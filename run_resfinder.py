@@ -114,6 +114,11 @@ parser.add_argument("-t", "--threshold",
                     help="Threshold for identity of ResFinder within the range 0-1.",
                     type=float,
                     default=0.80)
+parser.add_argument("-nano", "--nanopore",
+                        action="store_true",
+                        dest="nanopore",
+                        help="If nanopore data is used",
+                        default=False)
 # Point resistance option
 parser.add_argument("-c", "--point",
                     action="store_true",
@@ -385,18 +390,33 @@ if args.acquired is True:
 #        print("STD RESULT:\n{}".format(json.dumps(std_result)))
 
     else:
-        kma_run = acquired_finder.kma(inputfile_1=inputfastq_1,
-                                      inputfile_2=inputfastq_2,
-                                      out_path=out_res_kma,
-                                      db_path_kma=args.db_path_res_kma,
-                                      databases=acquired_finder.databases,
-                                      min_cov=min_cov,
-                                      threshold=args.threshold,
-                                      kma_path=kma,
-                                      sample_name="",
-                                      kma_cge=True,
-                                      kma_apm="p",
-                                      kma_1t1=True)
+        if args.nanopore:
+            kma_run = acquired_finder.kma(inputfile_1=inputfastq_1,
+                                          inputfile_2=inputfastq_2,
+                                          out_path=out_res_kma,
+                                          db_path_kma=args.db_path_res_kma,
+                                          databases=acquired_finder.databases,
+                                          min_cov=min_cov,
+                                          threshold=args.threshold,
+                                          kma_path=kma,
+                                          sample_name="",
+                                          kma_cge=True,
+                                          kma_apm="p",
+                                          kma_1t1=True,
+                                          kma_add_args='-ont -md 5')
+        else:
+            kma_run = acquired_finder.kma(inputfile_1=inputfastq_1,
+                                          inputfile_2=inputfastq_2,
+                                          out_path=out_res_kma,
+                                          db_path_kma=args.db_path_res_kma,
+                                          databases=acquired_finder.databases,
+                                          min_cov=min_cov,
+                                          threshold=args.threshold,
+                                          kma_path=kma,
+                                          sample_name="",
+                                          kma_cge=True,
+                                          kma_apm="p",
+                                          kma_1t1=True)
 
         # DEPRECATED
         # use std_result

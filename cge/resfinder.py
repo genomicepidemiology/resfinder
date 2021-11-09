@@ -108,7 +108,6 @@ class ResFinder(CGEFinder):
                       break
             if(no_hits):
                  results[db] = "No hit found"
-
             profile = str(self.configured_dbs[db][0])
             if results[db] == "No hit found":
                 table_str += ("%s\n%s\n\n" % (profile, results[db]))

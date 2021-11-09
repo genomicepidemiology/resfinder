@@ -101,6 +101,20 @@ parser.add_argument("-t", "--threshold",
                           "range 0-1."),
                     type=float,
                     default=None)
+# Disinfectant resistance options
+parser.add_argument("-dis", "--disinfectant",
+                    action="store_true",
+                    help="Run resfinder for disinfectant resistance genes",
+                    default=False)
+parser.add_argument("-db_disinf", "--db_path_disinf",
+                    help=("Path to the databases for ResFinder. Defaults to "
+                          "'db_resfinder' in the ResFinder application "
+                          "directory."),
+                    default=None)
+parser.add_argument("-db_disinf_kma", "--db_path_disinf_kma",
+                    help=("Path to the ResFinder databases indexed with KMA. "
+                          "Defaults to the value of the --db_res flag."),
+                    default=None)
 
 # Point resistance option
 parser.add_argument("-c", "--point",
@@ -167,7 +181,8 @@ if(conf.acquired):
     std_result.init_database("ResFinder", conf.db_path_res)
 if(conf.point):
     std_result.init_database("PointFinder", conf.db_path_point_root)
-
+if(conf.disinf):
+    std_result.init_database("DisinFinder", conf.db_path_disinf)
 ##########################################################################
 # ResFinder
 ##########################################################################
@@ -225,12 +240,69 @@ if(conf.acquired is True):
         ResFinderResultHandler.standardize_results(std_result,
                                                    kma_run.results,
                                                    "ResFinder")
+##########################################################################
+# DisinFinder
+##########################################################################
+if(conf.disinf is True):
 
+    blast_results = None
+    kma_run = None
+
+    # Actually running DisinFinder (for disinfectant resistance)
+    disinf_finder = ResFinder(db_conf_file=conf.db_config_disinf_file,
+                              db_path=conf.db_path_disinf,
+                              notes=conf.db_notes_disinf_file,
+                              db_path_kma=conf.db_path_disinf_kma)
+
+    if(conf.inputfasta):
+        blast_results = disinf_finder.blast(inputfile=conf.inputfasta,
+                                            out_path=conf.outPath_disinf_blast,
+                                            min_cov=conf.dis_gene_cov,
+                                            threshold=conf.dis_gene_id,
+                                            blast=conf.blast,
+                                            allowed_overlap=conf.dis_overlap)
+
+        # DEPRECATED
+        # TODO: make a write method that depends on the json output
+        disinf_finder.write_results(out_path=conf.outputPath,
+                                      result=blast_results,
+                                      res_type=ResFinder.TYPE_BLAST)
+
+        ResFinderResultHandler.standardize_results(std_result,
+                                                   blast_results.results,
+                                                   "DisinFinder")
+
+    else:
+        kma_run = disinf_finder.kma(inputfile_1=conf.inputfastq_1,
+                                    inputfile_2=conf.inputfastq_2,
+                                    out_path=conf.outPath_disinf_kma,
+                                    db_path_kma=conf.db_path_disinf_kma,
+                                    databases=disinf_finder.databases,
+                                    min_cov=conf.dis_gene_cov,
+                                    threshold=conf.dis_gene_id,
+                                    kma_path=conf.kma,
+                                    sample_name="",
+                                    kma_cge=True,
+                                    kma_apm="p",
+                                    kma_1t1=True)
+
+        # DEPRECATED
+        # TODO: make a write method that depends on the json output
+        disinf_finder.write_results(out_path=conf.outputPath,
+                                    result=kma_run.results,
+                                    res_type=ResFinder.TYPE_KMA)
+
+        ResFinderResultHandler.standardize_results(std_result,
+                                                   kma_run.results,
+                                                   "DisinFinder")
 ##########################################################################
 # PointFinder
 ##########################################################################
 
 if(conf.point):
+
+    blast_results = None
+    kma_run = None
 
     finder = PointFinder(db_path=conf.db_path_point, species=conf.species_dir,
                          gene_list=conf.specific_gene,
@@ -298,12 +370,17 @@ if(conf.point):
 # Load genotype to phenotype database
 res_pheno_db = PhenoDB(
     abclassdef_file=conf.abclassdef_file, acquired_file=conf.phenotype_file,
-    point_file=conf.point_file)
+    point_file=conf.point_file, disinf_file=conf.disinf_file, disclassdef_file=
+    conf.disclassdef_file)
 
 # Isolate object store results
 isolate = Isolate(name=conf.sample_name)
 
 if(conf.acquired):
+    isolate.load_finder_results(std_table=std_result,
+                                phenodb=res_pheno_db,
+                                type="seq_regions")
+if(conf.disinf):
     isolate.load_finder_results(std_table=std_result,
                                 phenodb=res_pheno_db,
                                 type="seq_regions")

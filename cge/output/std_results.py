@@ -23,7 +23,7 @@ class ResFinderResultHandler():
             Input:
                 res_collection: Result object created by the cge core module.
                 res: Custom dictionary of results from ResFinder
-                ref_db_name: 'ResFinder' or 'PointFinder'
+                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
 
             Method loads the given res_collection with results from res.
         """
@@ -37,10 +37,11 @@ class ResFinderResultHandler():
             for unique_id, hit_db in db.items():
                 if(unique_id in res["excluded"]):
                     continue
-
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
 
-                if gene_result["key"] not in res_collection["seq_regions"]:
+                if gene_result["key"] is None:
+                    continue
+                elif gene_result["key"] not in res_collection["seq_regions"]:
                     res_collection.add_class(cl="seq_regions", **gene_result)
                 else:
                     raise DuplicateKeyError(
@@ -108,7 +109,7 @@ class PointFinderResultHandler():
             Input:
                 res_collection: Result object created by the cge core module.
                 res: Custom dictionary of results from PointFinder
-                ref_db_name: 'ResFinder' or 'PointFinder'
+                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
 
             Method loads the given res_collection with results from res.
         """

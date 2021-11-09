@@ -22,7 +22,8 @@ class PhenoDB(dict):
         The dict consists of Phenotype objects. The keys are unique ids.
     """
 
-    def __init__(self, abclassdef_file, acquired_file=None, point_file=None):
+    def __init__(self, abclassdef_file, acquired_file=None, point_file=None,
+                 disclassdef_file=None, disinf_file=None):
 
         # Stores non-redundant complete list of antibiotics in DB.
         self.antibiotics = {}
@@ -37,12 +38,17 @@ class PhenoDB(dict):
 
         self.ab_class_defs = ABClassDefinition(abclassdef_file)
 
-        if(acquired_file is None and point_file is None):
+        if(acquired_file is None and point_file is None
+           and disinf_file is None):
             eprint("ERROR: No phenotype database files where specified.")
             quit(1)
 
         if(acquired_file):
             self.load_acquired_db(acquired_file)
+
+        if(disinf_file):
+            self.dis_class_defs = ABClassDefinition(disclassdef_file)
+            self.load_disinfectant_db(disinf_file)
 
         if(point_file):
             self.load_point_db(point_file)
@@ -309,6 +315,134 @@ class PhenoDB(dict):
                 except IndexError:
                     eprint("Error in line " + str(line_counter))
                     eprint("Split line:\n" + str(line_list))
+
+    def load_disinfectant_db(self, txt_file):
+
+        # Test file for illegal encodings
+        with open(txt_file, "r") as fh:
+            line_counter = 1
+            try:
+                for line in fh:
+                    line_counter += 1
+            except UnicodeDecodeError:
+                eprint("PhenoDB load_acquired_dbacq UnicodeDecodeError in "
+                       "line {0}".format(line_counter))
+                eprint("\t\"" + line + "\"")
+                sys.exit("UnicodeDecodeError")
+
+        with open(txt_file, "r") as fh:
+            # Skip headers
+            fh.readline()
+            line_counter = 1
+
+            for line in fh:
+                if(line.startswith("#")):
+                    continue
+
+                try:
+                    line_counter += 1
+
+                    # line = line.encode("latin_1")
+                    line = line.rstrip()
+                    line_list = line.split("\t")
+                    line_list = list(map(str.rstrip, line_list))
+
+                    # ID in DB is <gene>_<group>_<acc>. Ex: blaB-2_1_AF189300.
+                    # The gene + acc should be unique and is used here.
+                    id_with_group = line_list[0]
+                    phenodb_id = id_with_group.split("_")
+
+                    # This code is temporary
+                    # TODO: Remove when database has been reformatted.
+                    if(len(phenodb_id) < 3):
+                        unique_id = phenodb_id
+                    else:
+                        accno = "_".join(phenodb_id[2:])
+                        unique_id = "{0}_{1}".format(phenodb_id[0], accno)
+
+                    self.id_to_idwithvar[unique_id] = id_with_group
+
+                    # ab_class = self.get_csv_tuple(line_list[1].lower())
+
+                    pub_phenotype = self.get_csv_tuple(line_list[2].lower())
+                    if("unknown" in pub_phenotype or "none" in pub_phenotype):
+                        pub_phenotype = ()
+
+                    abs = []
+                    for ab_name in pub_phenotype:
+                        # TODO: Fix database
+                        if(ab_name == "see notes"):
+                            continue
+                        classes = self.dis_class_defs.get(ab_name, None)
+                        if(classes is None):
+                            eprint("Entry {id:s} contained antibiotic "
+                                   "'{ab:s}' not found in ab class "
+                                   "def file."
+                                   .format(id=unique_id, ab=ab_name))
+                            continue
+                        ab = Antibiotics(name=ab_name, classes=classes)
+                        abs.append(ab)
+                        for class_ in classes:
+                            if(class_ in self.antibiotics):
+                                self.antibiotics[class_][ab] = True
+                            else:
+                                self.antibiotics[class_] = {}
+                                self.antibiotics[class_][ab] = True
+
+                    # phenotype = list(pub_phenotype)
+
+                    pmid = self.get_csv_tuple(line_list[3].lower())
+
+                    if(len(line_list) > 4 and line_list[4]):
+                        res_mechanics = line_list[4].lower()
+                    else:
+                        res_mechanics = ""
+
+                    if(len(line_list) > 5 and line_list[5]):
+                        notes = line_list[5]
+                    else:
+                        notes = ""
+
+                    # Line list pos 6 is required genes
+
+                    #
+                    # The following should be written out
+                    #
+                    # if(len(line_list) > 6 and line_list[6]):
+                    #    sug_phenotype = self.get_csv_tuple(line_list[6])
+                    #    for p in sug_phenotype:
+                    #        if p not in pub_phenotype:
+                    #            phenotype.append(p)
+                    # else:
+                    sug_phenotype = ()
+
+                    if(len(line_list) > 7 and line_list[7]):
+                        gene_class = line_list[7].lower()
+                    else:
+                        gene_class = None
+                    if(len(line_list) > 8 and line_list[8]):
+                        susceptibile = self.get_csv_tuple(line_list[6])
+                    else:
+                        susceptibile = ()
+                    if(len(line_list) > 9 and line_list[9]):
+                        species = self.get_csv_tuple(line_list[9])
+                    else:
+                        species = None
+
+                    pheno = Phenotype(unique_id, abs,
+                                      sug_phenotype, pub_phenotype, pmid,
+                                      susceptibile=susceptibile,
+                                      gene_class=gene_class, notes=notes)
+
+                    pheno_lst = self.get(unique_id, [])
+                    pheno_lst.append(pheno)
+                    self[unique_id] = pheno_lst
+
+                except IndexError:
+                    eprint("PhenoDB load_acquired_dbacq IndexError in line {0}"
+                           .format(line_counter))
+                    eprint("Split line:\n{0}".format(str(line_list)))
+
 
     @staticmethod
     def if_promoter_rename(s):

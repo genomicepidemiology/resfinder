@@ -137,9 +137,11 @@ class Isolate(dict):
         for key, feat_info in std_table[type].items():
 
             # Skip genes from PointFinder database (not resistance genes).
+
             if(type == "seq_regions"
-               and re.search("PointFinder", feat_info["ref_database"])):
-               continue
+               and any(re.search("PointFinder",
+                                 line) for line in feat_info["ref_database"])):
+                continue
 
             unique_id = Isolate.get_phenodb_id(feat_info, type)
             phenotypes = phenodb.get(unique_id, None)
@@ -155,10 +157,8 @@ class Isolate(dict):
                 res_feature = self.new_res_gene(feat_info, unique_id, ab_class)
             elif(type == "seq_variations"):
                 res_feature = self.new_res_mut(feat_info, unique_id, ab_class)
-
             ResProfile.update_classes_dict_of_feature_sets(
                 self.feature_classes, res_feature)
-
             feat_list = self.get(unique_id, [])
             feat_list.append(res_feature)
             self[unique_id] = feat_list

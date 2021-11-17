@@ -204,26 +204,25 @@ class PhenoDB(dict):
                     line_list = line.split("\t")
                     line_list = list(map(str.rstrip, line_list))
 
-                    # ID in DB is just Gene ID and is not unique
-                    phenodb_id = line_list[0]
-                    codon_pos = line_list[2]
-                    res_codon_str = line_list[5].lower()
+                    # ID in DB is Gene-AAMut-Pos and is not unique
+                    gene_id = line_list[0]
+#                    unique_id = line_list[2]
+                    codon_pos = line_list[3]
+                    res_codon_str = line_list[6].lower()
 
                     # Check if the entry is with a promoter
-                    phenodb_id = PhenoDB.if_promoter_rename(phenodb_id)
+                    gene_id = PhenoDB.if_promoter_rename(gene_id)
 
-                    unique_id = (phenodb_id + "_" + codon_pos + "_"
-                                 + res_codon_str)
-
-                    pub_phenotype = self.get_csv_tuple(line_list[6].lower())
+                    gene_name = gene_id.split("_")[0]
+                    pub_phenotype = self.get_csv_tuple(line_list[8].lower())
                     if("unknown" in pub_phenotype or "none" in pub_phenotype):
                         pub_phenotype = ()
 
-                    pmid = self.get_csv_tuple(line_list[7].lower())
+                    pmid = self.get_csv_tuple(line_list[9].lower())
 
                     # TODO: Remove this tuple and its dependencies.
                     sug_phenotype = ()
-
+                    unique_id = gene_name + "_" + str(codon_pos) + "_" +res_codon_str
                     abs = []
                     for ab_name in pub_phenotype:
                         # TODO: Fix database
@@ -244,14 +243,13 @@ class PhenoDB(dict):
                             else:
                                 self.antibiotics[class_] = {}
                                 self.antibiotics[class_][ab] = True
-
-                    if(len(line_list) > 8 and line_list[8]):
-                        res_mechanics = line_list[8]
+                    if(len(line_list) > 10 and line_list[10]):
+                        res_mechanics = line_list[10]
                     else:
                         res_mechanics = None
 
-                    if(len(line_list) > 9 and line_list[9]):
-                        notes = line_list[9]
+                    if(len(line_list) > 11 and line_list[11]):
+                        notes = line_list[11]
                     else:
                         notes = ""
 
@@ -268,8 +266,8 @@ class PhenoDB(dict):
                     # Requied mutations are stored in a tuple of tuples
                     # of MutationGenotypes. Outer tuple seperate
                     # groups, inner tuples seperate mutations.
-                    if(len(line_list) > 10 and line_list[10]):
-                        mut_groups_str = PhenoDB.get_csv_tuple(line_list[10],
+                    if(len(line_list) > 12 and line_list[12]):
+                        mut_groups_str = PhenoDB.get_csv_tuple(line_list[12],
                                                                sep=";",
                                                                lower=False)
                         if(mut_groups_str):
@@ -306,10 +304,10 @@ class PhenoDB(dict):
                     # be found with just one.
                     # Alternative unique ids are therefore made using just a
                     # single res_codon.
-                    res_codon = self.get_csv_tuple(line_list[5].lower())
+                    res_codon = self.get_csv_tuple(line_list[6].lower())
                     if(len(res_codon) > 1):
                         for codon in res_codon:
-                            unique_id_alt = (phenodb_id + "_" + codon_pos
+                            unique_id_alt = (gene_name + "_" + codon_pos
                                              + "_" + codon)
                             self[unique_id_alt] = pheno_lst
                 except IndexError:

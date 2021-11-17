@@ -45,7 +45,6 @@ class PhenotypeResult(dict):
             pheno_keys = feat_result.get("phenotypes", [])
             pheno_keys.append(self["key"])
             feat_result["phenotypes"] = pheno_keys
-
         if(type == "seq_regions"):
             db_key = res_collection.get_db_key("ResFinder")[0]
         elif(type == "seq_variations"):

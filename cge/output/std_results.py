@@ -62,7 +62,6 @@ class ResFinderResultHandler():
         for ab_class in isolate.resprofile.phenodb.antibiotics.keys():
             # For each antibiotic in current class
             for phenodb_ab in isolate.resprofile.phenodb.antibiotics[ab_class]:
-
                 phenotype = PhenotypeResult(phenodb_ab)
 
                 # Isolate is resistant towards the antibiotic
@@ -75,7 +74,6 @@ class ResFinderResultHandler():
 
                         if(isinstance(feature, ResGene)
                            or isinstance(feature, ResMutation)):
-
                             phenotype.add_feature(res_collection, isolate,
                                                   feature)
 
@@ -113,9 +111,7 @@ class PointFinderResultHandler():
 
             Method loads the given res_collection with results from res.
         """
-
         for gene_name, db in res.items():
-
             # Ignore information in excluded dict
             if(gene_name == "excluded"):
                 continue
@@ -123,7 +119,6 @@ class PointFinderResultHandler():
             # Ignore genes found in excluded dict
             if gene_name in res["excluded"]:
                 continue
-
             if(isinstance(db, str)):
                 if(db == "No hit found"):
                     continue
@@ -149,10 +144,9 @@ class PointFinderResultHandler():
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
                 res_collection.add_class(cl="seq_regions", **gene_result)
                 gene_results.append(gene_result)
-
-            mismatches = db["mis_matches"]
-
-            for mismatch in mismatches:
-                seq_var_result = SeqVariationResult(
-                    res_collection, mismatch, gene_results, ref_db_name)
-                res_collection.add_class(cl="seq_variations", **seq_var_result)
+                mismatches = hit_db["mis_matches"]
+                for mismatch in mismatches:
+                    seq_var_result = SeqVariationResult(
+                        res_collection, mismatch, gene_results, ref_db_name)
+                    res_collection.add_class(cl="seq_variations",
+                                                **seq_var_result)

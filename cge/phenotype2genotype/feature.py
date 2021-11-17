@@ -62,7 +62,6 @@ class ResGene(Gene):
         Gene.__init__(self, unique_id, seq_region, start, end, hit, isolate)
         self.ab_class = Feature.na2none(ab_class)
 
-
 class Mutation(Gene):
     """
     """
@@ -166,7 +165,6 @@ class Mutation(Gene):
                     "p.{ref}{pos}_{ref_right}{end}del"
                     .format(pos=self.pos, end=self.end,
                             ref=self.ref_aa.upper(),
-#                            ref_right=self.ref_aa_right.upper()))
                             ref_right=self.ref_aa_right))
 
             # Single deletion
@@ -205,4 +203,4 @@ class ResMutation(Mutation):
                           isolate=isolate, insertion=insertion,
                           deletion=deletion, end=end, nuc=nuc,
                           premature_stop=premature_stop, frameshift=frameshift)
-        self.ab_class = ab_class
+        self.ab_class = Feature.na2none(ab_class)

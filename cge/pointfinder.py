@@ -418,13 +418,13 @@ class PointFinder(CGEFinder):
 
             # Only consider mutations in genes found in the gene list
             if gene_ID in gene_list:
-                gene_name = mutation[1]
-                mut_pos = int(mutation[2])
-                ref_codon = mutation[3]                     # Ref_nuc (1 or 3?)
-                ref_aa = mutation[4]                        # Ref_codon
-                alt_aa = mutation[5].split(",")             # Res_codon
-                res_drug = mutation[6].replace("\t", " ")
-                pmid = mutation[7].split(",")
+                gene_name = mutation[0].split("_")[0]
+                mut_pos = int(mutation[3])
+                ref_codon = mutation[4]                     # Ref_nuc (1 or 3?)
+                ref_aa = mutation[5]                        # Ref_codon
+                alt_aa = mutation[6].split(",")             # Res_codon
+                res_drug = mutation[7].replace("\t", " ")
+                pmid = mutation[9].split(",")
 
                 # Check if stop codons are predictive for resistance
                 if stopcodonflag is True:
@@ -522,7 +522,14 @@ class PointFinder(CGEFinder):
                 continue
             elif isinstance(hits, dict) and len(hits) > 0:
                 GENES[gene]['found'] = 'partially'
+                # IT is possible only this is the used part?
                 GENES[gene]['hits'] = hits
+                for hit_ in hits:
+                    GENES[gene]['hits'][hit_]['mis_matches'] = self.find_mismatches(
+                        gene=gene,
+                        sbjct_start=GENES[gene]['hits'][hit_]["sbjct_start"],
+                        sbjct_seq=GENES[gene]['hits'][hit_]["sbjct_string"],
+                        qry_seq=GENES[gene]['hits'][hit_]["query_string"])
             else:
                 # Gene not found! go to next gene
                 GENES[gene] = 'No hit found'
@@ -561,7 +568,7 @@ class PointFinder(CGEFinder):
             contigs = [hit['contig_name']]
             scores = [str(hit['cal_score'])]
 
-            # Check if more then one hit was found within the same gene
+            # Check if more than one hit was found within the same gene
             for i in range(len(hits_found) - 1):
 
                 # Save information from previous hit
@@ -680,7 +687,11 @@ class PointFinder(CGEFinder):
                 GENES[gene]['cal_score'] = ", ".join(scores)
                 GENES[gene]['gaps'] = no_call
                 GENES[gene]['alternative_overlaps'] = alternative_overlaps
-                GENES[gene]['mis_matches'] = []
+                mismatches = self.find_mismatches(gene=gene,
+                                                  sbjct_start=all_start,
+                                                  sbjct_seq=final_sbjct,
+                                                  qry_seq=final_qry)
+                GENES[gene]['mis_matches'] = mismatches
 
             else:
                 # Gene not found above given coverage

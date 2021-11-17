@@ -25,15 +25,9 @@ class GeneResult(dict):
 
         self["ref_id"] = res["sbjct_header"]
         self["ref_id"] = PhenoDB.if_promoter_rename(self["ref_id"])
+        self["name"], self.variant, self["ref_acc"] = (
+            GeneResult._split_sbjct_header(self["ref_id"]))
 
-        if(db_name == "ResFinder"):
-            self["name"], self.variant, self["ref_acc"] = (
-                GeneResult._split_sbjct_header(self["ref_id"]))
-        elif(db_name == "DisinFinder"):
-            self["name"], self.variant, self["ref_acc"] = (
-                GeneResult._split_sbjct_header(self["ref_id"]))
-        elif(db_name == "PointFinder"):
-            self["name"] = self["ref_id"]
         self["ref_database"] = [res_collection.get_db_key(db_name)[0]]
 
         self["identity"] = res["perc_ident"]
@@ -149,14 +143,8 @@ class GeneResult(dict):
             results the query_* doesn't exist, and results will never be
             considered identical.
         """
-        if(self.db_name == "ResFinder"):
-            gene_key = ("{name}{deli}{var}{deli}{ref_acc}"
-                        .format(deli=delimiter, var=self.variant, **self))
-        if(self.db_name == "DisinFinder"):
-            gene_key = ("{name}{deli}{var}{deli}{ref_acc}"
-                        .format(deli=delimiter, var=self.variant, **self))
-        if(self.db_name == "PointFinder"):
-            gene_key = self["name"]
+        gene_key = ("{name}{deli}{var}{deli}{ref_acc}".format(
+                deli=delimiter, var=self.variant, **self))
         # Attach random string if key already exists
         minimum_gene_key = gene_key
         if gene_key in res_collection["seq_regions"]:

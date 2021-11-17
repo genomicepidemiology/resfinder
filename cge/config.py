@@ -107,7 +107,7 @@ class Config():
         os.makedirs(self.outPath_res_blast, exist_ok=True)
 
         self.outPath_disinf_blast = ("{}/disinfinder_blast"
-                                    .format(self.outputPath))
+                                     .format(self.outputPath))
         os.makedirs(self.outPath_disinf_blast, exist_ok=True)
 
         self.outPath_point_blast = ("{}/pointfinder_blast"
@@ -248,7 +248,8 @@ class Config():
             self.point_file = ("{}/resistens-overview.txt"
                                .format(self.db_path_point))
             _ = self.get_abs_path_and_check(self.point_file)
-
+        if(not args.acquired):
+            self.set_path_resfinderdb(args)
         self.abclassdef_file = ("{}/antibiotic_classes.txt"
                                 .format(self.db_path_res))
         _ = self.get_abs_path_and_check(self.abclassdef_file)
@@ -264,6 +265,9 @@ class Config():
             self.disclassdef_file = ("{}/disinfectant_classes.txt"
                                      .format(self.db_path_disinf))
             _ = self.get_abs_path_and_check(self.disclassdef_file)
+        else:
+            self.disinf_file = None
+            self.disclassdef_file = None
 
     @staticmethod
     def get_abs_path_and_check(path, allow_exit=True):
@@ -384,8 +388,8 @@ class Config():
         try:
             _ = subprocess.check_output([prg_path, "-h"])
         except PermissionError:
-            sys.exit("ERROR: Missing permission. Unable to execute blastn from "
-                     "the path: {}".format(prg_path))
+            sys.exit("ERROR: Missing permission. Unable to execute blastn from"
+                     " the path: {}".format(prg_path))
         return prg_path
 
     @staticmethod
@@ -399,7 +403,7 @@ class Config():
 
             try:
                 cli_val = getattr(args, entries[0])
-                # Flags set by user will not be None, default vals will be None.
+                # Flags set by user will not be None, default vals will be None
                 if(cli_val is not None):
                     continue
 
@@ -408,9 +412,9 @@ class Config():
                     setattr(args, entries[0], var_val)
 
             except AttributeError:
-                sys.exit("ERROR: A flag set in the Environment Variables Table "
-                         "in the README file did not match any valid flags in "
-                         "ResFinder. Flag not recognized: {}."
+                sys.exit("ERROR: A flag set in the Environment Variables Table"
+                         " in the README file did not match any valid flags in"
+                         " ResFinder. Flag not recognized: {}."
                          .format(entries[0]))
 
         Config._set_default_values(args)

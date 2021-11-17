@@ -343,22 +343,19 @@ if(conf.point):
     if(conf.specific_gene):
         results = PointFinder.discard_unwanted_results(
             results=results, wanted=conf.specific_gene)
-
     if(method == PointFinder.TYPE_BLAST):
-        results_pnt = finder.find_best_seqs(results, conf.rf_gene_cov)
+        results_pnt = finder.find_best_seqs(results, conf.pf_gene_cov)
     else:
         results_pnt = results[finder.species]
         if(results_pnt == "No hit found"):
             results_pnt = {}
         else:
             results_pnt["excluded"] = results["excluded"]
-
     # DEPRECATED
     # TODO: make a write method that depends on the json output
     finder.write_results(out_path=conf.outputPath, result=results,
                          res_type=method, unknown_flag=conf.unknown_mut,
                          min_cov=conf.pf_gene_cov, perc_iden=conf.pf_gene_id)
-
     PointFinderResultHandler.standardize_results(std_result,
                                                  results_pnt,
                                                  "PointFinder")
@@ -370,9 +367,8 @@ if(conf.point):
 # Load genotype to phenotype database
 res_pheno_db = PhenoDB(
     abclassdef_file=conf.abclassdef_file, acquired_file=conf.phenotype_file,
-    point_file=conf.point_file, disinf_file=conf.disinf_file, disclassdef_file=
-    conf.disclassdef_file)
-
+    point_file=conf.point_file, disinf_file=conf.disinf_file,
+    disclassdef_file=conf.disclassdef_file)
 # Isolate object store results
 isolate = Isolate(name=conf.sample_name)
 
@@ -390,9 +386,9 @@ if(conf.point):
                                 type="seq_variations")
 
 isolate.calc_res_profile(res_pheno_db)
+
 ResFinderResultHandler.load_res_profile(std_result, isolate,
                                         conf.amr_abbreviations)
-
 std_result_file = "{}/std_format.json".format(conf.outputPath)
 
 with open(std_result_file, 'w') as fh:

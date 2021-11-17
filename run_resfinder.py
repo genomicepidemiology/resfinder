@@ -77,10 +77,6 @@ parser.add_argument("-db_res_kma", "--db_path_res_kma",
                     help=("Path to the ResFinder databases indexed with KMA. "
                           "Defaults to the value of the --db_res flag."),
                     default=None)
-parser.add_argument("-d", "--databases",
-                    help="Databases chosen to search in - if none is specified\
-                          all is used",
-                    default=None)
 parser.add_argument("-acq", "--acquired",
                     action="store_true",
                     help="Run resfinder for acquired resistance genes",
@@ -194,7 +190,6 @@ if(conf.acquired is True):
 
     # Actually running ResFinder (for acquired resistance)
     acquired_finder = ResFinder(db_conf_file=conf.db_config_file,
-                                databases=conf.databases,
                                 db_path=conf.db_path_res,
                                 notes=conf.db_notes_file,
                                 db_path_kma=conf.db_path_res_kma)
@@ -222,7 +217,6 @@ if(conf.acquired is True):
                                       inputfile_2=conf.inputfastq_2,
                                       out_path=conf.outPath_res_kma,
                                       db_path_kma=conf.db_path_res_kma,
-                                      databases=acquired_finder.databases,
                                       min_cov=conf.rf_gene_cov,
                                       threshold=conf.rf_gene_id,
                                       kma_path=conf.kma,
@@ -277,7 +271,6 @@ if(conf.disinf is True):
                                     inputfile_2=conf.inputfastq_2,
                                     out_path=conf.outPath_disinf_kma,
                                     db_path_kma=conf.db_path_disinf_kma,
-                                    databases=disinf_finder.databases,
                                     min_cov=conf.dis_gene_cov,
                                     threshold=conf.dis_gene_id,
                                     kma_path=conf.kma,

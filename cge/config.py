@@ -22,7 +22,6 @@ class Config():
         "ignore_missing_species": False,
         "db_path_res": None,
         "db_path_res_kma": None,
-        "databases": None,
         "acquired": None,
         "acq_overlap": 30,
         "min_cov": 0.6,
@@ -146,7 +145,6 @@ class Config():
         self.kma = self.get_prg_path(args.kmaPath)
 
     def set_resfinder_opts(self, args):
-        self.databases = args.databases
         self.set_path_resfinderdb(args)
         self.db_config_file = "{}/config".format(self.db_path_res)
         self.db_notes_file = "{}/notes.txt".format(self.db_path_res)

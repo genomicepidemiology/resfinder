@@ -203,7 +203,6 @@ class PhenoDB(dict):
 
                     line_list = line.split("\t")
                     line_list = list(map(str.rstrip, line_list))
-
                     # ID in DB is Gene-AAMut-Pos and is not unique
                     gene_id = line_list[0]
 #                    unique_id = line_list[2]
@@ -222,7 +221,8 @@ class PhenoDB(dict):
 
                     # TODO: Remove this tuple and its dependencies.
                     sug_phenotype = ()
-                    unique_id = gene_name + "_" + str(codon_pos) + "_" +res_codon_str
+                    unique_id = "%s_%s_%s" % (gene_name, codon_pos,
+                                              res_codon_str)
                     abs = []
                     for ab_name in pub_phenotype:
                         # TODO: Fix database
@@ -445,7 +445,7 @@ class PhenoDB(dict):
     @staticmethod
     def if_promoter_rename(s):
         out_string = s
-        regex = r"^(.+)_promoter_size_\d+bp$"
+        regex = r"^(.+)-promoter-size-\d+bp$"
         promoter_match = re.search(regex, s)
         if(promoter_match):
             reg_name = promoter_match.group(1)

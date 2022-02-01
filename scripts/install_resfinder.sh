@@ -37,5 +37,5 @@ cge/kma/kma_index -i db_pointfinder/neisseria_gonorrhoeae/*.fsa -o db_pointfinde
 cge/kma/kma_index -i db_pointfinder/salmonella/*.fsa -o db_pointfinder/salmonella/salmonella
 cge/kma/kma_index -i db_pointfinder/mycobacterium_tuberculosis/*.fsa -o db_pointfinder/mycobacterium_tuberculosis/mycobacterium_tuberculosis
 
-python3 test/functional_test.py
+python3 tests/functional_test.py
 

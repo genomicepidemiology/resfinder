@@ -285,7 +285,7 @@ os.makedirs(args.out_path, exist_ok=True)
 
 if args.acquired is False and args.point is False:
     sys.exit("Please specify to look for acquired resistance genes, "
-             "chromosomal mutaitons or both!\n")
+             "chromosomal mutations or both!\n")
 
 # Check ResFinder database
 if(args.db_path_res is None):

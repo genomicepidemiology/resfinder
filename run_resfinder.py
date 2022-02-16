@@ -204,7 +204,7 @@ if(args.threshold > 1.0 or args.threshold < 0.0):
     sys.exit("ERROR: Threshold for identity of ResFinder above 1 or below 0 is not allowed. Please select a threshold for identity within the range 0-1 with the flag -t.")
 
 # Check if input file is given
-if (args.inputfasta) or (args.inputfastq) is None:
+if not (args.inputfasta or args.inputfastq):
     sys.exit("ERROR: No input file given. Please provide path(s) to input file(s) either using "
              "--inputfasta or --inputfastq.")
 

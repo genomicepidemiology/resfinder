@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+import re
 import subprocess
 from argparse import ArgumentParser
 import pickle
@@ -26,6 +27,21 @@ import json
 # #########                                 FUNCTIONS               ######### #
 # ########################################################################### #
 
+def get_git_tag():
+    try:
+        git_tag = str(
+            subprocess.check_output(
+                ['git', 'describe', '--tags', '--abbrev=0'], stderr=subprocess.STDOUT
+            )).strip('\'b\\n')
+    except subprocess.CalledProcessError as exc_info:
+        match = re.search(
+            'fatal: no tag exactly matches \'(?P<commit>[a-z0-9]+)\'', str(exc_info.output))
+        if match:
+            raise Exception(
+                'Bailing: there is no git tag for the current commit, {commit}'.format(
+                commit=match.group('commit')))
+        raise Exception(str(exc_info.output))
+    return git_tag
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -160,6 +176,8 @@ parser.add_argument("-t_p", "--threshold_point",
                           ResFinder will be used.",
                     type=float,
                     default=None)
+parser.add_argument("-v", "--version", action="version", version=get_git_tag(), 
+                    help="Show program's version number and exit")
 # Temporary option only available temporary
 parser.add_argument("--pickle",
                     action="store_true",

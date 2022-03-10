@@ -28,10 +28,12 @@ import json
 # ########################################################################### #
 
 def get_git_tag():
+    git_folders_path = os.path.dirname(os.path.realpath(__file__))
     try:
         git_tag = str(
             subprocess.check_output(
-                ['git', 'describe', '--tags', '--abbrev=0'], stderr=subprocess.STDOUT
+                ['git', 'describe', '--tags', '--abbrev=0'],
+                stderr=subprocess.STDOUT, cwd=git_folders_path,
             )).strip('\'b\\n')
     except subprocess.CalledProcessError as exc_info:
         match = re.search(
@@ -176,7 +178,7 @@ parser.add_argument("-t_p", "--threshold_point",
                           ResFinder will be used.",
                     type=float,
                     default=None)
-parser.add_argument("-v", "--version", action="version", version=get_git_tag(), 
+parser.add_argument("-v", "--version", action="version", version=get_git_tag(),
                     help="Show program's version number and exit")
 # Temporary option only available temporary
 parser.add_argument("--pickle",

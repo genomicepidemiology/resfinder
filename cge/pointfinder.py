@@ -235,7 +235,7 @@ class PointFinder(CGEFinder):
         for gene, hit in GENES.items():
             # Start writing output string (to HTML tab file)
             gene_name = gene.split("_")[0]  # Not perfeft can differ from specific mutation
-            regex = r"promoter_size_(\d+)(?:bp)"
+            regex = r"promoter-size-(\d+)(?:bp)"
             promtr_gene_objt = re.search(regex, gene_name)
 
             if promtr_gene_objt:
@@ -733,7 +733,7 @@ class PointFinder(CGEFinder):
                                                                  qry_seq)
         else:
             # Check if the gene sequence is with a promoter
-            regex = r"promoter_size_(\d+)(?:bp)"
+            regex = r"promoter-size-(\d+)(?:bp)"
             promtr_gene_objt = re.search(regex, gene)
 
             # Check for promoter sequences

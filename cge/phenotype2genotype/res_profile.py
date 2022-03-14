@@ -58,7 +58,8 @@ class PhenoDB(dict):
                                        sug_phenotype=(),
                                        pub_phenotype=(),
                                        pmid="-",
-                                       notes="Phenotype not found in database")
+                                       notes="Phenotype not found in database",
+                                       res_db="ResFinder")
 
     def load_acquired_db(self, txt_file):
 
@@ -176,7 +177,8 @@ class PhenoDB(dict):
                     pheno = Phenotype(unique_id, abs,
                                       sug_phenotype, pub_phenotype, pmid,
                                       susceptibile=susceptibile,
-                                      gene_class=gene_class, notes=notes)
+                                      gene_class=gene_class, notes=notes,
+                                      res_db="ResFinder")
 
                     pheno_lst = self.get(unique_id, [])
                     pheno_lst.append(pheno)
@@ -293,7 +295,8 @@ class PhenoDB(dict):
                     pheno = Phenotype(unique_id, abs,
                                       sug_phenotype, pub_phenotype, pmid,
                                       notes=notes, res_mechanics=res_mechanics,
-                                      req_muts=mut_groups)
+                                      req_muts=mut_groups, res_db="PointFinder"
+                                      )
 
                     pheno_lst = self.get(unique_id, [])
                     pheno_lst.append(pheno)
@@ -430,7 +433,8 @@ class PhenoDB(dict):
                     pheno = Phenotype(unique_id, abs,
                                       sug_phenotype, pub_phenotype, pmid,
                                       susceptibile=susceptibile,
-                                      gene_class=gene_class, notes=notes)
+                                      gene_class=gene_class, notes=notes,
+                                      res_db="DisinFinder")
 
                     pheno_lst = self.get(unique_id, [])
                     pheno_lst.append(pheno)
@@ -611,7 +615,8 @@ class Phenotype(object):
     """
     def __init__(self, unique_id, antibiotics, sug_phenotype,
                  pub_phenotype, pmid, susceptibile=(), gene_class=None,
-                 notes="", species=None, res_mechanics=None, req_muts=None):
+                 notes="", species=None, res_mechanics=None, req_muts=None,
+                 res_db=None):
         self.unique_id = unique_id
         self.antibiotics = antibiotics
 
@@ -623,6 +628,7 @@ class Phenotype(object):
         self.notes = notes
         self.res_mechanics = res_mechanics
         self.req_muts = req_muts
+        self.res_database = res_db
 
 
 class Antibiotics(object):
@@ -656,8 +662,13 @@ class Antibiotics(object):
 
     # TODO: Overwrites identical features. Should check to keep only
     #       the most resistant feature.
+    # Alfred: now it creates a list
+
     def add_feature(self, feature):
-        self.features[feature.unique_id] = feature
+        if feature.unique_id in self.features:
+            self.features[feature.unique_id].append(feature)
+        else:
+            self.features[feature.unique_id] = [feature]
 
     def get_mut_names(self, _list=False):
         names = {}
@@ -728,9 +739,10 @@ class Antibiotics(object):
     def get_pubmed_ids(self, phenodb):
         pmids = {}
         for feature in self.features:
-            phenotype = phenodb[feature.unique_id]
-            for pmid in phenotype.pmid:
-                pmids[pmid] = True
+            phenotypes = phenodb[feature]
+            for phenotype in phenotypes:
+                for pmid in phenotype.pmid:
+                    pmids[pmid] = True
         return tuple(pmids.keys())
 
 
@@ -756,15 +768,21 @@ class ResProfile(object):
         for feature in features:
             if(feature.unique_id in phenodb):
                 # Add feature
-                self.features[feature.unique_id] = feature
+                if feature.unique_id in self.features:
+                    self.features[feature.unique_id].append(feature)
+                else:
+                    self.features[feature.unique_id] = [feature]
                 # Several phenotypes can exist for a single feature ID.
                 for phenotype in phenodb[feature.unique_id]:
-                    if(phenotype.antibiotics):
-                        self.add_phenotype(feature, phenotype, update=False)
-                    else:
-                        self.unknown_db_features.append(feature)
-                        self.update_classes_dict_of_feature_sets(
-                            self.resistance_classes, feature)
+                    if(phenotype.res_database == feature.hit.db):
+                        if(phenotype.antibiotics):
+                            self.add_phenotype(feature, phenotype,
+                                               update=False)
+                        else:
+                            self.unknown_db_features.append(feature)
+                            self.update_classes_dict_of_feature_sets(
+                                self.resistance_classes, feature)
+
             else:
                 self.missing_db_features.append(feature)
                 self.update_classes_dict_of_feature_sets(
@@ -829,9 +847,8 @@ class ResProfile(object):
                 if(_class not in self.resistance_classes):
                     self.resistance_classes[_class] = set()
                 self.resistance_classes[_class].add(feature)
-
             antibiotic.add_feature(feature)
-            self.resistance[antibiotic] = antibiotic
+            self.resistance[antibiotic.name] = antibiotic
 
         # TODO: delete this for-loop
         for antibiotic in phenotype.sug_phenotype:

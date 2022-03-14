@@ -191,6 +191,7 @@ if(conf.acquired is True):
     # Actually running ResFinder (for acquired resistance)
     acquired_finder = ResFinder(db_conf_file=conf.db_config_file,
                                 db_path=conf.db_path_res,
+                                pheno_file=conf.phenotype_file,
                                 notes=conf.db_notes_file,
                                 db_path_kma=conf.db_path_res_kma)
 
@@ -245,6 +246,7 @@ if(conf.disinf is True):
     # Actually running DisinFinder (for disinfectant resistance)
     disinf_finder = ResFinder(db_conf_file=conf.db_config_disinf_file,
                               db_path=conf.db_path_disinf,
+                              pheno_file=conf.disinf_file,
                               notes=conf.db_notes_disinf_file,
                               db_path_kma=conf.db_path_disinf_kma)
 
@@ -356,7 +358,6 @@ if(conf.point):
 ##########################################################################
 # Phenotype to genotype
 ##########################################################################
-
 # Load genotype to phenotype database
 res_pheno_db = PhenoDB(
     abclassdef_file=conf.abclassdef_file, acquired_file=conf.phenotype_file,
@@ -365,11 +366,7 @@ res_pheno_db = PhenoDB(
 # Isolate object store results
 isolate = Isolate(name=conf.sample_name)
 
-if(conf.acquired):
-    isolate.load_finder_results(std_table=std_result,
-                                phenodb=res_pheno_db,
-                                type="seq_regions")
-if(conf.disinf):
+if(conf.acquired or conf.disinf):
     isolate.load_finder_results(std_table=std_result,
                                 phenodb=res_pheno_db,
                                 type="seq_regions")
@@ -379,7 +376,6 @@ if(conf.point):
                                 type="seq_variations")
 
 isolate.calc_res_profile(res_pheno_db)
-
 ResFinderResultHandler.load_res_profile(std_result, isolate,
                                         conf.amr_abbreviations)
 std_result_file = "{}/std_format.json".format(conf.outputPath)

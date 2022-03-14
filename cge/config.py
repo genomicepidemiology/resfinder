@@ -54,7 +54,8 @@ class Config():
             self.set_disinfinder_opts(args)
         self.set_phenotype_opts(args)
 
-        if self.acquired is False and self.point is False:
+        if(self.acquired is False and self.point is False
+            and self.disinf is False):
             sys.exit("Please specify to look for acquired resistance genes, "
                      "chromosomal mutaitons or both!\n")
 
@@ -252,8 +253,12 @@ class Config():
                                 .format(self.db_path_res))
         _ = self.get_abs_path_and_check(self.abclassdef_file)
 
-        self.phenotype_file = ("{}/phenotypes.txt".format(self.db_path_res))
-        _ = self.get_abs_path_and_check(self.phenotype_file)
+        if(self.point or self.acquired):
+            self.phenotype_file = ("{}/phenotypes.txt"
+                                   .format(self.db_path_res))
+            _ = self.get_abs_path_and_check(self.phenotype_file)
+        else:
+            self.phenotype_file = None
 
         if(self.disinf):
             self.disinf_file = ("{}/phenotypes.txt".format(self.db_path_disinf)

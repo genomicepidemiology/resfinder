@@ -12,7 +12,7 @@ class GeneResult(dict):
                 res_collection: Result object created by the cgelib package.
                 res: Custom dictionary containing information about a single hit
                      from ResFinder.
-                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
+                db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
 
             Method creates a seq_region dict as defined in the BeOne template:
             https://bitbucket.org/genomicepidemiology/cgelib/src/master/src/
@@ -39,7 +39,8 @@ class GeneResult(dict):
         self["query_id"] = res["contig_name"]    # Positional essential
         self["query_start_pos"] = res["query_start"]    # Positional essential
         self["query_end_pos"] = res["query_end"]    # Positional essential
-
+        self["pmids"] = []
+        self["notes"] = []
         # BLAST coverage formatted results
         coverage = res.get("coverage", None)
         if(coverage is None):

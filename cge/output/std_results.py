@@ -63,20 +63,16 @@ class ResFinderResultHandler():
             # For each antibiotic in current class
             for phenodb_ab in isolate.resprofile.phenodb.antibiotics[ab_class]:
                 phenotype = PhenotypeResult(phenodb_ab)
-
                 # Isolate is resistant towards the antibiotic
                 if(phenodb_ab in isolate.resprofile.resistance):
                     phenotype.set_resistant(True)
-
                     isolate_ab = isolate.resprofile.resistance[phenodb_ab]
-
-                    for unique_id, feature in isolate_ab.features.items():
-
-                        if(isinstance(feature, ResGene)
-                           or isinstance(feature, ResMutation)):
-                            phenotype.add_feature(res_collection, isolate,
-                                                  feature)
-
+                    for unique_id, feature_lst in isolate_ab.features.items():
+                        for feature in feature_lst:
+                            if(isinstance(feature, ResGene)
+                                or isinstance(feature, ResMutation)):
+                                phenotype.add_feature(res_collection, isolate,
+                                                      feature)
                 res_collection.add_class(cl="phenotypes", **phenotype)
 
         amr_sum = ResFinderResultHandler.create_amr_summary_str(
@@ -140,7 +136,6 @@ class PointFinderResultHandler():
                 # Ignore genes found in excluded dict
                 if(unique_id in res["excluded"]):
                     continue
-
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
                 res_collection.add_class(cl="seq_regions", **gene_result)
                 gene_results.append(gene_result)

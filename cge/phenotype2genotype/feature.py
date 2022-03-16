@@ -83,7 +83,7 @@ class Mutation(Gene):
                  deletion=None, end=None, nuc=False, premature_stop=0,
                  frameshift=None, ref_db=None):
         Gene.__init__(self, unique_id=unique_id, seq_region=seq_region,
-                      start=start, end=end, hit=hit, isolate=isolate,
+                      start=pos, end=end, hit=hit, isolate=isolate,
                       ref_db=ref_db)
         if(pos is not None):
             self.pos = int(pos)
@@ -216,6 +216,5 @@ class ResMutation(Mutation, Resistance):
                           ref_aa_right=ref_aa_right, mut_aa=mut_aa,
                           isolate=isolate, insertion=insertion,
                           deletion=deletion, end=end, nuc=nuc,
-                          premature_stop=premature_stop, frameshift=frameshift,
-                          pmids=pmids, notes=notes)
+                          premature_stop=premature_stop, frameshift=frameshift)
         Resistance.__init__(self, ab_class=ab_class, pmids=pmids, notes=notes)

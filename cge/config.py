@@ -15,6 +15,7 @@ class Config():
     DEFAULT_VALS = {
         "inputfasta": None,
         "inputfastq": None,
+        "nanopore": False,
         "outputPath": None,
         "blastPath": "blastn",
         "kmaPath": "kma",
@@ -144,6 +145,7 @@ class Config():
         self.sample_name = os.path.basename(args.inputfastq[0])
         self.method = PointFinder.TYPE_KMA
         self.kma = self.get_prg_path(args.kmaPath)
+        self.nanopore = args.nanopore
 
     def set_resfinder_opts(self, args):
         self.set_path_resfinderdb(args)

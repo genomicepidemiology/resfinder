@@ -39,7 +39,8 @@ class SeqVariationResult(dict):
         self._get_unique_seqvar_key(res_collection, mismatch, region_results)
 
         self["ref_database"] = res_collection.get_db_key(db_name)[0]
-
+        self["pmids"] = []
+        self["notes"] = []
         region_keys = []
         for result in region_results:
             region_keys.append(result["key"])

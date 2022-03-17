@@ -209,12 +209,14 @@ class ResMutation(Mutation, Resistance):
                  ref_codon=None, mut_codon=None, ref_aa=None,
                  ref_aa_right=None, mut_aa=None, isolate=None, insertion=None,
                  deletion=None, end=None, nuc=False, premature_stop=False,
-                 frameshift=None, ab_class=None, pmids=None, notes=None):
+                 frameshift=None, ab_class=None, pmids=None, notes=None,
+                 ref_db=None):
         Mutation.__init__(self, unique_id=unique_id, seq_region=seq_region,
                           pos=pos, hit=hit, ref_codon=ref_codon,
                           mut_codon=mut_codon, ref_aa=ref_aa,
                           ref_aa_right=ref_aa_right, mut_aa=mut_aa,
                           isolate=isolate, insertion=insertion,
                           deletion=deletion, end=end, nuc=nuc,
-                          premature_stop=premature_stop, frameshift=frameshift)
+                          premature_stop=premature_stop, frameshift=frameshift,
+                          ref_db=ref_db)
         Resistance.__init__(self, ab_class=ab_class, pmids=pmids, notes=notes)

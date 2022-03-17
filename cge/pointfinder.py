@@ -427,7 +427,6 @@ class PointFinder(CGEFinder):
                 continue
 
             mutation = [data.strip() for data in line.split("\t")]
-
             gene_ID = mutation[0]
             gene_name = str(mutation[0].split("_")[0])
             # Only consider mutations in genes found in the gene list

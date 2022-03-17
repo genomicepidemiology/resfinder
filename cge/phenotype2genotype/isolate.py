@@ -170,12 +170,13 @@ class Isolate(dict):
             res_feature = self.new_res_gene(feat_info, unique_id, ab_class,
                                             phenotype)
         elif(type == "seq_variations"):
-            res_feature = self.new_res_mut(feat_info, unique_id, ab_class)
+            res_feature = self.new_res_mut(feat_info, unique_id, ab_class,
+                                           phenotype)
         ResProfile.update_classes_dict_of_feature_sets(
             self.feature_classes, res_feature)
         return res_feature
 
-    def new_res_mut(self, feat_info, unique_id, ab_class):
+    def new_res_mut(self, feat_info, unique_id, ab_class, phenotype):
         ref_aa = feat_info.get("ref_aa", None)
         if(ref_aa is None or ref_aa.upper() == "NA"):
             nucleotide_mut = True
@@ -193,12 +194,14 @@ class Isolate(dict):
                                deletion=feat_info["deletion"],
                                end=feat_info["ref_end_pos"],
                                nuc=nucleotide_mut,
-                               ab_class=ab_class)
+                               ab_class=ab_class,
+                               pmids=phenotype.pmid,
+                               notes=phenotype.notes,
+                               ref_db=phenotype.res_database)
 
         return feat_res
 
     def new_res_gene(self, gene_info, unique_id, ab_class, phenotype):
-        db = phenotype.res_database
         hit = DBHit(name=gene_info["name"],
                     identity=gene_info["identity"],
                     match_length=gene_info["alignment_length"],
@@ -207,7 +210,7 @@ class Isolate(dict):
                     end_ref=gene_info["ref_end_pos"],
                     acc=gene_info["ref_acc"],
                     depth=gene_info.get("depth", None),
-                    db=db)
+                    db=phenotype.res_database)
 
         query_start = gene_info.get("query_start_pos", None)
         query_end = gene_info.get("query_end_pos", None)
@@ -221,7 +224,7 @@ class Isolate(dict):
                            ab_class=ab_class,
                            pmids=phenotype.pmid,
                            notes=phenotype.notes,
-                           ref_db=db)
+                           ref_db=phenotype.res_database)
         return feat_res
 
     def calc_res_profile(self, phenodb):

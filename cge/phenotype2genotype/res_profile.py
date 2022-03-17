@@ -774,7 +774,7 @@ class ResProfile(object):
                     self.features[feature.unique_id] = [feature]
                 # Several phenotypes can exist for a single feature ID.
                 for phenotype in phenodb[feature.unique_id]:
-                    if(phenotype.res_database == feature.hit.db):
+                    if(phenotype.res_database == feature.ref_db):
                         if(phenotype.antibiotics):
                             self.add_phenotype(feature, phenotype,
                                                update=False)

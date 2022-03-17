@@ -164,10 +164,9 @@ parser.add_argument("-ic", "--ignore_stop_codons",
                     help="Ignore premature stop codons in Pointfinder.",
                     default=None)
 
-folder_file = os.path.dirname(os.path.realpath(__file__))
-
 parser.add_argument("-v", "--version", action="version",
-                    version=PliersMixin.get_git_tag(folder_file),
+                    version=PliersMixin.get_git_tag(
+                                os.path.dirname(os.path.realpath(__file__))),
                     help="Show program's version number and exit")
 
 # Temporary option only available temporary

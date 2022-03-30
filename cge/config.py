@@ -17,6 +17,7 @@ class Config():
         "inputfastq": None,
         "nanopore": False,
         "outputPath": None,
+        "out_json": None,
         "blastPath": "blastn",
         "kmaPath": "kma",
         "species": None,
@@ -63,6 +64,15 @@ class Config():
     def set_general_opts(self, args):
         self.outputPath = os.path.abspath(args.outputPath)
         os.makedirs(self.outputPath, exist_ok=True)
+        
+        if(args.out_json):
+            if not args.out_json.endswith(".json"):
+                sys.exit("Please specify the path to the JSON file including its filename "
+                "ending with .json.\n")
+            self.out_json = os.path.abspath(args.out_json)
+            os.makedirs(os.path.dirname(self.out_json), exist_ok=True)
+        else:
+            self.out_json = False
 
         self.acquired = bool(args.acquired)
         self.point = bool(args.point)

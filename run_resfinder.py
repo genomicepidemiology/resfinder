@@ -52,9 +52,13 @@ parser.add_argument("-nano", "--nanopore",
                         help="If nanopore data is used",
                         default=False)
 parser.add_argument("-o", "--outputPath",
-                    help=("Output directoy. If it doesn't exist, it will be "
+                    help=("Output directory. If it doesn't exist, it will be "
                           "created."),
                     required=True,
+                    default=None)
+parser.add_argument("-json", "--out_json",
+                    help=("Specify JSON filename and output directory. If the directory "
+                          "doesn't exist, it will be created."),
                     default=None)
 parser.add_argument("-b", "--blastPath",
                     help="Path to blastn",
@@ -434,8 +438,12 @@ if(conf.point):
 isolate.calc_res_profile(res_pheno_db)
 ResFinderResultHandler.load_res_profile(std_result, isolate,
                                         conf.amr_abbreviations)
-std_result_file = "{}/std_format.json".format(conf.outputPath)
 
+if(conf.out_json):
+    std_result_file = conf.out_json
+else:
+    std_result_file = "{}/{}.json".format(conf.outputPath, 
+    conf.sample_name.replace("_R1", "").split(".")[0])
 with open(std_result_file, 'w') as fh:
     fh.write(std_result.json_dumps())
 

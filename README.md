@@ -5,11 +5,14 @@ ResFinder identifies acquired antimicrobial resistance genes in total or partial
 sequenced isolates of bacteria.
 
 ## Content of the repository
-1. run_resfinder.py - Use this script to run ResFinder
-2. tests/data       - Contains fasta and fastq data for testing. More information in the "Test data" section
-3. scripts/         - All scripts in this directory is unsupported but has been uploaded as they may be useful
-4. cge/             - ResFinder code
-5. dockerfile       - Used to build ResFinder docker image (See Docker section near the end)
+* run_resfinder.py     - Use this script to run ResFinder.
+* README.md            - This file.
+* amr_abbreviations.md - List of antibiotic abbreviations used by ResFinder.
+* tests/data           - Contains fasta and fastq data for testing.
+* scripts/             - All scripts in this directory is unsupported but has been uploaded as they may be useful.
+* cge/                 - ResFinder code
+* dockerfile           - Used to build ResFinder docker image (See Docker section near the end)
+* database_tests.md    - Doctests for use whenever parts of the database has been altered.
 
 ## Installation
 The installation described here will first install the actual ResFinder software,
@@ -48,56 +51,65 @@ Depending on how you plan to run ResFinder BLAST and KMA can be optional.
 BLAST is used to analyse assemblies (ie. FASTA files).
 KMA is used to analyse read data (ie. FASTQ files).
 
-#### Python modules: Tabulate, BioPython, CGECore and Python-Git
+#### Python modules: Tabulate, BioPython, CGECore and CGELib
 To install the needed python modules you can use pip
 ```bash
-pip3 install tabulate biopython cgecore gitpython python-dateutil
+pip3 install tabulate biopython cgecore cgelib
 ```
 For more information visit the respective website
 ```url
 https://bitbucket.org/astanin/python-tabulate
 https://biopython.org
 https://bitbucket.org/genomicepidemiology/cge_core_module
-https://gitpython.readthedocs.io/en/stable/index.html
+https://bitbucket.org/genomicepidemiology/cgelib
 ```
 
 #### BLAST (optional)
-If you don't want to specify the path of blastn every time you run
-ResFinder, make sure that blastn is in you PATH.
+If you don't want to specify the path of blastn every time you run ResFinder, make sure that blastn is in you PATH or set the environment variable specified in the "Environment Variables Table" in this README.
 
 Blastn can be obtained from:
 ```url
 ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+```
+
+```bash
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+export CGE_BLASTN="/path/to/some/dir/blastn"
 ```
 
 #### KMA (optional)
-The instructions here will install KMA in the default location ResFinder uses. KMA
-can be installed in another location but the path to KMA will then need to be
-specified every time you run ResFinder unless you add the kma program to your PATH.
+If you don't want to specify the path of KMA every time you run ResFinder, make sure that KMA is in you PATH or set the environment variable specified in the "Environment Variables Table" in this README.
 ```bash
-# Go to the directoy in which you installed the ResFinder tool
-cd /path/to/some/dir/resfinder
-cd cge
-git clone https://bitbucket.org/genomicepidemiology/kma.git
+# Go to wanted location for kma
+cd /path/to/some/dir
+# Clone version 1.3.25. You can also clone latest version by omitting --branch 1.3.23 or change the version number.
+git clone --depth 1 --branch 1.3.23 https://bitbucket.org/genomicepidemiology/kma.git
+# Compile KMA
 cd kma && make
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+export CGE_KMA="/path/to/some/dir/kma/kma"
 ```
 
 ### Databases
-This section describes how to install the databases at the ResFinder default locations.
-The database locations can be changed, but must then be specified to ResFinder at run time.
+If you don't want to specify the path to the databases every time you run ResFinder, you need to set the environment variable specified in the "Environment Variables Table" in this README.
 
 #### ResFinder database
 ```bash
-# Go to the directoy in which you installed the ResFinder tool
-cd /path/to/some/dir/resfinder
-git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git db_resfinder
+# Go to wanted location for the ResFinder database.
+cd /path/to/some/dir/
+git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+export CGE_RESFINDER_RESGENE_DB="/path/to/some/dir/resfinder_db"
 ```
 
 #### PointFinder database
 ```bash
-# Go to the directoy in which you installed the ResFinder tool
-cd /path/to/some/dir/resfinder
-git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git db_pointfinder
+# Go to wanted location for the PointFinder database.
+cd /path/to/some/dir/
+git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+export CGE_RESFINDER_RESPOINT_DB="/path/to/some/dir/pointfinder_db"
 ```
 
 #### Indexing databases with KMA
@@ -107,10 +119,19 @@ you need to provide the path to kma_index to INSTALL.py
 **NOTE**: The documentation given here describes the procedure for the ResFinder database, but the procedure is identical for the PointFinder database.
 **PointFinder database documentation**: [https://bitbucket.org/genomicepidemiology/pointfinder_db]
 
-##### a) Run INSTALL.py in interactive mode
+##### a) Run INSTALL.py in non_interactive mode
 ```bash
 # Go to the database directory
-cd path/to/db_resfinder
+cd path/to/resfinder_db
+python3 INSTALL.py /path/to/some/dir/kma/kma_index non_interactive
+```
+The path to kma_index can be omitted if it exists in PATH or if the script
+should attempt to do an automatic temporary installation of KMA.
+
+##### b) Run INSTALL.py in interactive mode
+```bash
+# Go to the database directory
+cd path/to/resfinder_db
 python3 INSTALL.py
 ```
 If kma_index was found in your path a lot of indexing information will be
@@ -129,54 +150,6 @@ enter "1" or "2" and finish with <enter>.
 If "1" is chosen, the script will attempt to install kma in your systems
 default temporary location. If the installation is successful it will proceed
 to index your database, when finished it will delete the kma installation again.
-
-##### b) Run INSTALL.py in non_interactive mode
-```bash
-# Go to the database directory
-cd path/to/resfinder_db
-python3 INSTALL.py /path/to/kma_index non_interactive
-```
-The path to kma_index can be omitted if it exists in PATH or if the script
-should attempt to do an automatic temporary installation of KMA.
-
-##### c) Index database manually (not recommended)
-It is possible to index the databases manually, but is generally not recommended
-as it is more prone to error. If you choose to do so, be aware of the naming of
-the indexed files.
-
-This is an example of how to index the ResFinder database files:
-```bash
-# Go to the resfinder database directory
-cd path/to/resfinder_db
-# create indexing directory
-mkdir kma_indexing
-# Index files using kma_index
-kma_index -i db_resfinder/fusidicacid.fsa -o db_resfinder/kma_indexing/fusidicacid
-kma_index -i db_resfinder/phenicol.fsa -o db_resfinder/kma_indexing/phenicol
-kma_index -i db_resfinder/glycopeptide.fsa -o db_resfinder/kma_indexing/glycopeptide
-kma_index -i db_resfinder/trimethoprim.fsa -o db_resfinder/kma_indexing/trimethoprim
-kma_index -i db_resfinder/oxazolidinone.fsa -o db_resfinder/kma_indexing/oxazolidinone
-kma_index -i db_resfinder/tetracycline.fsa -o db_resfinder/kma_indexing/tetracycline
-kma_index -i db_resfinder/quinolone.fsa -o db_resfinder/kma_indexing/quinolone
-kma_index -i db_resfinder/nitroimidazole.fsa -o db_resfinder/kma_indexing/nitroimidazole
-kma_index -i db_resfinder/fosfomycin.fsa -o db_resfinder/kma_indexing/fosfomycin
-kma_index -i db_resfinder/aminoglycoside.fsa -o db_resfinder/kma_indexing/aminoglycoside
-kma_index -i db_resfinder/macrolide.fsa -o db_resfinder/kma_indexing/macrolide
-kma_index -i db_resfinder/sulphonamide.fsa -o db_resfinder/kma_indexing/sulphonamide
-kma_index -i db_resfinder/rifampicin.fsa -o db_resfinder/kma_indexing/rifampicin
-kma_index -i db_resfinder/colistin.fsa -o db_resfinder/kma_indexing/colistin
-kma_index -i db_resfinder/beta-lactam.fsa -o db_resfinder/kma_indexing/beta-lactam
-# Go to the pointfinder database directory
-cd path/to/pointfinder_db
-# Index files using kma_index
-kma_index -i db_pointfinder/campylobacter/*.fsa -o db_pointfinder/campylobacter/campylobacter
-kma_index -i db_pointfinder/escherichia_coli/*.fsa -o db_pointfinder/escherichia_coli/escherichia_coli
-kma_index -i db_pointfinder/enterococcus_faecalis/*.fsa -o db_pointfinder/enterococcus_faecalis/enterococcus_faecalis
-kma_index -i db_pointfinder/enterococcus_faecium/*.fsa -o db_pointfinder/enterococcus_faecium/enterococcus_faecium
-kma_index -i db_pointfinder/neisseria_gonorrhoeae/*.fsa -o db_pointfinder/neisseria_gonorrhoeae/neisseria_gonorrhoeae
-kma_index -i db_pointfinder/salmonella/*.fsa -o db_pointfinder/salmonella/salmonella
-kma_index -i db_pointfinder/mycobacterium_tuberculosis/*.fsa -o db_pointfinder/mycobacterium_tuberculosis/mycobacterium_tuberculosis
-```
 
 ### Install ResFinder with Docker
 If you would like to build a docker image with ResFinder, make sure you have cloned the ResFinder directory as well as installed and indexed the databases: `db_pointfinder` and `db_resfinder`. Then run the following commands:
@@ -205,17 +178,37 @@ docker run --rm -it -v $(pwd)/db_resfinder/:/usr/src/db_resfinder  -v $(pwd)/res
 If you did not install BLAST, test 1 and 3 will fail. If you did not install KMA, test 2
 and 4 will fail.
 The 4 tests will in total take approximately take 5-60 seconds, depending on your system.
+
+#### Test if no paths needs to be specified
+**Requirements**
+* blastn/kma is in your PATH or specified via environment variables.
+* ResFinder database and PointFinder database paths are specified via environment variables.
+
+```bash
+cd /path/to/some/dir/resfinder
+
+# Run tests
+python3 tests/functional_tests.py
+
+# Output from successful tests
+....
+----------------------------------------------------------------------
+Ran 4 tests in 8.263s
+
+OK
+```
+
+#### Test if paths needs to be specified
+If blastn/kma is not in your PATH or set as environment variables or the paths to the ResFinder and PointFinder databases is not set in environment variables, you need to specify the paths to these in the test script.
+
 ```bash
 # Go to the directoy in which you installed the ResFinder tool
 cd /path/to/some/dir/resfinder
 
-# For seeing the unittest options for running the tests
-python3 tests/functional_tests.py -h
-
-# In case you need to point blastn or kma, or the resfinder or the pointfinder databases as they are not in the places indicated above, see the optional arguments for the test by:
+# To see the flags you need to set for the test run:
 python3 tests/functional_tests.py -res_help
 
-#Which outputs:
+# Which outputs:
 usage: functional_tests.py [-res_help] [-db_res DB_PATH_RES] [-b BLAST_PATH]
                            [-k KMA_PATH] [-db_point DB_PATH_POINT]
 
@@ -230,8 +223,8 @@ Options:
   -db_point DB_PATH_POINT, --db_path_point DB_PATH_POINT
                         Path to the databases for PointFinder
 
-# Run tests
-python3 tests/functional_tests.py
+# Run tests with the options you need to set. For example:
+python3 tests/functional_tests.py -k /path/to/some/dir/kma/kma
 
 # Output from successful tests
 ....

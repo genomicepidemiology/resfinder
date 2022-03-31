@@ -47,18 +47,18 @@ parser.add_argument("-ifq", "--inputfastq",
                     nargs="+",
                     default=None)
 parser.add_argument("-nano", "--nanopore",
-                        action="store_true",
-                        dest="nanopore",
-                        help="If nanopore data is used",
-                        default=False)
+                    action="store_true",
+                    dest="nanopore",
+                    help="If nanopore data is used",
+                    default=False)
 parser.add_argument("-o", "--outputPath",
                     help=("Output directory. If it doesn't exist, it will be "
                           "created."),
                     required=True,
                     default=None)
 parser.add_argument("-json", "--out_json",
-                    help=("Specify JSON filename and output directory. If the directory "
-                          "doesn't exist, it will be created."),
+                    help=("Specify JSON filename and output directory. If the "
+                          "directory doesn't exist, it will be created."),
                     default=None)
 parser.add_argument("-b", "--blastPath",
                     help="Path to blastn",
@@ -170,7 +170,7 @@ parser.add_argument("-ic", "--ignore_stop_codons",
 
 parser.add_argument("-v", "--version", action="version",
                     version=PliersMixin.get_git_tag(
-                                os.path.dirname(os.path.realpath(__file__))),
+                        os.path.dirname(os.path.realpath(__file__))),
                     help="Show program's version number and exit")
 
 # Temporary option only available temporary
@@ -293,8 +293,8 @@ if(conf.disinf is True):
         # DEPRECATED
         # TODO: make a write method that depends on the json output
         disinf_finder.write_results(out_path=conf.outputPath,
-                                      result=blast_results,
-                                      res_type=ResFinder.TYPE_BLAST)
+                                    result=blast_results,
+                                    res_type=ResFinder.TYPE_BLAST)
 
         ResFinderResultHandler.standardize_results(std_result,
                                                    blast_results.results,
@@ -406,11 +406,13 @@ if(conf.point):
             results_pnt = {}
         else:
             results_pnt["excluded"] = results["excluded"]
+
     # DEPRECATED
     # TODO: make a write method that depends on the json output
     finder.write_results(out_path=conf.outputPath, result=results,
                          res_type=method, unknown_flag=conf.unknown_mut,
                          min_cov=conf.pf_gene_cov, perc_iden=conf.pf_gene_id)
+
     PointFinderResultHandler.standardize_results(std_result,
                                                  results_pnt,
                                                  "PointFinder")
@@ -442,8 +444,8 @@ ResFinderResultHandler.load_res_profile(std_result, isolate,
 if(conf.out_json):
     std_result_file = conf.out_json
 else:
-    std_result_file = "{}/{}.json".format(conf.outputPath,
-    conf.sample_name.replace("_R1", "").split(".")[0])
+    std_result_file = "{}/{}.json".format(
+        conf.outputPath, conf.sample_name.replace("_R1", "").split(".")[0])
 with open(std_result_file, 'w') as fh:
     fh.write(std_result.json_dumps())
 

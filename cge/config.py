@@ -57,7 +57,7 @@ class Config():
         self.set_phenotype_opts(args)
 
         if(self.acquired is False and self.point is False
-            and self.disinf is False):
+           and self.disinf is False):
             sys.exit("Please specify to look for acquired resistance genes, "
                      "chromosomal mutaitons or both!\n")
 
@@ -67,8 +67,8 @@ class Config():
 
         if(args.out_json):
             if not args.out_json.endswith(".json"):
-                sys.exit("Please specify the path to the JSON file including its filename "
-                "ending with .json.\n")
+                sys.exit("Please specify the path to the JSON file including "
+                         "its filename ending with .json.\n")
             self.out_json = os.path.abspath(args.out_json)
             os.makedirs(os.path.dirname(self.out_json), exist_ok=True)
         else:

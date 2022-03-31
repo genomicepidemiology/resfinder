@@ -218,18 +218,25 @@ class PointFinder(CGEFinder):
 
             # KMA only gives the genes found, however all genes should be
             # included
+            str_keys = str(GENES.keys())
             for gene in self.gene_list:
-                if gene not in GENES:
+                if gene not in str_keys:
                     GENES[gene] = 'No hit found'
 
             # Included excluded
             GENES['excluded'] = results['excluded']
+            for gene, entry in GENES.items():
+                if entry != 'No hit found' and gene != 'excluded':
+                    entry['mis_matches'] = self.find_mismatches(gene,
+                                            entry['sbjct_start'],
+                                            entry['sbjct_string'],
+                                            entry['query_string'])
 
         for gene, hit in GENES.items():
             # Start writing output string (to HTML tab file)
-            gene_name = gene  # Not perfeft can differ from specific mutation
-            regex = r"promoter_size_(\d+)(?:bp)"
-            promtr_gene_objt = re.search(regex, gene)
+            gene_name = gene.split("_")[0]  # Not perfeft can differ from specific mutation
+            regex = r"promoter-size-(\d+)(?:bp)"
+            promtr_gene_objt = re.search(regex, gene_name)
 
             if promtr_gene_objt:
                 gene_name = gene.split("_")[0]
@@ -273,20 +280,27 @@ class PointFinder(CGEFinder):
             sbjct_start = hit['sbjct_start']
             sbjct_seq = hit['sbjct_string']
             qry_seq = hit['query_string']
-
+            mis_matches = []
+            if res_type == PointFinder.TYPE_BLAST:
+                for subhit in hit['hits']:
+                    if len(hit['hits'][subhit]['mis_matches']) > 0:
+                        mis_matches.extend(hit['hits'][subhit]['mis_matches'])
+            else:
+                if "mis_matches" in hit:
+                    mis_matches.extend(hit['mis_matches'])
             # Find and save mis_matches in gene
             hit['mis_matches'] = self.find_mismatches(gene, sbjct_start,
                                                       sbjct_seq, qry_seq)
 
             # Check if no mutations was found
-            if len(hit['mis_matches']) < 1:
+            if len(mis_matches) < 1:
                 output_strings[1] += ("No mutations found in {}\n"
                                       .format(gene_name))
             else:
                 # Write mutations found to output file
                 total_unknown_str += "\n%s\n" % (gene_name)
 
-                str_tuple = self.mut2str(gene, gene_name, hit['mis_matches'],
+                str_tuple = self.mut2str(gene, gene_name, mis_matches,
                                          unknown_flag, hit)
 
                 all_results = str_tuple[0]
@@ -413,25 +427,23 @@ class PointFinder(CGEFinder):
                 continue
 
             mutation = [data.strip() for data in line.split("\t")]
-
             gene_ID = mutation[0]
-
+            gene_name = str(mutation[0].split("_")[0])
             # Only consider mutations in genes found in the gene list
-            if gene_ID in gene_list:
-                gene_name = mutation[1]
-                mut_pos = int(mutation[2])
-                ref_codon = mutation[3]                     # Ref_nuc (1 or 3?)
-                ref_aa = mutation[4]                        # Ref_codon
-                alt_aa = mutation[5].split(",")             # Res_codon
-                res_drug = mutation[6].replace("\t", " ")
-                pmid = mutation[7].split(",")
+            if gene_name in gene_list:
+                mut_pos = int(mutation[3])
+                ref_codon = mutation[4]                     # Ref_nuc (1 or 3?)
+                ref_aa = mutation[5]                        # Ref_codon
+                alt_aa = mutation[6].split(",")             # Res_codon
+                res_drug = mutation[8].replace("\t", " ")
+                pmid = mutation[9].split(",")
 
                 # Check if stop codons are predictive for resistance
                 if stopcodonflag is True:
-                    if gene_ID not in known_stop_codon:
-                        known_stop_codon[gene_ID] = {"pos": [],
+                    if gene_name not in known_stop_codon:
+                        known_stop_codon[gene_name] = {"pos": [],
                                                      "drug": res_drug}
-                    known_stop_codon[gene_ID]["pos"].append(mut_pos)
+                    known_stop_codon[gene_name]["pos"].append(mut_pos)
 
                 # Add genes associated with drug resistance to drug_genes dict
                 drug_lst = res_drug.split(",")
@@ -439,8 +451,8 @@ class PointFinder(CGEFinder):
                 for drug in drug_lst:
                     if drug not in drug_genes:
                         drug_genes[drug] = []
-                    if gene_ID not in drug_genes[drug]:
-                        drug_genes[drug].append(gene_ID)
+                    if gene_name not in drug_genes[drug]:
+                        drug_genes[drug].append(gene_name)
 
                 # Initiate empty dict to store relevant mutation information
                 mut_info = dict()
@@ -458,8 +470,8 @@ class PointFinder(CGEFinder):
                                                "pmid": "-"}
 
                 # Add all possible types of mutations to the dict
-                if gene_ID not in known_mutations:
-                    known_mutations[gene_ID] = {"sub": dict(), "ins": dict(),
+                if gene_name not in known_mutations:
+                    known_mutations[gene_name] = {"sub": dict(), "ins": dict(),
                                                 "del": dict()}
                 # Check for the type of mutation
                 if indelflag is False:
@@ -469,12 +481,12 @@ class PointFinder(CGEFinder):
 
                 # Save mutations positions with required information given in
                 # mut_info
-                if mut_pos not in known_mutations[gene_ID][mutation_type]:
-                    known_mutations[gene_ID][mutation_type][mut_pos] = dict()
+                if mut_pos not in known_mutations[gene_name][mutation_type]:
+                    known_mutations[gene_name][mutation_type][mut_pos] = dict()
                 for amino in alt_aa:
-                    if (amino in known_mutations[gene_ID][mutation_type]
+                    if (amino in known_mutations[gene_name][mutation_type]
                                                 [mut_pos]):
-                        stored_mut_info = (known_mutations[gene_ID]
+                        stored_mut_info = (known_mutations[gene_name]
                                                           [mutation_type]
                                                           [mut_pos][amino])
                         if stored_mut_info["drug"] != mut_info[amino]["drug"]:
@@ -484,10 +496,10 @@ class PointFinder(CGEFinder):
                             stored_mut_info["pmid"] += ";" + (mut_info[amino]
                                                                       ["pmid"])
 
-                        (known_mutations[gene_ID][mutation_type]
+                        (known_mutations[gene_name][mutation_type]
                                         [mut_pos][amino]) = stored_mut_info
                     else:
-                        (known_mutations[gene_ID][mutation_type]
+                        (known_mutations[gene_name][mutation_type]
                                         [mut_pos][amino]) = mut_info[amino]
 
         # Check that all genes in the gene list has known mutations
@@ -522,7 +534,14 @@ class PointFinder(CGEFinder):
                 continue
             elif isinstance(hits, dict) and len(hits) > 0:
                 GENES[gene]['found'] = 'partially'
+                # IT is possible only this is the used part?
                 GENES[gene]['hits'] = hits
+                for hit_ in hits:
+                    GENES[gene]['hits'][hit_]['mis_matches'] = self.find_mismatches(
+                        gene=gene,
+                        sbjct_start=GENES[gene]['hits'][hit_]["sbjct_start"],
+                        sbjct_seq=GENES[gene]['hits'][hit_]["sbjct_string"],
+                        qry_seq=GENES[gene]['hits'][hit_]["query_string"])
             else:
                 # Gene not found! go to next gene
                 GENES[gene] = 'No hit found'
@@ -561,7 +580,7 @@ class PointFinder(CGEFinder):
             contigs = [hit['contig_name']]
             scores = [str(hit['cal_score'])]
 
-            # Check if more then one hit was found within the same gene
+            # Check if more than one hit was found within the same gene
             for i in range(len(hits_found) - 1):
 
                 # Save information from previous hit
@@ -680,7 +699,11 @@ class PointFinder(CGEFinder):
                 GENES[gene]['cal_score'] = ", ".join(scores)
                 GENES[gene]['gaps'] = no_call
                 GENES[gene]['alternative_overlaps'] = alternative_overlaps
-                GENES[gene]['mis_matches'] = []
+                mismatches = self.find_mismatches(gene=gene,
+                                                  sbjct_start=all_start,
+                                                  sbjct_seq=final_sbjct,
+                                                  qry_seq=final_qry)
+                GENES[gene]['mis_matches'] = mismatches
 
             else:
                 # Gene not found above given coverage
@@ -709,7 +732,7 @@ class PointFinder(CGEFinder):
                                                                  qry_seq)
         else:
             # Check if the gene sequence is with a promoter
-            regex = r"promoter_size_(\d+)(?:bp)"
+            regex = r"promoter-size-(\d+)(?:bp)"
             promtr_gene_objt = re.search(regex, gene)
 
             # Check for promoter sequences
@@ -1595,7 +1618,6 @@ class PointFinder(CGEFinder):
         all_results_lst = []
         output_mut = []
         stop_codons = []
-
         # Go through each mutation
         for i in range(len(mis_matches)):
             m_type = mis_matches[i][0]
@@ -1742,11 +1764,11 @@ class PointFinder(CGEFinder):
         resistence = "Unknown"
         pmid = "-"
         found_mut = found_mut.upper()
-
+        gene_ID = gene.split("_")[0]
         if mut == "del":
             for i, i_pos in enumerate(range(pos, pos + len(found_mut))):
 
-                known_indels = self.known_mutations[gene]["del"].get(i_pos, [])
+                known_indels = self.known_mutations[gene_ID]["del"].get(i_pos, [])
                 for known_indel in known_indels:
                     partial_mut = found_mut[i:len(known_indel) + i]
 
@@ -1756,33 +1778,32 @@ class PointFinder(CGEFinder):
                     if(partial_mut == known_indel
                        and len(found_mut) % 3 == len(known_indel) % 3):
 
-                        resistence = (self.known_mutations[gene]["del"][i_pos]
+                        resistence = (self.known_mutations[gene_ID]["del"][i_pos]
                                       [known_indel]['drug'])
 
-                        pmid = (self.known_mutations[gene]["del"][i_pos]
+                        pmid = (self.known_mutations[gene_ID]["del"][i_pos]
                                 [known_indel]['pmid'])
 
-                        gene_name = (self.known_mutations[gene]["del"][i_pos]
+                        gene_name = (self.known_mutations[gene_ID]["del"][i_pos]
                                      [known_indel]['gene_name'])
                         break
         else:
-            if pos in self.known_mutations[gene][mut]:
-                if found_mut in self.known_mutations[gene][mut][pos]:
-                    resistence = (self.known_mutations[gene][mut][pos]
+            if pos in self.known_mutations[gene_ID][mut]:
+                if found_mut in self.known_mutations[gene_ID][mut][pos]:
+                    resistence = (self.known_mutations[gene_ID][mut][pos]
                                   [found_mut]['drug'])
 
-                    pmid = (self.known_mutations[gene][mut][pos][found_mut]
+                    pmid = (self.known_mutations[gene_ID][mut][pos][found_mut]
                             ['pmid'])
 
-                    gene_name = (self.known_mutations[gene][mut][pos]
+                    gene_name = (self.known_mutations[gene_ID][mut][pos]
                                  [found_mut]['gene_name'])
-
         # Check if stop codons refer resistance
-        if "*" in found_mut and gene in self.known_stop_codon:
+        if "*" in found_mut and gene_ID in self.known_stop_codon:
             if resistence == "Unknown":
-                resistence = self.known_stop_codon[gene]["drug"]
+                resistence = self.known_stop_codon[gene_ID]["drug"]
             else:
-                resistence += "," + self.known_stop_codon[gene]["drug"]
+                resistence += "," + self.known_stop_codon[gene_ID]["drug"]
 
         return (gene_name, resistence, pmid)
 

@@ -36,6 +36,7 @@ class SeqVariationResult(dict):
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
                                       var=self["var_codon"], deli="_"))
+
         self["key"] = self._get_unique_key()
         self["seq_var"] = mut_string
 

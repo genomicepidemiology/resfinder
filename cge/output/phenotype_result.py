@@ -29,7 +29,6 @@ class PhenotypeResult(dict):
         # Most of the time this will be a one to one relationship.
         # However if several identical features has been found in a sample,
         # they will all have different keys, but identical ref ids.
-
         ref_id, type = PhenotypeResult.get_ref_id_and_type(feature, isolate)
         feature_keys = PhenotypeResult.get_keys_matching_ref_id(
             ref_id, res_collection[type])
@@ -37,7 +36,6 @@ class PhenotypeResult(dict):
         pheno_feat_keys = self.get(type, [])
         pheno_feat_keys = pheno_feat_keys + feature_keys
         self[type] = pheno_feat_keys
-
         # Add phenotype keys to feature results
         features = res_collection[type]
         for feat_key in feature_keys:
@@ -45,12 +43,18 @@ class PhenotypeResult(dict):
             pheno_keys = feat_result.get("phenotypes", [])
             pheno_keys.append(self["key"])
             feat_result["phenotypes"] = pheno_keys
-
+        # Add unique PMIDs to feature results
+        for pmid in feature.pmids:
+            if pmid not in feat_result["pmids"]:
+                feat_result["pmids"].append(pmid)
+        # Add unique Notes to feature results
+        if feature.notes not in feat_result["notes"]:
+            feat_result["notes"].append(feature.notes)
+        db_name = feature.ref_db
         if(type == "seq_regions"):
-            db_key = res_collection.get_db_key("ResFinder")[0]
+            db_key = res_collection.get_db_key(db_name)[0]
         elif(type == "seq_variations"):
             db_key = res_collection.get_db_key("PointFinder")[0]
-
         self["ref_database"] = db_key
 
     @staticmethod
@@ -97,3 +101,9 @@ class PhenotypeResult(dict):
                 out_keys.append(key)
 
         return out_keys
+
+    def get_pmid_key(self, isolate):
+        phenodb = isolate.resprofile.phenodb
+        isolate_ab = isolate.resprofile.resistance[self["key"]]
+        pubmed_ids = isolate_ab.get_pubmed_ids(phenodb)
+        return pubmed_ids

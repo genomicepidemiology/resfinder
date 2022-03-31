@@ -15,14 +15,15 @@ class Config():
     DEFAULT_VALS = {
         "inputfasta": None,
         "inputfastq": None,
+        "nanopore": False,
         "outputPath": None,
+        "out_json": None,
         "blastPath": "blastn",
         "kmaPath": "kma",
         "species": None,
         "ignore_missing_species": False,
         "db_path_res": None,
         "db_path_res_kma": None,
-        "databases": None,
         "acquired": None,
         "acq_overlap": 30,
         "min_cov": 0.6,
@@ -51,9 +52,12 @@ class Config():
             self.set_resfinder_opts(args)
         if(self.point):
             self.set_pointfinder_opts(args)
+        if(self.disinf):
+            self.set_disinfinder_opts(args)
         self.set_phenotype_opts(args)
 
-        if self.acquired is False and self.point is False:
+        if(self.acquired is False and self.point is False
+            and self.disinf is False):
             sys.exit("Please specify to look for acquired resistance genes, "
                      "chromosomal mutaitons or both!\n")
 
@@ -61,8 +65,18 @@ class Config():
         self.outputPath = os.path.abspath(args.outputPath)
         os.makedirs(self.outputPath, exist_ok=True)
 
+        if(args.out_json):
+            if not args.out_json.endswith(".json"):
+                sys.exit("Please specify the path to the JSON file including its filename "
+                "ending with .json.\n")
+            self.out_json = os.path.abspath(args.out_json)
+            os.makedirs(os.path.dirname(self.out_json), exist_ok=True)
+        else:
+            self.out_json = False
+
         self.acquired = bool(args.acquired)
         self.point = bool(args.point)
+        self.disinf = bool(args.disinfectant)
         self.species = Config.get_species(args.species, self.readme_file)
 
         if(args.inputfasta):
@@ -103,6 +117,10 @@ class Config():
         self.outPath_res_blast = "{}/resfinder_blast".format(self.outputPath)
         os.makedirs(self.outPath_res_blast, exist_ok=True)
 
+        self.outPath_disinf_blast = ("{}/disinfinder_blast"
+                                     .format(self.outputPath))
+        os.makedirs(self.outPath_disinf_blast, exist_ok=True)
+
         self.outPath_point_blast = ("{}/pointfinder_blast"
                                     .format(self.outputPath))
         os.makedirs(self.outPath_point_blast, exist_ok=True)
@@ -121,12 +139,15 @@ class Config():
                 args.inputfastq[1])
         elif(len(args.inputfastq) > 2):
             sys.exit("ERROR: More than 2 files were provided to inputfastq: {}."
-                     .format(inputfastq))
+                     .format(args.inputfastq))
         else:
             self.inputfastq_2 = None
 
         self.outPath_res_kma = "{}/resfinder_kma".format(self.outputPath)
         os.makedirs(self.outPath_res_kma, exist_ok=True)
+
+        self.outPath_disinf_kma = "{}/disinfinder_kma".format(self.outputPath)
+        os.makedirs(self.outPath_disinf_kma, exist_ok=True)
 
         self.outPath_point_kma = "{}/pointfinder_kma".format(self.outputPath)
         os.makedirs(self.outPath_point_kma, exist_ok=True)
@@ -134,15 +155,16 @@ class Config():
         self.sample_name = os.path.basename(args.inputfastq[0])
         self.method = PointFinder.TYPE_KMA
         self.kma = self.get_prg_path(args.kmaPath)
+        self.nanopore = args.nanopore
 
     def set_resfinder_opts(self, args):
-        self.databases = args.databases
         self.set_path_resfinderdb(args)
         self.db_config_file = "{}/config".format(self.db_path_res)
         self.db_notes_file = "{}/notes.txt".format(self.db_path_res)
-        if not os.path.exists(self.db_config_file or self.db_notes_fil):
-            sys.exit("Input Error: The database config or notes.txt file could "
-                     "not be found in the ResFinder database directory.")
+        if not os.path.exists(self.db_config_file
+                              or self.db_notes_file):
+            sys.exit("Input Error: The database config or notes.txt file could"
+                     " not be found in the DisinFinder database directory.")
 
         args.min_cov = float(args.min_cov)
         args.threshold = float(args.threshold)
@@ -156,13 +178,42 @@ class Config():
         self.rf_gene_cov = args.min_cov
 
         if(args.threshold > 1.0 or args.threshold < 0.0):
-            sys.exit("ERROR: Threshold for identity of ResFinder above 1 or "
+            sys.exit("ERROR: Threshold for identity of DisinFinder above 1 or "
                      "below 0 is not allowed. Please select a threshold for "
                      "identity within the range 0-1 with the flag -t. Given "
                      "value: {}.".format(args.threshold))
         self.rf_gene_id = args.threshold
 
         self.rf_overlap = int(args.acq_overlap)
+
+    def set_disinfinder_opts(self, args):
+        self.set_path_disinfinderdb(args)
+        self.db_config_disinf_file = "{}/config".format(self.db_path_disinf)
+        self.db_notes_disinf_file = "{}/notes.txt".format(self.db_path_disinf)
+        if not os.path.exists(self.db_config_disinf_file
+                              or self.db_notes_disinf_file):
+            sys.exit("Input Error: The database config or notes.txt file could"
+                     " not be found in the DisinFinder database directory.")
+
+        args.min_cov = float(args.min_cov)
+        args.threshold = float(args.threshold)
+
+        # Check if coverage/identity parameters are valid
+        if(args.min_cov > 1.0 or args.min_cov < 0.0):
+            sys.exit("ERROR: Minimum coverage above 1 or below 0 is not "
+                     "allowed. Please select a minimum coverage within the "
+                     "range 0-1 with the flag -l. Given value: {}."
+                     .format(args.min_cov))
+        self.dis_gene_cov = args.min_cov
+
+        self.dis_overlap = int(args.acq_overlap)
+
+        if(args.threshold > 1.0 or args.threshold < 0.0):
+            sys.exit("ERROR: Threshold for identity of DisinFinder above 1 or "
+                     "below 0 is not allowed. Please select a threshold for "
+                     "identity within the range 0-1 with the flag -t. Given "
+                     "value: {}.".format(args.threshold))
+        self.dis_gene_id = args.threshold
 
     def set_pointfinder_opts(self, args):
         if(not self.species and not args.ignore_missing_species):
@@ -208,13 +259,30 @@ class Config():
             self.point_file = ("{}/resistens-overview.txt"
                                .format(self.db_path_point))
             _ = self.get_abs_path_and_check(self.point_file)
-
+        if(not args.acquired):
+            self.set_path_resfinderdb(args)
         self.abclassdef_file = ("{}/antibiotic_classes.txt"
                                 .format(self.db_path_res))
         _ = self.get_abs_path_and_check(self.abclassdef_file)
 
-        self.phenotype_file = ("{}/phenotypes.txt".format(self.db_path_res))
-        _ = self.get_abs_path_and_check(self.phenotype_file)
+        if(self.point or self.acquired):
+            self.phenotype_file = ("{}/phenotypes.txt"
+                                   .format(self.db_path_res))
+            _ = self.get_abs_path_and_check(self.phenotype_file)
+        else:
+            self.phenotype_file = None
+
+        if(self.disinf):
+            self.disinf_file = ("{}/phenotypes.txt".format(self.db_path_disinf)
+                                )
+            _ = self.get_abs_path_and_check(self.disinf_file)
+
+            self.disclassdef_file = ("{}/disinfectant_classes.txt"
+                                     .format(self.db_path_disinf))
+            _ = self.get_abs_path_and_check(self.disclassdef_file)
+        else:
+            self.disinf_file = None
+            self.disclassdef_file = None
 
     @staticmethod
     def get_abs_path_and_check(path, allow_exit=True):
@@ -250,6 +318,32 @@ class Config():
         if(self.species_dir is not None):
             self.db_path_point_root = path_pointdb
             self.db_path_point = "{}/{}".format(path_pointdb, self.species_dir)
+
+    def set_path_disinfinderdb(self, args):
+        self.db_path_disinf = args.db_path_disinf
+        if(self.db_path_disinf is None):
+            self.db_path_disinf = "{}{}".format(self.resfinder_root,
+                                                "/db_disinfinder")
+        self.db_path_disinf_kma = args.db_path_disinf_kma
+        if(self.db_path_disinf_kma is None):
+            self.db_path_disinf_kma = self.db_path_disinf
+
+        try:
+            self.db_path_disinf = Config.get_abs_path_and_check(
+                self.db_path_disinf, allow_exit=False)
+        except FileNotFoundError:
+            sys.exit("Could not locate DisinFinder database path: {}"
+                     .format(self.db_path_disinf))
+
+        try:
+            self.db_path_disinf_kma = Config.get_abs_path_and_check(
+                self.db_path_disinf_kma, allow_exit=False)
+        except FileNotFoundError:
+            if(self.disinf and self.inputfastq_1):
+                sys.exit("Could not locate DisinFinder database index path: {}"
+                         .format(self.db_path_disinf_kma))
+            else:
+                pass
 
     def set_path_resfinderdb(self, args):
         self.db_path_res = args.db_path_res
@@ -309,8 +403,8 @@ class Config():
         try:
             _ = subprocess.check_output([prg_path, "-h"])
         except PermissionError:
-            sys.exit("ERROR: Missing permission. Unable to execute blastn from "
-                     "the path: {}".format(prg_path))
+            sys.exit("ERROR: Missing permission. Unable to execute blastn from"
+                     " the path: {}".format(prg_path))
         return prg_path
 
     @staticmethod
@@ -324,7 +418,7 @@ class Config():
 
             try:
                 cli_val = getattr(args, entries[0])
-                # Flags set by user will not be None, default vals will be None.
+                # Flags set by user will not be None, default vals will be None
                 if(cli_val is not None):
                     continue
 
@@ -333,9 +427,9 @@ class Config():
                     setattr(args, entries[0], var_val)
 
             except AttributeError:
-                sys.exit("ERROR: A flag set in the Environment Variables Table "
-                         "in the README file did not match any valid flags in "
-                         "ResFinder. Flag not recognized: {}."
+                sys.exit("ERROR: A flag set in the Environment Variables Table"
+                         " in the README file did not match any valid flags in"
+                         " ResFinder. Flag not recognized: {}."
                          .format(entries[0]))
 
         Config._set_default_values(args)

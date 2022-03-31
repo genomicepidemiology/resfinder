@@ -5,6 +5,7 @@ import os
 import time
 import random
 import re
+import pandas as pd
 from argparse import ArgumentParser
 from tabulate import tabulate
 import collections
@@ -18,7 +19,7 @@ from .output.table import TableResults
 class ResFinder(CGEFinder):
 
     def __init__(self, db_conf_file, notes, db_path, db_path_kma,
-                 databases=None):
+                 databases=None, pheno_file=None):
         """
         """
         self.db_path = db_path
@@ -32,7 +33,10 @@ class ResFinder(CGEFinder):
         self.load_databases(databases=databases)
 
         self.phenos = dict()
-        self.load_notes(notes=notes)
+        if pheno_file is None:
+            self.load_notes(notes=notes)
+        else:
+            self.load_phenos(pheno_file=pheno_file)
 
         self.blast_results = None
 
@@ -71,6 +75,13 @@ class ResFinder(CGEFinder):
         self.blast_results = blast_run.results
         return blast_run
 
+    def load_phenos(self, pheno_file):
+        df_phenos = pd.read_csv(pheno_file, sep="\t", usecols=[0,2])
+        df_phenos["Gene_accession no."] = df_phenos["Gene_accession no."].str.split('_').str[0]
+        df_phenos = df_phenos["Phenotype"].groupby([df_phenos["Gene_accession no."]]).apply(set).apply(list).apply(', '.join).reset_index()
+        dict_phenos = df_phenos.set_index("Gene_accession no.").to_dict()['Phenotype']
+        self.phenos = dict_phenos
+
     def results_to_str(self, res_type, results, query_align=None,
                        homo_align=None, sbjct_align=None):
 
@@ -108,7 +119,6 @@ class ResFinder(CGEFinder):
                       break
             if(no_hits):
                  results[db] = "No hit found"
-
             profile = str(self.configured_dbs[db][0])
             if results[db] == "No hit found":
                 table_str += ("%s\n%s\n\n" % (profile, results[db]))
@@ -338,6 +348,7 @@ class ResFinder(CGEFinder):
 
                     if(tmp[2].startswith("Alternate name; ")):
                         self.phenos[tmp[2][16:]] = "%s %s" % (tmp[1], tmp[2])
+        print(self.phenos)
 
     def load_databases(self, databases):
         """

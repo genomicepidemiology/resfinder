@@ -8,6 +8,7 @@ import json
 
 from cgelib.output.result import Result
 from cgelib.utils.loaders_mixin import LoadersMixin
+from cgelib.utils.pliers_mixin import PliersMixin
 
 from cge.config import Config
 from cge.resfinder import ResFinder
@@ -45,10 +46,19 @@ parser.add_argument("-ifq", "--inputfastq",
                           paired-end data if two files are provided.",
                     nargs="+",
                     default=None)
+parser.add_argument("-nano", "--nanopore",
+                        action="store_true",
+                        dest="nanopore",
+                        help="If nanopore data is used",
+                        default=False)
 parser.add_argument("-o", "--outputPath",
-                    help=("Output directoy. If it doesn't exist, it will be "
+                    help=("Output directory. If it doesn't exist, it will be "
                           "created."),
                     required=True,
+                    default=None)
+parser.add_argument("-json", "--out_json",
+                    help=("Specify JSON filename and output directory. If the directory "
+                          "doesn't exist, it will be created."),
                     default=None)
 parser.add_argument("-b", "--blastPath",
                     help="Path to blastn",
@@ -67,6 +77,7 @@ parser.add_argument("--ignore_missing_species",
                          "mutations will silently be ignored.",
                     default=False)
 
+
 # Acquired resistance options
 parser.add_argument("-db_res", "--db_path_res",
                     help=("Path to the databases for ResFinder. Defaults to "
@@ -76,10 +87,6 @@ parser.add_argument("-db_res", "--db_path_res",
 parser.add_argument("-db_res_kma", "--db_path_res_kma",
                     help=("Path to the ResFinder databases indexed with KMA. "
                           "Defaults to the value of the --db_res flag."),
-                    default=None)
-parser.add_argument("-d", "--databases",
-                    help="Databases chosen to search in - if none is specified\
-                          all is used",
                     default=None)
 parser.add_argument("-acq", "--acquired",
                     action="store_true",
@@ -100,6 +107,20 @@ parser.add_argument("-t", "--threshold",
                     help=("Threshold for identity of ResFinder within the "
                           "range 0-1."),
                     type=float,
+                    default=None)
+# Disinfectant resistance options
+parser.add_argument("-dis", "--disinfectant",
+                    action="store_true",
+                    help="Run resfinder for disinfectant resistance genes",
+                    default=False)
+parser.add_argument("-db_disinf", "--db_path_disinf",
+                    help=("Path to the databases for ResFinder. Defaults to "
+                          "'db_resfinder' in the ResFinder application "
+                          "directory."),
+                    default=None)
+parser.add_argument("-db_disinf_kma", "--db_path_disinf_kma",
+                    help=("Path to the ResFinder databases indexed with KMA. "
+                          "Defaults to the value of the --db_res flag."),
                     default=None)
 
 # Point resistance option
@@ -147,6 +168,11 @@ parser.add_argument("-ic", "--ignore_stop_codons",
                     help="Ignore premature stop codons in Pointfinder.",
                     default=None)
 
+parser.add_argument("-v", "--version", action="version",
+                    version=PliersMixin.get_git_tag(
+                                os.path.dirname(os.path.realpath(__file__))),
+                    help="Show program's version number and exit")
+
 # Temporary option only available temporary
 parser.add_argument("--pickle",
                     action="store_true",
@@ -167,7 +193,8 @@ if(conf.acquired):
     std_result.init_database("ResFinder", conf.db_path_res)
 if(conf.point):
     std_result.init_database("PointFinder", conf.db_path_point_root)
-
+if(conf.disinf):
+    std_result.init_database("DisinFinder", conf.db_path_disinf)
 ##########################################################################
 # ResFinder
 ##########################################################################
@@ -179,8 +206,8 @@ if(conf.acquired is True):
 
     # Actually running ResFinder (for acquired resistance)
     acquired_finder = ResFinder(db_conf_file=conf.db_config_file,
-                                databases=conf.databases,
                                 db_path=conf.db_path_res,
+                                pheno_file=conf.phenotype_file,
                                 notes=conf.db_notes_file,
                                 db_path_kma=conf.db_path_res_kma)
 
@@ -203,18 +230,33 @@ if(conf.acquired is True):
                                                    "ResFinder")
 
     else:
-        kma_run = acquired_finder.kma(inputfile_1=conf.inputfastq_1,
-                                      inputfile_2=conf.inputfastq_2,
-                                      out_path=conf.outPath_res_kma,
-                                      db_path_kma=conf.db_path_res_kma,
-                                      databases=acquired_finder.databases,
-                                      min_cov=conf.rf_gene_cov,
-                                      threshold=conf.rf_gene_id,
-                                      kma_path=conf.kma,
-                                      sample_name="",
-                                      kma_cge=True,
-                                      kma_apm="p",
-                                      kma_1t1=True)
+        if(conf.nanopore):
+            kma_run = acquired_finder.kma(inputfile_1=conf.inputfastq_1,
+                                          inputfile_2=conf.inputfastq_2,
+                                          out_path=conf.outPath_res_kma,
+                                          db_path_kma=conf.db_path_res_kma,
+                                          min_cov=conf.rf_gene_cov,
+                                          threshold=conf.rf_gene_id,
+                                          kma_path=conf.kma,
+                                          databases=acquired_finder.databases,
+                                          sample_name="",
+                                          kma_cge=True,
+                                          kma_apm="p",
+                                          kma_1t1=True,
+                                          kma_add_args='-ont -md 5')
+        else:
+            kma_run = acquired_finder.kma(inputfile_1=conf.inputfastq_1,
+                                          inputfile_2=conf.inputfastq_2,
+                                          out_path=conf.outPath_res_kma,
+                                          db_path_kma=conf.db_path_res_kma,
+                                          min_cov=conf.rf_gene_cov,
+                                          threshold=conf.rf_gene_id,
+                                          kma_path=conf.kma,
+                                          databases=acquired_finder.databases,
+                                          sample_name="",
+                                          kma_cge=True,
+                                          kma_apm="p",
+                                          kma_1t1=True)
 
         # DEPRECATED
         # TODO: make a write method that depends on the json output
@@ -225,12 +267,83 @@ if(conf.acquired is True):
         ResFinderResultHandler.standardize_results(std_result,
                                                    kma_run.results,
                                                    "ResFinder")
+##########################################################################
+# DisinFinder
+##########################################################################
+if(conf.disinf is True):
 
+    blast_results = None
+    kma_run = None
+
+    # Actually running DisinFinder (for disinfectant resistance)
+    disinf_finder = ResFinder(db_conf_file=conf.db_config_disinf_file,
+                              db_path=conf.db_path_disinf,
+                              pheno_file=conf.disinf_file,
+                              notes=conf.db_notes_disinf_file,
+                              db_path_kma=conf.db_path_disinf_kma)
+
+    if(conf.inputfasta):
+        blast_results = disinf_finder.blast(inputfile=conf.inputfasta,
+                                            out_path=conf.outPath_disinf_blast,
+                                            min_cov=conf.dis_gene_cov,
+                                            threshold=conf.dis_gene_id,
+                                            blast=conf.blast,
+                                            allowed_overlap=conf.dis_overlap)
+
+        # DEPRECATED
+        # TODO: make a write method that depends on the json output
+        disinf_finder.write_results(out_path=conf.outputPath,
+                                      result=blast_results,
+                                      res_type=ResFinder.TYPE_BLAST)
+
+        ResFinderResultHandler.standardize_results(std_result,
+                                                   blast_results.results,
+                                                   "DisinFinder")
+
+    else:
+        if(conf.nanopore):
+            kma_run = disinf_finder.kma(inputfile_1=conf.inputfastq_1,
+                                        inputfile_2=conf.inputfastq_2,
+                                        out_path=conf.outPath_disinf_kma,
+                                        db_path_kma=conf.db_path_disinf_kma,
+                                        min_cov=conf.dis_gene_cov,
+                                        threshold=conf.dis_gene_id,
+                                        kma_path=conf.kma,
+                                        sample_name="",
+                                        kma_cge=True,
+                                        kma_apm="p",
+                                        kma_1t1=True,
+                                        kma_add_args='-ont -md 5')
+        else:
+            kma_run = disinf_finder.kma(inputfile_1=conf.inputfastq_1,
+                                        inputfile_2=conf.inputfastq_2,
+                                        out_path=conf.outPath_disinf_kma,
+                                        db_path_kma=conf.db_path_disinf_kma,
+                                        min_cov=conf.dis_gene_cov,
+                                        threshold=conf.dis_gene_id,
+                                        kma_path=conf.kma,
+                                        sample_name="",
+                                        kma_cge=True,
+                                        kma_apm="p",
+                                        kma_1t1=True)
+
+        # DEPRECATED
+        # TODO: make a write method that depends on the json output
+        disinf_finder.write_results(out_path=conf.outputPath,
+                                    result=kma_run.results,
+                                    res_type=ResFinder.TYPE_KMA)
+
+        ResFinderResultHandler.standardize_results(std_result,
+                                                   kma_run.results,
+                                                   "DisinFinder")
 ##########################################################################
 # PointFinder
 ##########################################################################
 
 if(conf.point):
+
+    blast_results = None
+    kma_run = None
 
     finder = PointFinder(db_path=conf.db_path_point, species=conf.species_dir,
                          gene_list=conf.specific_gene,
@@ -252,41 +365,52 @@ if(conf.point):
     else:
 
         method = PointFinder.TYPE_KMA
-
-        kma_run = finder.kma(inputfile_1=conf.inputfastq_1,
-                             inputfile_2=conf.inputfastq_2,
-                             out_path=conf.outPath_point_kma,
-                             db_path_kma=conf.db_path_point,
-                             databases=[conf.species_dir],
-                             min_cov=0.01,  # Sorts on coverage later
-                             threshold=conf.pf_gene_id,
-                             kma_path=conf.kma,
-                             sample_name=conf.sample_name,
-                             kma_cge=True,
-                             kma_apm="p",
-                             kma_1t1=True)
+        if(conf.nanopore):
+            kma_run = finder.kma(inputfile_1=conf.inputfastq_1,
+                                 inputfile_2=conf.inputfastq_2,
+                                 out_path=conf.outPath_point_kma,
+                                 db_path_kma=conf.db_path_point,
+                                 databases=[conf.species_dir],
+                                 min_cov=0.01,  # Sorts on coverage later
+                                 threshold=conf.pf_gene_id,
+                                 kma_path=conf.kma,
+                                 sample_name=conf.sample_name,
+                                 kma_cge=True,
+                                 kma_apm="p",
+                                 kma_1t1=True,
+                                 kma_add_args='-ont -md 5')
+        else:
+            kma_run = finder.kma(inputfile_1=conf.inputfastq_1,
+                                 inputfile_2=conf.inputfastq_2,
+                                 out_path=conf.outPath_point_kma,
+                                 db_path_kma=conf.db_path_point,
+                                 databases=[conf.species_dir],
+                                 min_cov=0.01,  # Sorts on coverage later
+                                 threshold=conf.pf_gene_id,
+                                 kma_path=conf.kma,
+                                 sample_name=conf.sample_name,
+                                 kma_cge=True,
+                                 kma_apm="p",
+                                 kma_1t1=True)
 
         results = kma_run.results
 
     if(conf.specific_gene):
         results = PointFinder.discard_unwanted_results(
             results=results, wanted=conf.specific_gene)
-
     if(method == PointFinder.TYPE_BLAST):
-        results_pnt = finder.find_best_seqs(results, conf.rf_gene_cov)
+        results_pnt = finder.find_best_seqs(results, conf.pf_gene_cov)
     else:
         results_pnt = results[finder.species]
         if(results_pnt == "No hit found"):
             results_pnt = {}
         else:
             results_pnt["excluded"] = results["excluded"]
-
     # DEPRECATED
     # TODO: make a write method that depends on the json output
     finder.write_results(out_path=conf.outputPath, result=results,
                          res_type=method, unknown_flag=conf.unknown_mut,
                          min_cov=conf.pf_gene_cov, perc_iden=conf.pf_gene_id)
-
     PointFinderResultHandler.standardize_results(std_result,
                                                  results_pnt,
                                                  "PointFinder")
@@ -294,16 +418,15 @@ if(conf.point):
 ##########################################################################
 # Phenotype to genotype
 ##########################################################################
-
 # Load genotype to phenotype database
 res_pheno_db = PhenoDB(
     abclassdef_file=conf.abclassdef_file, acquired_file=conf.phenotype_file,
-    point_file=conf.point_file)
-
+    point_file=conf.point_file, disinf_file=conf.disinf_file,
+    disclassdef_file=conf.disclassdef_file)
 # Isolate object store results
 isolate = Isolate(name=conf.sample_name)
 
-if(conf.acquired):
+if(conf.acquired or conf.disinf):
     isolate.load_finder_results(std_table=std_result,
                                 phenodb=res_pheno_db,
                                 type="seq_regions")
@@ -316,8 +439,11 @@ isolate.calc_res_profile(res_pheno_db)
 ResFinderResultHandler.load_res_profile(std_result, isolate,
                                         conf.amr_abbreviations)
 
-std_result_file = "{}/std_format.json".format(conf.outputPath)
-
+if(conf.out_json):
+    std_result_file = conf.out_json
+else:
+    std_result_file = "{}/{}.json".format(conf.outputPath,
+    conf.sample_name.replace("_R1", "").split(".")[0])
 with open(std_result_file, 'w') as fh:
     fh.write(std_result.json_dumps())
 

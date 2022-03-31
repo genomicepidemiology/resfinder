@@ -36,25 +36,11 @@ class SeqVariationResult(dict):
 
         self.load_var_type(mismatch[0])
 
-        region_name = region_results[0]["ref_id"]
-        region_name = PhenoDB.if_promoter_rename(region_name)
-
-        if(len(mismatch) > 7):
-            self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
-                              .format(id=region_name,
-                                      pos=self["ref_start_pos"],
-                                      var=self["var_aa"], deli=";;"))
-        else:
-            self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
-                              .format(id=region_name,
-                                      pos=self["ref_start_pos"],
-                                      var=self["var_codon"], deli=";;"))
-
-        self["key"] = SeqVariationResult._get_unique_seqvar_key(res_collection,
-                                                                self["ref_id"])
+        self._get_unique_seqvar_key(res_collection, mismatch, region_results)
 
         self["ref_database"] = res_collection.get_db_key(db_name)[0]
-
+        self["pmids"] = []
+        self["notes"] = []
         region_keys = []
         for result in region_results:
             region_keys.append(result["key"])
@@ -78,9 +64,49 @@ class SeqVariationResult(dict):
         elif(type == "del"):
             self["deletion"] = True
 
-    @staticmethod
-    def _get_unique_seqvar_key(res_collection, minimum_key,
+    def _get_unique_seqvar_key(self, res_collection, mismatch, region_results,
                                delimiter=";;"):
+        """
+            Input:
+                res_collection: Result object created by the cge core module.
+                minimum_key: The smallest key possible. If minimum_key is
+                             already unique, minimum_key will be returned by the
+                             method.
+                delimiter: String used as delimiter inside the returned key.
+
+            Returns a unique seq_variations key. If minimum_key is unique it
+            will be returned. Else a random string will be appended after an
+            additional delimiter.
+        """
+        region_name = region_results[0]["name"]
+        region_name = PhenoDB.if_promoter_rename(region_name)
+
+        if(len(mismatch) > 7):
+            self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
+                              .format(id=region_name,
+                                      pos=self["ref_start_pos"],
+                                      var=self["var_aa"], deli="_"))
+            minimum_key = ("{id}{deli}{pos}{deli}{var}"
+                           .format(id=region_name,
+                                   pos=self["ref_start_pos"],
+                                   var=self["var_aa"], deli=";;"))
+        else:
+            self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
+                              .format(id=region_name,
+                                      pos=self["ref_start_pos"],
+                                      var=self["var_codon"], deli="_"))
+            minimum_key = ("{id}{deli}{pos}{deli}{var}"
+                           .format(id=region_name,
+                                   pos=self["ref_start_pos"],
+                                   var=self["var_codon"], deli=";;"))
+
+        gene_key = SeqVariationResult._get_rnd_unique_seqvar_key(
+                    res_collection, minimum_key)
+        self["key"] = gene_key
+
+    @staticmethod
+    def _get_rnd_unique_seqvar_key(res_collection, minimum_key,
+                                   delimiter=";;"):
         """
             Input:
                 res_collection: Result object created by the cge core module.

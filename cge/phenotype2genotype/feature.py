@@ -21,7 +21,7 @@ class Feature(object):
         part of the genome without anotations/function is named 'region'.
     """
     def __init__(self, unique_id, seq_region=None, start=None, hit=None,
-                 isolate=None):
+                 isolate=None, ref_db=None):
         self.id = unique_id
         self.unique_id = unique_id
         self.seq_region = Feature.na2none(seq_region)
@@ -32,6 +32,7 @@ class Feature(object):
             self.start = None
         self.hit = Feature.na2none(hit)
         self.isolate = Feature.na2none(isolate)
+        self.ref_db = Feature.na2none(ref_db)
 
     @staticmethod
     def na2none(entry):
@@ -40,13 +41,20 @@ class Feature(object):
                 return None
         return entry
 
+class Resistance(object):
+    """ Proposal for resistance class"""
+    def __init__(self, ab_class=None, pmids=None, notes=None):
+        self.ab_class = Feature.na2none(ab_class)
+        self.pmids = Feature.na2none(pmids)
+        self.notes = Feature.na2none(notes)
 
 class Gene(Feature):
     """
     """
     def __init__(self, unique_id, seq_region=None, start=None, end=None,
-                 hit=None, isolate=None):
-        Feature.__init__(self, unique_id, seq_region, start, hit, isolate)
+                 hit=None, isolate=None, pmids=None, notes=None, ref_db=None):
+        Feature.__init__(self, unique_id=unique_id, seq_region=seq_region,
+                         start=start, hit=hit, isolate=isolate, ref_db=ref_db)
         end = Feature.na2none(end)
         if(end):
             self.end = int(end)
@@ -54,13 +62,16 @@ class Gene(Feature):
             self.end = None
 
 
-class ResGene(Gene):
+class ResGene(Gene, Resistance):
     """
     """
     def __init__(self, unique_id, seq_region=None, start=None, end=None,
-                 hit=None, isolate=None, ab_class=None):
-        Gene.__init__(self, unique_id, seq_region, start, end, hit, isolate)
-        self.ab_class = Feature.na2none(ab_class)
+                 hit=None, isolate=None, ab_class=None, pmids=None,
+                 notes=None, ref_db=None):
+        Gene.__init__(self, unique_id=unique_id, seq_region=seq_region,
+                      start=start, end=end, hit=hit, isolate=isolate,
+                      ref_db=ref_db)
+        Resistance.__init__(self, ab_class=ab_class, pmids=pmids, notes=notes)
 
 
 class Mutation(Gene):
@@ -70,8 +81,10 @@ class Mutation(Gene):
                  ref_codon=None, mut_codon=None, ref_aa=None,
                  ref_aa_right=None, mut_aa=None, isolate=None, insertion=None,
                  deletion=None, end=None, nuc=False, premature_stop=0,
-                 frameshift=None):
-        Gene.__init__(self, unique_id, seq_region, pos, end, hit, isolate)
+                 frameshift=None, ref_db=None):
+        Gene.__init__(self, unique_id=unique_id, seq_region=seq_region,
+                      start=pos, end=end, hit=hit, isolate=isolate,
+                      ref_db=ref_db)
         if(pos is not None):
             self.pos = int(pos)
         self.ref_codon = Feature.na2none(ref_codon)
@@ -166,7 +179,6 @@ class Mutation(Gene):
                     "p.{ref}{pos}_{ref_right}{end}del"
                     .format(pos=self.pos, end=self.end,
                             ref=self.ref_aa.upper(),
-#                            ref_right=self.ref_aa_right.upper()))
                             ref_right=self.ref_aa_right))
 
             # Single deletion
@@ -190,19 +202,21 @@ class Mutation(Gene):
                         mut=self.mut_aa.upper()))
 
 
-class ResMutation(Mutation):
+class ResMutation(Mutation, Resistance):
     """
     """
     def __init__(self, unique_id, seq_region=None, pos=None, hit=None,
                  ref_codon=None, mut_codon=None, ref_aa=None,
                  ref_aa_right=None, mut_aa=None, isolate=None, insertion=None,
                  deletion=None, end=None, nuc=False, premature_stop=False,
-                 frameshift=None, ab_class=None):
+                 frameshift=None, ab_class=None, pmids=None, notes=None,
+                 ref_db=None):
         Mutation.__init__(self, unique_id=unique_id, seq_region=seq_region,
                           pos=pos, hit=hit, ref_codon=ref_codon,
                           mut_codon=mut_codon, ref_aa=ref_aa,
                           ref_aa_right=ref_aa_right, mut_aa=mut_aa,
                           isolate=isolate, insertion=insertion,
                           deletion=deletion, end=end, nuc=nuc,
-                          premature_stop=premature_stop, frameshift=frameshift)
-        self.ab_class = ab_class
+                          premature_stop=premature_stop, frameshift=frameshift,
+                          ref_db=ref_db)
+        Resistance.__init__(self, ab_class=ab_class, pmids=pmids, notes=notes)

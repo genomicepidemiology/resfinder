@@ -10,3 +10,5 @@ db_resfinder
 db_disinfinder
 ._*
 tests/doctest_tmp
+scripts/wdl/cromwell-*
+tests/test01fa

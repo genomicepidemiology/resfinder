@@ -1,3 +1,6 @@
+build/
+dist/
+src/resfinder.egg-info/
 .DS_Store
 blast-2.2.26
 *.gz

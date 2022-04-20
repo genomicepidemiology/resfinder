@@ -14,11 +14,11 @@ setuptools = "*"
 wheel = "*"
 twine = "*"
 tqdm = "*"
+build = "*"
 
 [requires]
 python_version = "3.10"
 
 [scripts]
-test = "python3 -m doctest cge/config.md"
-build = "python3 setup.py sdist bdist_wheel" # Added line here
-deploy = "twine upload dist/*" # Added line here
+build = "python3 -m build"
+deploy = "twine upload dist/*"

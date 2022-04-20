@@ -46,7 +46,7 @@ parser.add_argument("-ifq", "--inputfastq",
                           paired-end data if two files are provided.",
                     nargs="+",
                     default=None)
-parser.add_argument("-nano", "--nanopore",
+parser.add_argument("--nanopore",
                     action="store_true",
                     dest="nanopore",
                     help="If nanopore data is used",
@@ -56,7 +56,7 @@ parser.add_argument("-o", "--outputPath",
                           "created."),
                     required=True,
                     default=None)
-parser.add_argument("-json", "--out_json",
+parser.add_argument("-j", "--out_json",
                     help=("Specify JSON filename and output directory. If the "
                           "directory doesn't exist, it will be created."),
                     default=None)
@@ -109,7 +109,7 @@ parser.add_argument("-t", "--threshold",
                     type=float,
                     default=None)
 # Disinfectant resistance options
-parser.add_argument("-dis", "--disinfectant",
+parser.add_argument("-d", "--disinfectant",
                     action="store_true",
                     help="Run resfinder for disinfectant resistance genes",
                     default=False)

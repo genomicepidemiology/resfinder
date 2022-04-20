@@ -34,6 +34,9 @@
 ...         self.ignore_indels = None
 ...         self.ignore_stop_codons = None
 ...         self.pickle = False
+...         self.nanopore = False     # Tested?
+...         self.out_json = None      # Tested?
+...         self.disinfectant = False  # Tested?
 
 >>> args = DummyArgs()
 >>> args1 = DummyArgs()

@@ -17,7 +17,7 @@
 # SOFTWARE.
 import collections
 
-class OrderedSet(collections.MutableSet):
+class OrderedSet(collections.abc.MutableSet):
 
     def __init__(self, iterable=None):
         self.end = end = []

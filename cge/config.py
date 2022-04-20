@@ -178,7 +178,7 @@ class Config():
         self.rf_gene_cov = args.min_cov
 
         if(args.threshold > 1.0 or args.threshold < 0.0):
-            sys.exit("ERROR: Threshold for identity of DisinFinder above 1 or "
+            sys.exit("ERROR: Threshold for identity of ResFinder above 1 or "
                      "below 0 is not allowed. Please select a threshold for "
                      "identity within the range 0-1 with the flag -t. Given "
                      "value: {}.".format(args.threshold))

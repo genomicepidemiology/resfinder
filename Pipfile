@@ -5,9 +5,10 @@ name = "pypi"
 
 [packages]
 cgelib = "*"
-cgecore = "*"
+cgecore = "1.5"
 tabulate = "*"
 biopython = "*"
+pandas = "*"
 
 [dev-packages]
 setuptools = "*"
@@ -22,3 +23,4 @@ python_version = "3.10"
 [scripts]
 build = "python3 -m build"
 deploy = "twine upload dist/*"
+deploy_test = "twine upload --repository testpypi dist/*"

@@ -1,7 +1,6 @@
-include README.md
+include CHANGELOG.md
 include LICENSE
-include database_tests.md
-include amr_abbreviations.md
-include src/resfinder/cge/*.md
-include src/resfinder/cge/output/*.md
-include src/resfinder/cge/phenotype2genotype/*.md
+include README.md
+include src/resfinder/VERSION
+include src/resfinder/amr_abbreviations.md
+include src/resfinder/environment_variables.md

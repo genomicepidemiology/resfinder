@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 import random
 import string
+import json
 
 from cgelib.utils.loaders_mixin import LoadersMixin
 
+from ..phenotype2genotype.res_profile import PhenoDB
+from ..phenotype2genotype.feature import ResGene, ResMutation
+
 from .exceptions import DuplicateKeyError
-from cge.phenotype2genotype.res_profile import PhenoDB
 from .gene_result import GeneResult
 from .seq_variation_result import SeqVariationResult
 from .phenotype_result import PhenotypeResult
-
-from cge.phenotype2genotype.feature import ResGene, ResMutation
-
-import json
 
 
 class ResFinderResultHandler():

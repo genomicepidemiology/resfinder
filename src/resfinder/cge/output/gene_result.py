@@ -2,7 +2,7 @@
 import random
 import string
 
-from cge.phenotype2genotype.res_profile import PhenoDB
+from ..phenotype2genotype.res_profile import PhenoDB
 
 
 class GeneResult(dict):

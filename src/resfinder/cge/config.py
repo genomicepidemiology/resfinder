@@ -7,10 +7,13 @@ import subprocess
 
 from cgelib.utils.loaders_mixin import LoadersMixin
 
-from cge.pointfinder import PointFinder
+from .pointfinder import PointFinder
 
 
 class Config():
+
+    ENV_VAR_FILENAME = "environment_variables.md"
+    SPECIES_ABBR_FILENAME = "species_abbreviations.md"
 
     DEFAULT_VALS = {
         "inputfasta": None,
@@ -44,8 +47,10 @@ class Config():
 
         # Directoy of config.py substracted the last dir 'cge'
         self.resfinder_root = os.path.dirname(os.path.realpath(__file__))[:-3]
-        self.readme_file = "{}{}".format(self.resfinder_root, "README.md")
-        Config.set_default_and_env_vals(args, self.readme_file)
+        self.env_var_file = "{}{}".format(self.resfinder_root, ENV_VAR_FILENAME)
+        self.species_abbr_file = "{}{}".format(self.resfinder_root,
+                                               SPECIES_ABBR_FILENAME)
+        Config.set_default_and_env_vals(args, self.env_var_file)
 
         self.set_general_opts(args)
         if(self.acquired):
@@ -77,7 +82,7 @@ class Config():
         self.acquired = bool(args.acquired)
         self.point = bool(args.point)
         self.disinf = bool(args.disinfectant)
-        self.species = Config.get_species(args.species, self.readme_file)
+        self.species = Config.get_species(args.species, self.species_abbr_file)
 
         if(args.inputfasta):
             self.set_fasta_related_opts(args)
@@ -101,7 +106,7 @@ class Config():
             out_species = in_species.lower()
 
         species_transl = LoadersMixin.load_md_table_after_keyword(
-            species_def_filepath, "#### Species Abbreviations Table",
+            species_def_filepath, "## Species Abbreviations Table",
             header_key="Abbreviation")
 
         fixed_species = species_transl.get(out_species, None)
@@ -411,7 +416,7 @@ class Config():
     def set_default_and_env_vals(args, env_def_filepath):
 
         known_envs = LoadersMixin.load_md_table_after_keyword(
-            env_def_filepath, "#### Environment Variables Table")
+            env_def_filepath, "## Environment Variables Table")
 
         # Set flag values defined in environment variables
         for var, entries in known_envs.items():

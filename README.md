@@ -319,7 +319,7 @@ optional arguments:
 
 Environment variables recognized by ResFinder, the flag they replace and the default value for the flag. Provided commandline flags will always take precedence. Set environment variables takes precedence over default flag values.
 
-Additional Environment variables can be added by appending entries to the table below. The 'Flag' entry in the table must be the double dash flag recognized by ResFinder. The 'Default Value' entry is just for information.
+Additional Environment variables can be added by appending entries to the file named "environment_variables.md".
 
 #### Environment Variables Table
 
@@ -336,7 +336,7 @@ Additional Environment variables can be added by appending entries to the table 
 
 ### Species Abbreviations
 
-ResFinder understands the species abbreviations listed in the Species Abbreviations Table. Additional species abbreviations can be added by appending entries to the table below. Important! All entries should be kept in lower case, although at runtime the ResFinder species flag will be case insensitive.
+ResFinder understands the species abbreviations listed in the Species Abbreviations Table. Additional species abbreviations can be added by appending entries to the file "species_abbreviations.md".
 
 #### Species Abbreviations Table
 

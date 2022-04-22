@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from cge.phenotype2genotype.res_profile import PhenoDB
+from ..phenotype2genotype.res_profile import PhenoDB
 from .gene_result import GeneResult
 
 

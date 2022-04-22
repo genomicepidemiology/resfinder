@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from cge.phenotype2genotype.feature import ResGene, ResMutation
+from ..phenotype2genotype.feature import ResGene, ResMutation
 
 
 class PhenotypeResult(dict):

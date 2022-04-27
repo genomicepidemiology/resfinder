@@ -17,7 +17,7 @@
 ...         self.kmaPath = None
 ...         self.species = None
 ...         self.ignore_missing_species = None
-...         self.db_path_res = None
+...         self.db_path_res = "resfinder_db"
 ...         self.db_path_res_kma = None
 ...         self.databases = None
 ...         self.acquired = True
@@ -25,7 +25,7 @@
 ...         self.min_cov = None
 ...         self.threshold = None
 ...         self.point = True
-...         self.db_path_point = None
+...         self.db_path_point = "pointfinder_db"
 ...         self.db_path_point_kma = None
 ...         self.specific_gene = None
 ...         self.unknown_mut = None
@@ -48,6 +48,7 @@
 >>> args7 = DummyArgs()
 >>> args8 = DummyArgs()
 >>> args9 = DummyArgs()
+>>> args10 = DummyArgs()
 
 ```
 
@@ -276,16 +277,15 @@ Test errors. Success is tested via constructor (Config(args)) above.
 Traceback (most recent call last):
 SystemExit: Input Error: The database config or notes.txt file could not be...
 
->>> args5.db_path_res = None
->>> args5.min_cov = 1.2
->>> Config(args5)
+>>> args10.min_cov = 1.2
+>>> Config(args10)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
 SystemExit: ERROR: Minimum coverage above 1 or below 0...Given value: 1.2.
 
->>> args5.min_cov = 0.65
->>> args5.threshold = 80
->>> Config(args5)
+>>> args10.min_cov = 0.65
+>>> args10.threshold = 80
+>>> Config(args10)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
 SystemExit: ERROR: Threshold for identity of ResFinder...Given value: 80.0.

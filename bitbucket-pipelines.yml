@@ -10,6 +10,8 @@ pipelines:
           caches:
             - pip
           script:
+            - git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git
+            - git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
             - pip install --upgrade pipenv wheel
             - pipenv install --dev
             - pipenv run build

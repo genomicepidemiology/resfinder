@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-cgelib = "*"
-cgecore = "1.5"
+cgelib = "0.3.0"
+cgecore = "~=1.5"
 tabulate = "*"
 biopython = "*"
 pandas = "*"
@@ -16,12 +16,13 @@ wheel = "*"
 twine = "*"
 tqdm = "*"
 build = "*"
+pytest = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "~=3.8"
 
 [scripts]
-test = "python -m doctest tests/config.md"
+test = "python -m pytest"
 build = "python3 -m build"
 deploy = "twine upload dist/*"
 deploy_test = "twine upload --repository testpypi dist/*"

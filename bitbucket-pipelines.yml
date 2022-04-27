@@ -6,6 +6,8 @@ pipelines:
   custom:
     build-and-test:
       - step:
+        caches:
+          - pip
         script:
           - pip install --upgrade pipenv wheel
           - pipenv install --dev

@@ -20,8 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 - It is no longer recommended to clone the repository of ResFinder, unless you are a developer. Instead install via pip is recommended.
+- Flag "--databases". ResFinder will now always be run against all databases. Option will be removed in the next major update.
+- ResFinder will in the next major update not default to database paths within the application directory. Instead the use of the appropriate environment variables is recommended or the appropriate flags.
+- The flag "-db_res" will in the next major update not be supported. Instead use "--db_path_res".
+- The flag "-db_res_kma" will in the next major update not be supported.Instead use "--db_path_res_kma".
+- The flag "-acq" will in the next major update not be supported.Instead use "--acquired".
+- The flag "-ao" will in the next major update not be supported.Instead use "--acq_overlap".
+- The flag "-db_disinf" will in the next major update not be supported.Instead use "--db_path_disinf".
+- The flag "-db_disinf_kma" will in the next major update not be supported.Instead use "--db_path_disinf_kma".
+- The flag "-db_point" will in the next major update not be supported.Instead use "--db_path_point".
+- The flag "-db_point_kma" will in the next major update not be supported.Instead use "--db_path_point_kma".
+- The flag "-l_p" will in the next major update not be supported.Instead use "--min_cov_point".
+- The flag "-t_p" will in the next major update not be supported.Instead use "--threshold_point".
 
-### Removed
-- Flag "--databases". ResFinder will now always be run against all databases.
 
 ## 2.4.0 - 2022-04-21 [YANKED]

@@ -21,6 +21,7 @@ build = "*"
 python_version = "3.10"
 
 [scripts]
+test = "python -m doctest tests/config.md"
 build = "python3 -m build"
 deploy = "twine upload dist/*"
 deploy_test = "twine upload --repository testpypi dist/*"

@@ -166,11 +166,11 @@ def main():
                               "coverage of ResFinder will be used."),
                         type=float,
                         default=None)
-    parser.add_argument("-ii", "--ignore_indels",
+    parser.add_argument("--ignore_indels",
                         action="store_true",
                         help="Ignore frameshift-causing indels in Pointfinder.",
                         default=None)
-    parser.add_argument("-ic", "--ignore_stop_codons",
+    parser.add_argument("--ignore_stop_codons",
                         action="store_true",
                         help="Ignore premature stop codons in Pointfinder.",
                         default=None)

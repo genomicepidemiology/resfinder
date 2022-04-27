@@ -1,4 +1,4 @@
-#### Environment Variables Table
+## Environment Variables Table
 
 | Environment Variabel       | Flag            | Default Value  |
 |----------------------------|-----------------|----------------|

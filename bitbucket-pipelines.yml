@@ -1,0 +1,12 @@
+# Testing ResFinder
+
+image: python:3.9
+
+pipelines:
+  custom:
+    build-and-test:
+      - step:
+        - pip install --upgrade pipenv wheel
+        - pipenv install --dev
+        - pipenv run build
+        - pipenv run test

@@ -47,9 +47,10 @@ class Config():
 
         # Directoy of config.py substracted the last dir 'cge'
         self.resfinder_root = os.path.dirname(os.path.realpath(__file__))[:-3]
-        self.env_var_file = "{}{}".format(self.resfinder_root, ENV_VAR_FILENAME)
+        self.env_var_file = "{}{}".format(self.resfinder_root,
+                                          Config.ENV_VAR_FILENAME)
         self.species_abbr_file = "{}{}".format(self.resfinder_root,
-                                               SPECIES_ABBR_FILENAME)
+                                               Config.SPECIES_ABBR_FILENAME)
         Config.set_default_and_env_vals(args, self.env_var_file)
 
         self.set_general_opts(args)

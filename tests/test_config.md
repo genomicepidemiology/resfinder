@@ -133,7 +133,7 @@ SystemExit: ERROR: Path not found: /file/not/found
 >>> blastPath = args.blastPath
 >>> Config.get_prg_path(blastPath)
 ... #doctest: +ELLIPSIS
-...blastn'
+'...blastn'
 
 ```
 

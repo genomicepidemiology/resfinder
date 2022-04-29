@@ -33,7 +33,7 @@ class Config():
         "threshold": 0.8,
         "point": None,
         "db_path_point": None,
-        "db_path_point_kma": "kma",
+        "db_path_point_kma": None,
         "specific_gene": None,
         "unknown_mut": False,
         "min_cov_point": 0.01,
@@ -409,7 +409,7 @@ class Config():
         try:
             _ = subprocess.check_output([prg_path, "-h"])
         except PermissionError:
-            sys.exit("ERROR: Missing permission. Unable to execute blastn from"
+            sys.exit("ERROR: Missing permission. Unable to execute app from"
                      " the path: {}".format(prg_path))
         return prg_path
 

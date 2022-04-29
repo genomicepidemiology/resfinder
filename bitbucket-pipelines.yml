@@ -22,7 +22,9 @@ pipelines:
             - cd ..
             - mv kma/kma tools/
             - WORKDIR=`pwd`
-            - export PATH=/root/.local/bin:$WORKDIR/tools:$PATH
+            - export CGE_KMA=$WORKDIR/tools/kma
+            - export CGE_BLASTN=$WORKDIR/tools/blastn
+            - export PATH=/root/.local/bin:$PATH
             - pdm install
             - pdm run test
             - pdm build

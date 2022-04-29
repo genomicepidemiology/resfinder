@@ -128,13 +128,12 @@ SystemExit: ERROR: Path not found: /file/not/found
 
 ## get_prg_path(args)
 
-This test will fail if 'blastn' isn't in PATH.
-
 ```python
 
->>> blastPath = "blastn"
+>>> blastPath = args.blastPath
 >>> Config.get_prg_path(blastPath)
-'blastn'
+... #doctest: +ELLIPSIS
+...blastn'
 
 ```
 

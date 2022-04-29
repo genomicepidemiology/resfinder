@@ -24,6 +24,8 @@ pipelines:
             - WORKDIR=`pwd`
             - export CGE_KMA=$WORKDIR/tools/kma
             - export CGE_BLASTN=$WORKDIR/tools/blastn
+            - export CGE_RESFINDER_RESGENE_DB=$WORKDIR/resfinder_db
+            - export CGE_RESFINDER_RESPOINT_DB=$WORKDIR/pointfinder_db
             - export PATH=/root/.local/bin:$PATH
             - pdm install
             - pdm run test

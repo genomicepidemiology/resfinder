@@ -1,6 +1,6 @@
 # Test Isolate class
 
-**Missing tests***
+**Missing tests**
 
 ## Setup
 
@@ -9,7 +9,7 @@
 ```python
 
 >>> import os
->>> from cge.phenotype2genotype.res_profile import PhenoDB
+>>> from src.resfinder.cge.phenotype2genotype.res_profile import PhenoDB
 
 >>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
 >>> assert(len(resfinder_db_path) > 0)
@@ -52,7 +52,7 @@ std_results test documentation.
 >>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
 
 >>> gyrA_kma_hit = {}
->>> gyrA_kma_hit["sbjct_header"] = "gyrA"
+>>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_LR134511.1"
 >>> gyrA_kma_hit["perc_ident"] = 99.92
 >>> gyrA_kma_hit["HSP_length"] = 2628
 >>> gyrA_kma_hit["sbjct_length"] = 2628
@@ -72,19 +72,19 @@ std_results test documentation.
 >>> pf_custom_kma["gyrA"] = gyrA_kma_hit
 >>> pf_custom_kma["gyrB"] = "No hit found"
 
->>> from cge2.output.result import Result
->>> from cge.output.gene_result import GeneResult
+>>> from cgelib.output.result import Result
+>>> from src.resfinder.cge.output.gene_result import GeneResult
 
 >>> res = Result.init_software_result(name="ResFinder", gitdir=".")
 >>> res.init_database("ResFinder", ".")
 >>> res.init_database("PointFinder", ".")
 
->>> from cge.output.std_results import ResFinderResultHandler
+>>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 >>> ResFinderResultHandler.standardize_results(res,
 ...                                            rf_custom_kma,
 ...                                            "ResFinder")
 
->>> from cge.output.std_results import PointFinderResultHandler
+>>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> PointFinderResultHandler.standardize_results(res,
 ...                                              pf_custom_kma,
 ...                                              "PointFinder")
@@ -95,7 +95,7 @@ std_results test documentation.
 
 ```python
 
->>> from cge.phenotype2genotype.isolate import Isolate
+>>> from src.resfinder.cge.phenotype2genotype.isolate import Isolate
 >>> isolate = Isolate(name="Test sample")
 
 ```

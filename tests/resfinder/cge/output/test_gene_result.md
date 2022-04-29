@@ -42,7 +42,7 @@ results from a ResFinder hit.
 
 ```python
 
->>> from cge.output.gene_result import GeneResult
+>>> from src.resfinder.cge.output.gene_result import GeneResult
 
 >>> gene_result_blast = GeneResult(res, rf_dat_blast, "ResFinder")
 >>> assert(gene_result_blast["type"] == "seq_region")
@@ -61,7 +61,7 @@ results from a ResFinder hit.
 >>> assert(gene_result_blast["key"] == "blaOXA-384;;1;;KF986263")
 >>> gene_result_blast["ref_database"]
 ... #doctest: +ELLIPSIS
-'ResFinder-...'
+['ResFinder-...']
 >>> assert(gene_result_blast["coverage"] == 100)
 
 >>> gene_result_kma = GeneResult(res, rf_dat_kma, "ResFinder")
@@ -146,7 +146,5 @@ GeneResult.get_rnd_unique_gene_key()
 'blaOXA-384;;1;;KF986263'
 >>> res_unique_gene_test_kma.add_class(cl="seq_regions", **gene_result_kma)
 >>> gene_result_kma._get_unique_gene_key(res_unique_gene_test_kma)
-... #doctest: +ELLIPSIS
-'blaOXA-384;;1;;KF986263;;...'
 
 ```

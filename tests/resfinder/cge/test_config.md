@@ -6,18 +6,23 @@
 
 ```python
 
->>> from cge.config import Config
+>>> import os
+>>> import shutil
+>>> TEST_OUT_DIR = "./tests/tmp_out/"
+>>> os.makedirs(TEST_OUT_DIR, exist_ok = True)
+
+>>> from src.resfinder.cge.config import Config
 
 >>> class DummyArgs():
 ...     def __init__(self):
 ...         self.inputfasta = None
 ...         self.inputfastq = None
-...         self.outputPath = "./"
+...         self.outputPath = "./tests/tmp_out/"
 ...         self.blastPath = None
 ...         self.kmaPath = None
 ...         self.species = None
 ...         self.ignore_missing_species = None
-...         self.db_path_res = None
+...         self.db_path_res = "resfinder_db"
 ...         self.db_path_res_kma = None
 ...         self.databases = None
 ...         self.acquired = True
@@ -25,7 +30,7 @@
 ...         self.min_cov = None
 ...         self.threshold = None
 ...         self.point = True
-...         self.db_path_point = None
+...         self.db_path_point = "pointfinder_db"
 ...         self.db_path_point_kma = None
 ...         self.specific_gene = None
 ...         self.unknown_mut = None
@@ -48,6 +53,7 @@
 >>> args7 = DummyArgs()
 >>> args8 = DummyArgs()
 >>> args9 = DummyArgs()
+>>> args10 = DummyArgs()
 
 ```
 
@@ -72,8 +78,7 @@ None
 ```python
 
 >>> args3 = DummyArgs()
->>> fasta_filepath = "{}/{}".format(conf.resfinder_root,
-...     "tests/data/test_isolate_01.fa")
+>>> fasta_filepath = "tests/data/test_isolate_01.fa"
 >>> args3.inputfasta = fasta_filepath
 >>> args3.species = "ecoli"
 >>> conf_fasta = Config(args3)
@@ -96,10 +101,8 @@ False
 
 ```python
 
->>> fastq_filepath_1 = "{}/{}".format(conf.resfinder_root,
-...     "tests/data/test_isolate_01_1.fq")
->>> fastq_filepath_2 = "{}/{}".format(conf.resfinder_root,
-...     "tests/data/test_isolate_01_2.fq")
+>>> fastq_filepath_1 = "tests/data/test_isolate_01_1.fq"
+>>> fastq_filepath_2 = "tests/data/test_isolate_01_2.fq"
 >>> args7.inputfastq = [fastq_filepath_1, fastq_filepath_2]
 >>> args7.species = "ecoli"
 >>> conf_fastq = Config(args7)
@@ -130,13 +133,12 @@ SystemExit: ERROR: Path not found: /file/not/found
 
 ## get_prg_path(args)
 
-This test will fail if 'blastn' isn't in PATH.
-
 ```python
 
->>> blastPath = "blastn"
+>>> blastPath = args.blastPath
 >>> Config.get_prg_path(blastPath)
-'blastn'
+... #doctest: +ELLIPSIS
+'...blastn'
 
 ```
 
@@ -144,7 +146,7 @@ This test will fail if 'blastn' isn't in PATH.
 
 ```python
 
->>> species_def_filepath = "{}/{}".format(conf.resfinder_root, "README.md")
+>>> species_def_filepath = "{}/{}".format(conf.resfinder_root, "species_abbreviations.md")
 >>> Config.get_species("Escherichia coli", species_def_filepath)
 'escherichia coli'
 >>> Config.get_species("ecoli", species_def_filepath)
@@ -242,7 +244,8 @@ SystemExit: ERROR: species...
 
 ```python
 
->>> env_def_filepath = "{}/{}".format(conf.resfinder_root, "README.md")
+>>> env_def_filepath = "{}/{}".format(conf.resfinder_root,
+...                                   "environment_variables.md")
 
 >>> print(args2.min_cov)
 None
@@ -258,8 +261,7 @@ None
 >>> args2.unknown_mut
 False
 
->>> env_def_fail_filepath = "{}/{}".format(conf.resfinder_root,
-...     "tests/data/env_var_test_fail.md")
+>>> env_def_fail_filepath = "tests/data/env_var_test_fail.md"
 >>> Config.set_default_and_env_vals(args2, env_def_fail_filepath)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
@@ -279,16 +281,15 @@ Test errors. Success is tested via constructor (Config(args)) above.
 Traceback (most recent call last):
 SystemExit: Input Error: The database config or notes.txt file could not be...
 
->>> args5.db_path_res = None
->>> args5.min_cov = 1.2
->>> Config(args5)
+>>> args10.min_cov = 1.2
+>>> Config(args10)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
 SystemExit: ERROR: Minimum coverage above 1 or below 0...Given value: 1.2.
 
->>> args5.min_cov = 0.65
->>> args5.threshold = 80
->>> Config(args5)
+>>> args10.min_cov = 0.65
+>>> args10.threshold = 80
+>>> Config(args10)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
 SystemExit: ERROR: Threshold for identity of ResFinder...Given value: 80.0.
@@ -321,5 +322,13 @@ True
 False
 >>> str(conf_args6_no_species.species)
 'None'
+
+```
+
+## Tear down
+
+```python
+
+>>> shutil.rmtree(TEST_OUT_DIR)
 
 ```

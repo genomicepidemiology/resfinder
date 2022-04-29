@@ -6,7 +6,7 @@ This is only testing a very small fraction of the PointFinder class.
 
 ```python
 
->>> from cge.pointfinder import PointFinder
+>>> from src.resfinder.cge.pointfinder import PointFinder
 
 ```
 

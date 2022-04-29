@@ -13,8 +13,8 @@ db_pointfinder
 db_resfinder
 db_disinfinder
 ._*
-tests/doctest_tmp
+doctest_tmp
 scripts/wdl/cromwell-*
-tests/test01fa
+test01fa
 .pdm.toml
 *trash*

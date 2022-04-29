@@ -151,6 +151,7 @@ class GeneResult(dict):
         if gene_key in res_collection["seq_regions"]:
 
             query_id = self.get("query_id", "NA")
+
             # Query id == "NA" when FASTQ
             if(query_id == "NA"):
                 res_collection["seq_regions"][gene_key]["ref_database"].extend(self["ref_database"])

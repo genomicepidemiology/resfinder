@@ -118,13 +118,13 @@ std_results test documentation.
 >>> isolate["gyrA_81_d"][0].mut_codon
 'gat'
 >>> isolate["gyrA_81_d"][0].ab_class.pop()
-'fluoroquinolone'
+'quinolone'
 >>> isolate["gyrA_82_g"][0].ref_codon
 'gac'
 >>> isolate["gyrA_82_g"][0].mut_codon
 'ggc'
 >>> isolate["gyrA_82_g"][0].ab_class.pop()
-'fluoroquinolone'
+'quinolone'
 
 ```
 

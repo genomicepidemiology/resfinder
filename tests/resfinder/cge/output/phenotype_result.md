@@ -6,7 +6,8 @@
 
 ```python
 
->>> from cge.phenotype2genotype.feature import ResGene, ResMutation
+>>> from src.resfinder.cge.phenotype2genotype.feature import ResGene
+>>> from src.resfinder.cge.phenotype2genotype.feature import ResMutation
 >>> rg = ResGene(unique_id="blaOXA-384_KF986263", start=1, end=90,
 ...              isolate="isolateA", ab_class=["beta-lactam"])
 >>> rm = ResMutation(unique_id="gyrA;;81;;d", seq_region="gyrA", pos=81,
@@ -14,7 +15,7 @@
 ...                  mut_aa="d", isolate="isolateB", nuc=False,
 ...                  ab_class=["fluoroquinolone"])
 
->>> from cge.phenotype2genotype.res_profile import Antibiotics
+>>> from src.resfinder.cge.phenotype2genotype.res_profile import Antibiotics
 >>> ab_m1 = Antibiotics(name="ciprofloxacin", classes=["fluoroquinolone"],
 ...                     feature=rm)
 >>> ab_m2 = Antibiotics(name="nalidixic acid", classes=["fluoroquinolone"],
@@ -31,9 +32,9 @@
 >>> import os
 >>> import copy
 >>> from cgelib.output.result import Result
->>> from cge.phenotype2genotype.res_profile import PhenoDB
->>> from cge.phenotype2genotype.isolate import Isolate
->>> from cge.output.std_results import ResFinderResultHandler
+>>> from src.resfinder.cge.phenotype2genotype.res_profile import PhenoDB
+>>> from src.resfinder.cge.phenotype2genotype.isolate import Isolate
+>>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 
 >>> res = Result.init_software_result(name="ResFinder", gitdir=".")
 >>> res.init_database("ResFinder", ".")
@@ -125,7 +126,7 @@
 
 ```python
 
->>> from cge.output.phenotype_result import PhenotypeResult
+>>> from src.resfinder.cge.output.phenotype_result import PhenotypeResult
 >>> pheno = PhenotypeResult(ab_g1)
 >>> pheno["key"]
 'carbapenem'

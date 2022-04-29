@@ -13,6 +13,7 @@ pipelines:
             - git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git
             - git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
             - curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
+            - export PATH=/root/.local/bin:$PATH
             - pdm install
             - pdm run test
             - pdm build

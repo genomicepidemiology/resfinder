@@ -175,7 +175,7 @@ def main():
                         help="Ignore premature stop codons in Pointfinder.",
                         default=None)
     parser.add_argument("-v", "--version", action="version",
-                        version=version,
+                        version=__version__,
                         help="Show program's version number and exit")
 
     # Temporary option only available temporary

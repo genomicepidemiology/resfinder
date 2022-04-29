@@ -6,6 +6,7 @@ blast-2.2.26
 *.gz
 *.pyc
 __pycache__
+__pypackages__
 running_test
 cge/kma
 db_pointfinder
@@ -15,3 +16,5 @@ db_disinfinder
 tests/doctest_tmp
 scripts/wdl/cromwell-*
 tests/test01fa
+.pdm.toml
+*trash*

@@ -10,14 +10,14 @@ hit.
 ```python
 
 >>> from cgelib.output.result import Result
->>> from cge.output.gene_result import GeneResult
+>>> from src.resfinder.cge.output.gene_result import GeneResult
 
 >>> res = Result.init_software_result(name="ResFinder", gitdir=".")
 >>> res.init_database("ResFinder", ".")
 >>> res.init_database("PointFinder", ".")
 
 >>> pf_dat_gyra_kma = {}
->>> pf_dat_gyra_kma["sbjct_header"] = "gyrA"
+>>> pf_dat_gyra_kma["sbjct_header"] = "gyrA_1_CP073768.1"
 >>> pf_dat_gyra_kma["perc_ident"] = 99.92
 >>> pf_dat_gyra_kma["HSP_length"] = 2628
 >>> pf_dat_gyra_kma["sbjct_length"] = 2628
@@ -52,7 +52,7 @@ hit.
 
 ```python
 
->>> from cge.output.seq_variation_result import SeqVariationResult
+>>> from src.resfinder.cge.output.seq_variation_result import SeqVariationResult
 
 >>> seqvar_result = SeqVariationResult(res, pf_dat, genes, "PointFinder")
 >>> print(seqvar_result)
@@ -71,8 +71,8 @@ hit.
   'insertion': False,
   'ref_id': 'gyrA;;81;;d',
   'key': 'gyrA;;81;;d',
-  'ref_database': 'PointFinder-...',
-  'seq_regions': ['gyrA']}
+  'ref_database': 'PointFinder-...',...
+  'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
 ```
 
@@ -104,8 +104,8 @@ hit.
   'insertion': False,
   'ref_id': 'gyrA;;81;;gat',
   'key': 'gyrA;;81;;gat',
-  'ref_database': 'PointFinder-...',
-  'seq_regions': ['gyrA']}
+  'ref_database': 'PointFinder-...',...
+  'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
 ```
 
@@ -141,9 +141,9 @@ hit.
 ...     print(k)
 gyrA;;81;;d
 
->>> SeqVariationResult._get_unique_seqvar_key(res, "minkey", "||")
+>>> SeqVariationResult._get_rnd_unique_seqvar_key(res, "minkey", delimiter="||")
 'minkey'
->>> SeqVariationResult._get_unique_seqvar_key(res, "gyrA;;81;;d")
+>>> SeqVariationResult._get_rnd_unique_seqvar_key(res, "gyrA;;81;;d")
 ... #doctest: +ELLIPSIS
 'gyrA;;81;;d;;...'
 

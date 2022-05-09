@@ -10,7 +10,7 @@ class SeqVariationResult(dict):
             Input:
                 res_collection: Result object created by the cge core module.
                 mismatch: Custom list of results from PointFinder
-                region_results: List of GeneResult onbjects in which the
+                region_results: List of GeneResult objects in which the
                                 sequence variation was found.
                 db_name: Currently always "PointFinder"
 
@@ -85,7 +85,7 @@ class SeqVariationResult(dict):
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
-                                      var=self["var_aa"], deli="_"))
+                                      var=self["var_aa"], deli=";;"))
             minimum_key = ("{id}{deli}{pos}{deli}{var}"
                            .format(id=region_name,
                                    pos=self["ref_start_pos"],
@@ -94,7 +94,7 @@ class SeqVariationResult(dict):
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
-                                      var=self["var_codon"], deli="_"))
+                                      var=self["var_codon"], deli=";;"))
             minimum_key = ("{id}{deli}{pos}{deli}{var}"
                            .format(id=region_name,
                                    pos=self["ref_start_pos"],

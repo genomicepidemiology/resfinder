@@ -96,7 +96,7 @@ class Isolate(dict):
         """
             Input:
                 feat_res_dict: entry in the dict 'genes' or 'seq_variations'
-                               from a cge2 Result object.
+                               from a cgecore Result object.
                 type: Which dict in the Result object, either 'seq_regions' or
                       'seq_variations'
             Output: Key formatted as the ones in the PhenoDB object.
@@ -123,12 +123,11 @@ class Isolate(dict):
             return "{}_{}".format(feat_res_dict["name"],
                                   feat_res_dict["ref_acc"])
 
-
     def load_finder_results(self, std_table, phenodb, type):
         """
             Input:
-                std_table: Result object from cge2 module loaded with ResFinder
-                           and/or Pointfinder results.
+                std_table: Result object from cgecore module loaded with
+                           ResFinder and/or Pointfinder results.
                 phenodb: PhenoDB object
                 type: 'seq_regions' or 'seq_variations', for ResFinder and
                       PointFinder results, respectively.
@@ -140,8 +139,8 @@ class Isolate(dict):
             # Skip genes from PointFinder database (not resistance genes).
 
             if(type == "seq_regions"
-               and any(re.search("PointFinder",
-                                 line) for line in feat_info["ref_database"])):
+               and any(re.search("PointFinder", entry)
+                       for entry in feat_info["ref_database"])):
                 continue
 
             unique_id = Isolate.get_phenodb_id(feat_info, type)
@@ -202,6 +201,9 @@ class Isolate(dict):
         return feat_res
 
     def new_res_gene(self, gene_info, unique_id, ab_class, phenotype):
+#todo delete
+        if(phenotype is None):
+            sys.exit(f"PHENO: {phenotype}\nGENE: {gene_info}")
         hit = DBHit(name=gene_info["name"],
                     identity=gene_info["identity"],
                     match_length=gene_info["alignment_length"],
@@ -234,8 +236,6 @@ class Isolate(dict):
         # Flatten features.
         features = list(chain.from_iterable(features))
         self.resprofile = ResProfile(features, phenodb)
-
-
 
     def profile_to_str_table(self, header=False):
         """
@@ -287,7 +287,7 @@ class Isolate(dict):
                         feature_list = ab.features[unique_id]
                         for feature in feature_list:
                             if(isinstance(feature, Mutation)
-                                or isinstance(feature, FeatureGroup)):
+                               or isinstance(feature, FeatureGroup)):
                                 best_match = 3
                             # Note: Mutations do not have "hits"
                             elif(feature.hit.match_category > best_match):

@@ -41,12 +41,14 @@ class Feature(object):
                 return None
         return entry
 
+
 class Resistance(object):
     """ Proposal for resistance class"""
     def __init__(self, ab_class=None, pmids=None, notes=None):
         self.ab_class = Feature.na2none(ab_class)
         self.pmids = Feature.na2none(pmids)
         self.notes = Feature.na2none(notes)
+
 
 class Gene(Feature):
     """

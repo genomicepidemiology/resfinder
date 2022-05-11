@@ -3,8 +3,6 @@ import random
 import string
 import json
 
-from cgelib.utils.loaders_mixin import LoadersMixin
-
 from ..phenotype2genotype.res_profile import PhenoDB
 from ..phenotype2genotype.feature import ResGene, ResMutation
 
@@ -69,7 +67,7 @@ class ResFinderResultHandler():
                     for unique_id, feature_lst in isolate_ab.features.items():
                         for feature in feature_lst:
                             if(isinstance(feature, ResGene)
-                                or isinstance(feature, ResMutation)):
+                               or isinstance(feature, ResMutation)):
                                 phenotype.add_feature(res_collection, isolate,
                                                       feature)
                 res_collection.add_class(cl="phenotypes", **phenotype)

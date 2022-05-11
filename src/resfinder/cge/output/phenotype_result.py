@@ -44,18 +44,21 @@ class PhenotypeResult(dict):
             pheno_keys.append(self["key"])
             feat_result["phenotypes"] = pheno_keys
         # Add unique PMIDs to feature results
-        for pmid in feature.pmids:
-            if pmid not in feat_result["pmids"]:
-                feat_result["pmids"].append(pmid)
+        if(feature.pmids is not None):
+            for pmid in feature.pmids:
+                if pmid not in feat_result["pmids"]:
+                    feat_result["pmids"].append(pmid)
         # Add unique Notes to feature results
-        if feature.notes not in feat_result["notes"]:
-            feat_result["notes"].append(feature.notes)
+        if(feature.notes is not None):
+            if feature.notes not in feat_result["notes"]:
+                feat_result["notes"].append(feature.notes)
         db_name = feature.ref_db
         if(type == "seq_regions"):
             db_key = res_collection.get_db_key(db_name)[0]
         elif(type == "seq_variations"):
-            db_key = res_collection.get_db_key("PointFinder")[0]
-        self["ref_database"] = db_key
+            #db_key = res_collection.get_db_key("PointFinder")[0]
+            db_key = res_collection.get_db_key(db_name)[0]
+        self["ref_database"] = [db_key]
 
     @staticmethod
     def get_ref_id_and_type(feature, isolate):

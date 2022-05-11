@@ -85,7 +85,7 @@ class SeqVariationResult(dict):
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
-                                      var=self["var_aa"], deli=";;"))
+                                      var=self["var_aa"], deli="_"))
             minimum_key = ("{id}{deli}{pos}{deli}{var}"
                            .format(id=region_name,
                                    pos=self["ref_start_pos"],
@@ -94,7 +94,7 @@ class SeqVariationResult(dict):
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
-                                      var=self["var_codon"], deli=";;"))
+                                      var=self["var_codon"], deli="_"))
             minimum_key = ("{id}{deli}{pos}{deli}{var}"
                            .format(id=region_name,
                                    pos=self["ref_start_pos"],

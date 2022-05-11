@@ -154,7 +154,8 @@ class GeneResult(dict):
 
             # Query id == "NA" when FASTQ
             if(query_id == "NA"):
-                res_collection["seq_regions"][gene_key]["ref_database"].extend(self["ref_database"])
+                res_collection["seq_regions"][gene_key]["ref_database"].extend(
+                    self["ref_database"])
                 gene_key = None
             # Query id != "NA" when FASTA
             elif (self["query_id"]
@@ -166,7 +167,8 @@ class GeneResult(dict):
                 gene_key = GeneResult.get_rnd_unique_gene_key(
                     gene_key, res_collection, minimum_gene_key, delimiter)
             else:
-                res_collection["seq_regions"][gene_key]["ref_database"].extend(self["ref_database"])
+                res_collection["seq_regions"][gene_key]["ref_database"].extend(
+                    self["ref_database"])
                 gene_key = None
 
         return gene_key

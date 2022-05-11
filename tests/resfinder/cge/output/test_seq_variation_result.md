@@ -69,7 +69,7 @@ hit.
   'substitution': True,
   'deletion': False,
   'insertion': False,
-  'ref_id': 'gyrA;;81;;d',
+  'ref_id': 'gyrA_81_d',
   'key': 'gyrA;;81;;d',
   'ref_database': 'PointFinder-...',...
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
@@ -102,7 +102,7 @@ hit.
   'substitution': True,
   'deletion': False,
   'insertion': False,
-  'ref_id': 'gyrA;;81;;gat',
+  'ref_id': 'gyrA_81_gat',
   'key': 'gyrA;;81;;gat',
   'ref_database': 'PointFinder-...',...
   'seq_regions': ['gyrA;;1;;CP073768.1']...}

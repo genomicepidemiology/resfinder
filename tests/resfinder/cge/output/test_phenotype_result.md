@@ -9,11 +9,12 @@
 >>> from src.resfinder.cge.phenotype2genotype.feature import ResGene
 >>> from src.resfinder.cge.phenotype2genotype.feature import ResMutation
 >>> rg = ResGene(unique_id="blaOXA-384_KF986263", start=1, end=90,
-...              isolate="isolateA", ab_class=["beta-lactam"])
->>> rm = ResMutation(unique_id="gyrA;;81;;d", seq_region="gyrA", pos=81,
+...              isolate="isolateA", ab_class=["beta-lactam"],
+...              ref_db="ResFinder")
+>>> rm = ResMutation(unique_id="gyrA_81_d", seq_region="gyrA", pos=81,
 ...                  ref_codon="ggt", mut_codon="gat", ref_aa="g",
 ...                  mut_aa="d", isolate="isolateB", nuc=False,
-...                  ab_class=["fluoroquinolone"])
+...                  ab_class=["fluoroquinolone"], ref_db="PointFinder")
 
 >>> from src.resfinder.cge.phenotype2genotype.res_profile import Antibiotics
 >>> ab_m1 = Antibiotics(name="ciprofloxacin", classes=["fluoroquinolone"],
@@ -58,7 +59,7 @@
 ...  "type": "seq_region",
 ...  "gene": True,
 ...  "key": "blaOXA-384;;1;;KF986263",
-...  "name": "blaOXA",
+...  "name": "blaOXA-384",
 ...  "identity": 98.2,
 ...  "alignment_length": 90,
 ...  "ref_seq_lenght": 100,
@@ -68,15 +69,16 @@
 ...  "ref_acc": "KF986263",
 ...  "ref_start_pos": 1,
 ...  "ref_end_pos": 100,
-...  "ref_database": "ResFinder-unknown"
+...  "ref_database": ["ResFinder-unknown"]
 ... }
 
 >>> gyra = {
 ...   'type': 'seq_region',
 ...   'gene': True,
-...   'ref_id': 'gyrA',
+...   'ref_id': 'gyrA_1_CP073768.1',
+...   "ref_acc": "CP073768.1",
 ...   'name': 'gyrA',
-...   'key': 'gyrA',
+...   'key': 'gyrA;;1;;CP073768.1',
 ...   'identity': 99.92,
 ...   'alignment_length': 2628,
 ...   'ref_seq_lenght': 2628,
@@ -86,7 +88,7 @@
 ...   'query_id': 'gyrA_G81D_GAT_D82G_GGC',
 ...   'query_start_pos': 1,
 ...   'query_end_pos': 2628,
-...   'ref_database': 'PointFinder-a2b2ce4',
+...   'ref_database': ['PointFinder-a2b2ce4'],
 ...   'coverage': 100.0
 ... }
 
@@ -103,10 +105,10 @@
 ...  'substitution': True,
 ...  'deletion': False,
 ...  'insertion': False,
-...  'ref_id': 'gyrA;;81;;d',
+...  'ref_id': 'gyrA_81_d',
 ...  'key': 'gyrA;;81;;d',
-...  'ref_database': 'PointFinder-a2b2ce4',
-...  'seq_regions': ['gyrA']
+...  'ref_database': ['PointFinder-a2b2ce4'],
+...  'seq_regions': ['gyrA;;1;;CP073768.1']
 ... }
 
 >>> res.add_class(cl="seq_regions", **blaoxa)
@@ -158,7 +160,7 @@ True
 >>> PhenotypeResult.get_ref_id_and_type(rg, isolate)
 ('blaOXA-384_1_KF986263', 'seq_regions')
 >>> PhenotypeResult.get_ref_id_and_type(rm, isolate)
-('gyrA;;81;;d', 'seq_variations')
+('gyrA_81_d', 'seq_variations')
 
 ```
 
@@ -171,6 +173,10 @@ True
 ['blaOXA-384;;1;;KF986263']
 >>> PhenotypeResult.get_keys_matching_ref_id(refid, res_empty[type])
 []
+
+>>> refid_m, type_m = PhenotypeResult.get_ref_id_and_type(rm, isolate)
+>>> PhenotypeResult.get_keys_matching_ref_id(refid_m, res[type_m])
+['gyrA;;81;;d']
 
 ```
 

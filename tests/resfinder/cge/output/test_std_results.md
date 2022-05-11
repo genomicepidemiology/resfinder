@@ -10,7 +10,7 @@ hit.
 ```python
 
 >>> from cgelib.output.result import Result
->>> from cge.output.gene_result import GeneResult
+>>> from src.resfinder.cge.output.gene_result import GeneResult
 
 >>> res = Result.init_software_result(name="ResFinder", gitdir=".")
 >>> res.init_database("ResFinder", ".")
@@ -58,7 +58,7 @@ of lists, where each list in the list describes a mutation.
 
 >>> gyrA_hit = {}
 >>> gyrA_hit["evalue"] = 0.0
->>> gyrA_hit["sbjct_header"] = "gyrA"
+>>> gyrA_hit["sbjct_header"] = "gyrA_1_CP073768.1"
 >>> gyrA_hit["bit"] = 4843.04
 >>> gyrA_hit["perc_ident"] = 99.92
 >>> gyrA_hit["sbjct_length"] = 2628
@@ -84,7 +84,7 @@ of lists, where each list in the list describes a mutation.
 
 >>> pf_custom_blast = {}
 >>> pf_custom_blast["excluded"] = {}
->>> pf_custom_blast["gyrA"] = gyrA
+>>> pf_custom_blast["gyrA_1_CP073768.1"] = gyrA
 >>> pf_custom_blast["gyrB"] = "No hit found"
 
 ```
@@ -95,7 +95,7 @@ PointFinder.
 ```python
 
 >>> gyrA_kma_hit = {}
->>> gyrA_kma_hit["sbjct_header"] = "gyrA"
+>>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
 >>> gyrA_kma_hit["perc_ident"] = 99.92
 >>> gyrA_kma_hit["HSP_length"] = 2628
 >>> gyrA_kma_hit["sbjct_length"] = 2628
@@ -112,7 +112,7 @@ PointFinder.
 
 >>> pf_custom_kma = {}
 >>> pf_custom_kma["excluded"] = {}
->>> pf_custom_kma["gyrA"] = gyrA_kma_hit
+>>> pf_custom_kma["gyrA_1_CP073768.1"] = gyrA_kma_hit
 >>> pf_custom_kma["gyrB"] = "No hit found"
 
 >>> import copy
@@ -125,7 +125,7 @@ Create the phenoDB object.
 ```python
 
 >>> import os
->>> from cge.phenotype2genotype.res_profile import PhenoDB
+>>> from src.resfinder.cge.phenotype2genotype.res_profile import PhenoDB
 
 >>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
 >>> assert(len(resfinder_db_path) > 0)
@@ -148,7 +148,7 @@ Create the phenoDB object.
 
 ```python
 
->>> from cge.output.std_results import ResFinderResultHandler
+>>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 >>> ResFinderResultHandler.standardize_results(res,
 ...                                            rf_custom_kma,
 ...                                            "ResFinder")
@@ -173,7 +173,7 @@ Create Isolate object
 
 ```python
 
->>> from cge.phenotype2genotype.isolate import Isolate
+>>> from src.resfinder.cge.phenotype2genotype.isolate import Isolate
 >>> isolate = Isolate(name="Test sample")
 
 >>> isolate.load_finder_results(std_table=res, phenodb=res_pheno_db,
@@ -198,7 +198,7 @@ Create Isolate object
 
 ```python
 
->>> from cge.output.std_results import PointFinderResultHandler
+>>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> ResFinderResultHandler.load_res_profile(res, isolate, amr_abbreviations)
 >>> res["phenotypes"]["ampicillin"]["seq_regions"]
 []
@@ -226,7 +226,7 @@ PointFinder-...
 >>> for k in res["seq_regions"]:
 ...   print(k)
 blaOXA-384;;1;;KF986263
-gyrA
+gyrA;;1;;CP073768.1
 
 >>> for k in res["seq_variations"]:
 ...   print(k)
@@ -237,7 +237,7 @@ gyrA;;82;;g
 
 ```python
 
->>> from cge.output.std_results import PointFinderResultHandler
+>>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> PointFinderResultHandler.standardize_results(res_kma_test,
 ...                                              pf_custom_kma,
 ...                                              "PointFinder")
@@ -250,7 +250,7 @@ PointFinder-...
 
 >>> for k in res_kma_test["seq_regions"]:
 ...   print(k)
-gyrA
+gyrA;;1;;CP073768.1
 
 >>> for k in res_kma_test["seq_variations"]:
 ...   print(k)

@@ -2,6 +2,8 @@
 import random
 import string
 import json
+#DEBUG
+import sys
 
 from ..phenotype2genotype.res_profile import PhenoDB
 from ..phenotype2genotype.feature import ResGene, ResMutation
@@ -136,7 +138,13 @@ class PointFinderResultHandler():
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
                 res_collection.add_class(cl="seq_regions", **gene_result)
                 gene_results.append(gene_result)
-                mismatches = hit_db["mis_matches"]
+
+                # KMA hits
+                mismatches = hit_db.get("mis_matches", None)
+                # BLAST hits
+                if(mismatches is None):
+                    mismatches = db["mis_matches"]
+
                 for mismatch in mismatches:
                     seq_var_result = SeqVariationResult(
                         res_collection, mismatch, gene_results, ref_db_name)

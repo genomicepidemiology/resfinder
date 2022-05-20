@@ -337,6 +337,7 @@ def main():
                                             min_cov=conf.dis_gene_cov,
                                             threshold=conf.dis_gene_id,
                                             kma_path=conf.kma,
+                                            databases=disinf_finder.databases,
                                             sample_name="",
                                             kma_cge=True,
                                             kma_apm="p",

@@ -26,9 +26,9 @@ summary = "Center for Genomic Epidemiology Core Module"
 
 [[package]]
 name = "cgelib"
-version = "0.3.0"
-requires_python = ">=3.8"
-summary = "Library of modules used throughout the tools developed and maintained by the Center for Genomic Epidemiology (CGE)."
+version = "0.7.2"
+requires_python = ">=3.6"
+summary = "Description of my package"
 dependencies = [
     "GitPython",
     "python-dateutil",
@@ -106,7 +106,7 @@ summary = "library with cross-python path, ini-parsing, io, code, log facilities
 
 [[package]]
 name = "pyparsing"
-version = "3.0.8"
+version = "3.0.9"
 requires_python = ">=3.6.8"
 summary = "pyparsing module - Classes and methods to define and execute parsing grammars"
 
@@ -165,7 +165,7 @@ summary = "A lil' TOML parser"
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:fc32a11afc159c645f83a339da6a81fff104dfd330794d6eec2f8904650e6271"
+content_hash = "sha256:9975116832776d952a0be14ed21e60b32540748fcaced6d4b8f8b5cd254ff541"
 
 [metadata.files]
 "atomicwrites 1.4.0" = [
@@ -208,9 +208,9 @@ content_hash = "sha256:fc32a11afc159c645f83a339da6a81fff104dfd330794d6eec2f89046
     {file = "cgecore-1.5.6-py3-none-any.whl", hash = "sha256:a4d957c2e34878ab2e440430b72763649043eaf7b0784766649ec203b090ac17"},
     {file = "cgecore-1.5.6.tar.gz", hash = "sha256:310dbaf02c6791dcc17cff7b01930a6260d92328c07cfaaf431742f073fcc758"},
 ]
-"cgelib 0.3.0" = [
-    {file = "cgelib-0.3.0-py3-none-any.whl", hash = "sha256:d16075ffe261a5239453dd0d0b6085b0ec3b5788b034d9280950587702c4ec5f"},
-    {file = "cgelib-0.3.0.tar.gz", hash = "sha256:c2f6f16c1fd1701ef77d97c782d821feb1310745fe31867d2b5f00e7274a1be4"},
+"cgelib 0.7.2" = [
+    {file = "cgelib-0.7.2-py3-none-any.whl", hash = "sha256:6b57a0c2bc100512e080830ad2a4dc4e06d886001944a6da391a71693b878723"},
+    {file = "cgelib-0.7.2.tar.gz", hash = "sha256:f185f06bcda08dbee3925d7de0c21b8d246a79d0f418d153cb82320778414e46"},
 ]
 "colorama 0.4.4" = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -285,9 +285,9 @@ content_hash = "sha256:fc32a11afc159c645f83a339da6a81fff104dfd330794d6eec2f89046
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
 ]
-"pyparsing 3.0.8" = [
-    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
-    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
+"pyparsing 3.0.9" = [
+    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
+    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 "pytest 7.1.2" = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},

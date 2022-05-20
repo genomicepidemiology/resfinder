@@ -8,7 +8,6 @@ from signal import *
 import tempfile
 import sys
 import subprocess
-# import urllib.parse
 from itertools import chain
 
 from .feature import Feature, ResGene, Mutation, ResMutation
@@ -22,11 +21,122 @@ class Isolate(dict):
     """
     NO_AB_CLASS = "No class defined"
 
-    def __init__(self, name, species=None):
+    def __init__(self, name, species=None, amr_panel_file=None):
         self.name = name
         self.resprofile = None
-        self.species = None
         self.feature_classes = {}
+        self.species = None
+        if(species is not None):
+            self.amr_panel = Isolate.load_amr_panel(species, amr_panel_file)
+        else:
+            self.amr_panel = None
+
+    @staticmethod
+    def load_amr_panel(species, panel_file):
+        """
+        """
+        panels = {}
+        inclusions = {}
+
+        with open(panel_file, "r") as fh:
+            panel_name = None
+            re_panel = re.compile(r':Panel:\s{0,1}(.+)$')
+            re_include = re.compile(r':Include:\s{0,1}(.+)$')
+            for line in fh:
+
+                line = line.rstrip()
+
+                # Skip empty lines
+                if(not line):
+                    continue
+
+                # Skip Comments
+                if(line.startswith("#")):
+                    continue
+
+                # Get panel name
+                match_panel = re_panel.search(line)
+                if(match_panel):
+                    panel_name = Isolate._get_panel_name(panels, match_panel)
+                    continue
+
+                # Get inclusions
+                match_inclusion = re_include.search(line)
+                if(match_inclusion):
+                    Isolate._get_inclusions(panel_name, match_inclusion,
+                                            inclusions)
+                    continue
+
+                # Get Antibiotics
+                if(panel_name):
+                    Isolate._get_antibiotics(line, panel_name, panels)
+
+        Isolate._merge_inclusions(panels, inclusions)
+
+        species_key = Isolate.check_panel_name(species, panels)
+        return set(panels[species_key])
+
+    @staticmethod
+    def _get_antibiotics(line, panel_name, panels):
+        """ Stores list of antimicrobials in dict of panel names. """
+        tmp_list = panels.get(panel_name, [])
+        tmp_list.append(line.lower())
+        panels[panel_name] = tmp_list
+
+    @staticmethod
+    def _get_panel_name(panels, match_panel):
+        panel_name = match_panel.group(1).lower()
+        panels[panel_name] = []
+        return panel_name
+
+    @staticmethod
+    def _get_inclusions(panel_name, match_inclusion, inclusions):
+        include_panel = match_inclusion.group(1).lower()
+        tmp_list = inclusions.get(panel_name, [])
+        tmp_list.append(include_panel)
+        inclusions[panel_name] = tmp_list
+
+    @staticmethod
+    def _merge_inclusions(panels, inclusions):
+        for panel in inclusions:
+            panel_list = panels[panel]
+            include_list = inclusions[panel]
+            include_abs = []
+            for incl_panel in include_list:
+                include_abs = include_abs + panels[incl_panel]
+            panels[panel] = panel_list + include_abs
+
+    @staticmethod
+    def _remove_redundancy(panels):
+        for panel in panels:
+            panel_list = panels[panel]
+            panels[panel] = list(set(panel_list))
+
+    @staticmethod
+    def check_panel_name(name, panels):
+        """ Panel names are expected to consist of "Genus species" or
+            only "Genus". The method checks the name against the loaded
+            panel names and returns the panel name that matches the
+            given name. If no panel name matches it checks if the first
+            word of the given name matches any of the genus panel
+            names, and considers that a match if found.
+
+            Returns False if no match is found
+            Returns None if no panels has been loaded
+            Returns the panel name that match
+        """
+        if(not panels):
+            return None
+
+        name = name.lower()
+        if(name in panels):
+            return name
+
+        genus_name = " ".split(name)[0]
+        if(genus_name in panels):
+            return genus_name
+
+        return False
 
     def load_resfinder_tab(self, tabbed_output, phenodb):
         with open(tabbed_output, "r") as fh:

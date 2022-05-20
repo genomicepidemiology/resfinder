@@ -5,13 +5,24 @@ from ..phenotype2genotype.feature import ResGene, ResMutation
 
 
 class PhenotypeResult(dict):
-    def __init__(self, antibiotic):
+    def __init__(self, antibiotic, isolate):
         self["type"] = "phenotype"
         self["category"] = "amr"
         self["key"] = antibiotic.name
         self["amr_classes"] = antibiotic.classes
         self["amr_resistance"] = antibiotic.name
         self["amr_resistant"] = False
+        self["amr_species_relevant"] = PhenotypeResult.get_amr_relevance(
+            antibiotic.name, isolate)
+
+    @staticmethod
+    def get_amr_relevance(ab, isolate):
+        if(isolate.amr_panel is None):
+            return True
+        elif(ab in isolate.amr_panel):
+            return True
+        else:
+            return False
 
     def set_resistant(self, res):
         self["amr_resistant"] = res

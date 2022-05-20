@@ -129,7 +129,7 @@
 ```python
 
 >>> from src.resfinder.cge.output.phenotype_result import PhenotypeResult
->>> pheno = PhenotypeResult(ab_g1)
+>>> pheno = PhenotypeResult(ab_g1, isolate)
 >>> pheno["key"]
 'carbapenem'
 >>> pheno["amr_classes"]
@@ -193,7 +193,7 @@ True
 >>> res["seq_regions"]["blaOXA-384;;1;;KF986263"]["phenotypes"]
 ['carbapenem']
 
->>> pheno2 = PhenotypeResult(ab_m1)
+>>> pheno2 = PhenotypeResult(ab_m1, isolate)
 >>> pheno2.set_resistant(True)
 >>> pheno2.add_feature(res, isolate, rm)
 >>> res.add_class(cl="phenotypes", **pheno2)
@@ -206,7 +206,7 @@ True
 >>> res["seq_variations"]["gyrA;;81;;d"]["phenotypes"]
 ['ciprofloxacin']
 
->>> pheno3 = PhenotypeResult(ab_m2)
+>>> pheno3 = PhenotypeResult(ab_m2, isolate)
 >>> pheno3.set_resistant(True)
 >>> pheno3.add_feature(res, isolate, rm)
 >>> res.add_class(cl="phenotypes", **pheno3)

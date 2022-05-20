@@ -2,8 +2,6 @@
 import random
 import string
 import json
-#DEBUG
-import sys
 
 from ..phenotype2genotype.res_profile import PhenoDB
 from ..phenotype2genotype.feature import ResGene, ResMutation
@@ -61,7 +59,7 @@ class ResFinderResultHandler():
         for ab_class in isolate.resprofile.phenodb.antibiotics.keys():
             # For each antibiotic in current class
             for phenodb_ab in isolate.resprofile.phenodb.antibiotics[ab_class]:
-                phenotype = PhenotypeResult(phenodb_ab)
+                phenotype = PhenotypeResult(phenodb_ab, isolate)
                 # Isolate is resistant towards the antibiotic
                 if(phenodb_ab in isolate.resprofile.resistance):
                     phenotype.set_resistant(True)

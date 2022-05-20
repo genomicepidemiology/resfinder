@@ -32,6 +32,7 @@ from resfinder import __version__
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+
 def main():
 
     # version = read_version("VERSION")
@@ -192,8 +193,17 @@ def main():
     conf = Config(args)
 
     # Initialise result dict
-    std_result = Result.init_software_result(name="ResFinder",
-                                             gitdir=conf.resfinder_root)
+    std_result = Result.init_software_result(
+        name="ResFinder",
+        gitdir=f"{conf.resfinder_root}/../../")
+
+    init_result_data = {
+        "provided_species": conf.species,
+        "software_version": __version__,
+        "key": f"ResFinder-{__version__}",
+    }
+    std_result.add(**init_result_data)
+
     if(conf.acquired):
         std_result.init_database("ResFinder", conf.db_path_res)
     if(conf.point):
@@ -431,7 +441,8 @@ def main():
         point_file=conf.point_file, disinf_file=conf.disinf_file,
         disclassdef_file=conf.disclassdef_file)
     # Isolate object store results
-    isolate = Isolate(name=conf.sample_name)
+    isolate = Isolate(name=conf.sample_name, species=conf.species,
+                      amr_panel_file=conf.db_panels_file)
 
     if(conf.acquired or conf.disinf):
         isolate.load_finder_results(std_table=std_result,

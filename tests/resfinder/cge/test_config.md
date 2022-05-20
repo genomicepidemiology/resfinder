@@ -279,7 +279,7 @@ Test errors. Success is tested via constructor (Config(args)) above.
 >>> Config(args5)
 ... #doctest: +ELLIPSIS
 Traceback (most recent call last):
-SystemExit: Input Error: The database config or notes.txt file could not be...
+SystemExit: Input Error: The database config file could not be found...
 
 >>> args10.min_cov = 1.2
 >>> Config(args10)

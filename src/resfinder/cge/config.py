@@ -165,12 +165,18 @@ class Config():
 
     def set_resfinder_opts(self, args):
         self.set_path_resfinderdb(args)
-        self.db_config_file = "{}/config".format(self.db_path_res)
-        self.db_notes_file = "{}/notes.txt".format(self.db_path_res)
-        if not os.path.exists(self.db_config_file
-                              or self.db_notes_file):
-            sys.exit("Input Error: The database config or notes.txt file could"
-                     " not be found in the DisinFinder database directory.")
+        self.db_config_file = f"{self.db_path_res}/config"
+        self.db_notes_file = f"{self.db_path_res}/notes.txt"
+        self.db_panels_file = f"{self.db_path_res}/phenotype_panels.txt"
+        if not os.path.exists(self.db_config_file):
+            sys.exit("Input Error: The database config file could not be found"
+                     " in the ResFinder database directory.")
+        if not os.path.exists(self.db_notes_file):
+            sys.exit("Input Error: The database notes.txt file could not be "
+                     "found in the ResFinder database directory.")
+        if not os.path.exists(self.db_panels_file):
+            sys.exit("Input Error: The database phenotype_panels.txt file "
+                     "could not be found in the ResFinder database directory.")
 
         args.min_cov = float(args.min_cov)
         args.threshold = float(args.threshold)

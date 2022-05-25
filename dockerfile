@@ -24,6 +24,7 @@ COPY run_resfinder.py /usr/src/run_resfinder.py
 
 ADD cge /usr/src/cge
 ADD tests /usr/src/tests
+ADD .git /usr/src/.git
 
 # Install kma
 RUN cd /usr/src/cge; \

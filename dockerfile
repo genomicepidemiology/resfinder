@@ -17,6 +17,7 @@ RUN apt-get update -qq; \
 ENV DEBIAN_FRONTEND Teletype
 
 # Install python dependencies
+RUN pip3 install --upgrade pip
 RUN pip3 install -U biopython==1.73 tabulate cgecore gitpython python-dateutil;
 
 # RESFINDER setup

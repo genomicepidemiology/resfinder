@@ -30,8 +30,7 @@ ADD .git /usr/src/.git
 # Install kma
 RUN cd /usr/src/cge; \
     git clone --depth 1 https://bitbucket.org/genomicepidemiology/kma.git; \
-    cd kma && make; \
-    mv kma* /bin/
+    cd kma && make
 
 
 RUN chmod 755 /usr/src/run_resfinder.py

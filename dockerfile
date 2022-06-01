@@ -28,9 +28,10 @@ ADD tests /usr/src/tests
 ADD .git /usr/src/.git
 
 # Install kma
-RUN cd /usr/src/cge; \
+RUN cd /usr/src; \
     git clone --depth 1 https://bitbucket.org/genomicepidemiology/kma.git; \
-    cd kma && make
+    cd kma && make; \
+    mv kma /usr/bin
 
 
 RUN chmod 755 /usr/src/run_resfinder.py
@@ -51,4 +52,4 @@ RUN echo "alias ls='ls -h --color=tty'\n"\
 WORKDIR "/usr/src/"
 
 # Execute program when running the container
-ENTRYPOINT ["python3", "/usr/src/run_resfinder.py"]
+ENTRYPOINT ["python3", "/usr/src/run_resfinder.py", "-k", "/usr/bin/kma"]

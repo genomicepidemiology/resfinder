@@ -42,6 +42,8 @@
 ...         self.nanopore = False     # Tested?
 ...         self.out_json = None      # Tested?
 ...         self.disinfectant = False  # Tested?
+...         self.db_path_disinf = None       # Tested?
+...         self.db_path_disinf_kma = None   # Tested?
 
 >>> args = DummyArgs()
 >>> args1 = DummyArgs()

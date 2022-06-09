@@ -122,13 +122,12 @@ def main():
                         help="Run resfinder for disinfectant resistance genes",
                         default=False)
     parser.add_argument("-db_disinf", "--db_path_disinf",
-                        help=("Path to the databases for ResFinder. Defaults to "
-                              "'db_resfinder' in the ResFinder application "
-                              "directory."),
+                        help=("Path to the databases for DisinFinder."),
                         default=None)
     parser.add_argument("-db_disinf_kma", "--db_path_disinf_kma",
-                        help=("Path to the ResFinder databases indexed with KMA. "
-                              "Defaults to the value of the --db_res flag."),
+                        help=("Path to the DisinFinder databases indexed with "
+                              "KMA. Defaults to the value of the --db_res "
+                              "flag."),
                         default=None)
 
     # Point resistance option

@@ -6,13 +6,15 @@ Additional Environment variables can be added by appending entries to the table 
 
 ## Environment Variables Table
 
-| Environment Variabel       | Flag            | Default Value  |
-|----------------------------|-----------------|----------------|
-| CGE_KMA                    | kmaPath         | kma            |
-| CGE_BLASTN                 | blastPath       | blastn         |
-| CGE_RESFINDER_RESGENE_DB   | db_path_res     | db_resfinder   |
-| CGE_RESFINDER_RESPOINT_DB  | db_path_point   | db_pointfinder |
-| CGE_RESFINDER_GENE_COV     | min_cov         | 0.60           |
-| CGE_RESFINDER_GENE_ID      | threshold       | 0.80           |
-| CGE_RESFINDER_POINT_COV    | min_cov_point   | 0.60           |
-| CGE_RESFINDER_POINT_ID     | threshold_point | 0.80           |
+| Environment Variabel       | Flag                | Default Value  |
+|----------------------------|---------------------|----------------|
+| CGE_KMA                    | kmaPath             | kma            |
+| CGE_BLASTN                 | blastPath           | blastn         |
+| CGE_RESFINDER_RESGENE_DB   | db_path_res         | db_resfinder   |
+| CGE_RESFINDER_RESPOINT_DB  | db_path_point       | db_pointfinder |
+| CGE_RESFINDER_GENE_COV     | min_cov             | 0.60           |
+| CGE_RESFINDER_GENE_ID      | threshold           | 0.80           |
+| CGE_RESFINDER_POINT_COV    | min_cov_point       | 0.60           |
+| CGE_RESFINDER_POINT_ID     | threshold_point     | 0.80           |
+| CGE_DISINFINDER_DB         | db_path_disinf      | None           |
+| CGE_DISINFINDER_DB_KMA     | db_path_disinf_kma  | None           |

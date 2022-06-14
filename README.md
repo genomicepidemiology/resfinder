@@ -4,6 +4,14 @@ ResFinder documentation
 ResFinder identifies acquired antimicrobial resistance genes in total or partial
 sequenced isolates of bacteria.
 
+## Important if you are updating from a previous ResFinder version
+
+It is no longer recommended to clone the ResFinder bitbucket repository unless you plan to do development work on ResFinder.
+
+Instead we recommend installing ResFinder using pip as described below.
+
+There are several good reasons why the recommended installation procedure has changed, among those are the increasing size of the repository that has risen to several hundreds of megabytes, due to the long history of ResFinder. Its easier for users. And it makes sure your installation will be a tested release of the application.
+
 ## Content of the repository
 * run_resfinder.py     - Use this script to run ResFinder.
 * README.md            - This file.
@@ -15,34 +23,14 @@ sequenced isolates of bacteria.
 * database_tests.md    - Doctests for use whenever parts of the database has been altered.
 
 ## Installation
-The installation described here will first install the actual ResFinder software,
-then the dependencies, and finally the databases. A more detailed breakdown of the
-installation is provided below:
+ResFinder consists of an application and 1-3 databases. The databases can be used without the application, but not the other way around. Below ResFinder the application will be installed first and then the databases will be installed and configured to work with ResFinder the application.
 
-1. Install ResFinder tool
-2. Install python modules
-3. Install BLAST (optional)
-4. install KMA (optional)
-5. Download ResFinder database
-6. Download PointFinder database
-7. Index databases with KMA (if installed)
-8. Test installation
+### ResFinder the application
+Install ResFinder the application.
 
-A small script has been written to automate this process. It is available from the
-scripts directory and is named install_resfinder.sh. It is very simple and might
-not work in all environments. It is only meant as a supplement and no support will
-be provided for any scripts in this directory. However, specific suggestions (with code)
-for improvement is very welcome.
-
-### ResFinder tool
-Setting up ResFinder script and database
 ```bash
-# Go to wanted location for resfinder
-cd /path/to/some/dir
 
-# Clone the latest version and enter the resfinder directory
-git clone https://git@bitbucket.org/genomicepidemiology/resfinder.git
-cd resfinder
+pip install resfinder
 
 ```
 

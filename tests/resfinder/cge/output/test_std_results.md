@@ -271,21 +271,24 @@ gyrA;;82;;g
 ...     "category": "amr",
 ...     "amr_classes": ['beta-lactam'],
 ...     "amr_resistance": "ampicillin+clavulanic acid",
-...     "amr_resistant": True}
+...     "amr_resistant": True,
+...     "amr_species_relevant": True}
 >>> phenotype2 = {
 ...     "type": "phenotype",
 ...     "key": "imipenem",
 ...     "category": "amr",
 ...     "amr_classes": ['beta-lactam'],
 ...     "amr_resistance": "imipenem",
-...     "amr_resistant": True}
+...     "amr_resistant": True,
+...     "amr_species_relevant": True}
 >>> phenotype3 = {
 ...     "type": "phenotype",
 ...     "key": "doxycycline",
 ...     "category": "amr",
 ...     "amr_classes": ['tetracycline'],
 ...     "amr_resistance": "doxycycline",
-...     "amr_resistant": True}
+...     "amr_resistant": True,
+...     "amr_species_relevant": False}
 >>> res.add_class(cl="phenotypes", clobber_warn=False, **phenotype1)
 >>> res.add_class(cl="phenotypes", clobber_warn=False, **phenotype2)
 >>> res.add_class(cl="phenotypes", clobber_warn=False, **phenotype3)
@@ -296,6 +299,6 @@ gyrA;;82;;g
 
 >>> sum_str = ResFinderResultHandler.create_amr_summary_str(res, amr_abbreviations)
 >>> sum_str
-'AML_IMI_UBE_DOX'
+'AML_IMI_UBE'
 
 ```

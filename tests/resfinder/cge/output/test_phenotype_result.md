@@ -47,6 +47,7 @@
 >>> pointfinder_db_path = os.environ["CGE_RESFINDER_RESPOINT_DB"]
 >>> assert(len(pointfinder_db_path) > 0)
 
+>>> amr_panel_file = f"{resfinder_db_path}/phenotype_panels.txt"
 >>> abclassdef_file= "{}/antibiotic_classes.txt".format(resfinder_db_path)
 >>> acquired_file= "{}/phenotypes.txt".format(resfinder_db_path)
 >>> point_file = ("{}/escherichia_coli/resistens-overview.txt"
@@ -115,7 +116,8 @@
 >>> res.add_class(cl="seq_regions", **gyra)
 >>> res.add_class(cl="seq_variations", **pg81d)
 
->>> isolate = Isolate(name="Test sample")
+>>> isolate = Isolate(name="Test sample", species="Escherichia coli",
+...                   amr_panel_file=amr_panel_file)
 >>> isolate.load_finder_results(std_table=res, phenodb=res_pheno_db,
 ...                             type="seq_regions")
 >>> isolate.load_finder_results(std_table=res, phenodb=res_pheno_db,
@@ -142,6 +144,24 @@ False
 ```
 
 ## Methods
+
+### get_amr_relevance(ab, isolate)
+
+```python
+
+>>> isolate_no_panel = Isolate(name="Test sample no panel")
+>>> assert(isolate_no_panel.amr_panel is None)
+>>> no_panel_result = PhenotypeResult.get_amr_relevance("colistin",
+...     isolate_no_panel)
+>>> print(f"{no_panel_result}")
+True
+
+>>> PhenotypeResult.get_amr_relevance("colistin", isolate)
+True
+>>> PhenotypeResult.get_amr_relevance("some irrelevant ab", isolate)
+False
+
+```
 
 ### set_resistant(res)
 

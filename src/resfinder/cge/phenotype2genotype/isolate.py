@@ -40,31 +40,21 @@ class Isolate(dict):
 
         with open(panel_file, "r") as fh:
             panel_name = None
-            re_panel = re.compile(r':Panel:\s{0,1}(.+)$')
-            re_include = re.compile(r':Include:\s{0,1}(.+)$')
             for line in fh:
 
                 line = line.rstrip()
 
-                # Skip empty lines
-                if(not line):
-                    continue
-
-                # Skip Comments
-                if(line.startswith("#")):
+                # Skip empty lines and comments
+                if not line or line.startswith("#"):
                     continue
 
                 # Get panel name
-                match_panel = re_panel.search(line)
-                if(match_panel):
-                    panel_name = Isolate._get_panel_name(panels, match_panel)
+                new_panel_name = Isolate._get_panel_name(panels, line)
+                if new_panel_name is not None:
+                    panel_name = new_panel_name
                     continue
 
-                # Get inclusions
-                match_inclusion = re_include.search(line)
-                if(match_inclusion):
-                    Isolate._get_inclusions(panel_name, match_inclusion,
-                                            inclusions)
+                if Isolate._get_inclusions(panel_name, line, inclusions):
                     continue
 
                 # Get Antibiotics
@@ -84,33 +74,41 @@ class Isolate(dict):
         panels[panel_name] = tmp_list
 
     @staticmethod
-    def _get_panel_name(panels, match_panel):
-        panel_name = match_panel.group(1).lower()
-        panels[panel_name] = []
-        return panel_name
+    def _get_panel_name(panels, line):
+        match_panel = re.search(r':Panel:\s{0,1}(.+)$', line)
+        if(match_panel):
+            panel_name = match_panel.group(1).lower()
+            panels[panel_name] = []
+            return panel_name
+        else:
+            return None
 
     @staticmethod
-    def _get_inclusions(panel_name, match_inclusion, inclusions):
-        include_panel = match_inclusion.group(1).lower()
-        tmp_list = inclusions.get(panel_name, [])
-        tmp_list.append(include_panel)
-        inclusions[panel_name] = tmp_list
+    def _get_inclusions(panel_name, line, inclusions):
+        match_inclusion = re.search(r':Include:\s{0,1}(.+)$', line)
+        if(match_inclusion):
+            include_panel = match_inclusion.group(1).lower()
+            tmp_list = inclusions.get(panel_name, [])
+            tmp_list.append(include_panel)
+            inclusions[panel_name] = tmp_list
+            return True
+        else:
+            return False
 
     @staticmethod
     def _merge_inclusions(panels, inclusions):
-        for panel in inclusions:
+        for panel, include_list in inclusions.items():
             panel_list = panels[panel]
-            include_list = inclusions[panel]
             include_abs = []
             for incl_panel in include_list:
                 include_abs = include_abs + panels[incl_panel]
             panels[panel] = panel_list + include_abs
 
-    @staticmethod
-    def _remove_redundancy(panels):
-        for panel in panels:
-            panel_list = panels[panel]
-            panels[panel] = list(set(panel_list))
+    #@staticmethod
+    #def _remove_redundancy(panels):
+    #    for panel in panels:
+    #        panel_list = panels[panel]
+    #        panels[panel] = list(set(panel_list))
 
     @staticmethod
     def check_panel_name(name, panels):

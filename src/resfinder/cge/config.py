@@ -144,8 +144,8 @@ class Config():
             self.inputfastq_2 = self.get_abs_path_and_check(
                 args.inputfastq[1])
         elif(len(args.inputfastq) > 2):
-            sys.exit("ERROR: More than 2 files were provided to inputfastq: {}."
-                     .format(args.inputfastq))
+            sys.exit("ERROR: More than 2 files were provided to inputfastq: "
+                     "{}.".format(args.inputfastq))
         else:
             self.inputfastq_2 = None
 

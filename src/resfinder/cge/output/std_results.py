@@ -80,7 +80,8 @@ class ResFinderResultHandler():
     def create_amr_summary_str(res_collection, amr_abbreviations):
         amr_list = []
         for key, phenotype in res_collection["phenotypes"].items():
-            if(phenotype["amr_resistant"] is True):
+            if(phenotype["amr_resistant"] is True
+               and phenotype["amr_species_relevant"] is True):
                 amr_name = phenotype["amr_resistance"].capitalize()
                 amr = amr_abbreviations.get(amr_name,
                                             [phenotype["amr_resistance"]])

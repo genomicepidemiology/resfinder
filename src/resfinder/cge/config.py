@@ -268,9 +268,20 @@ class Config():
     def set_phenotype_opts(self, args):
         self.point_file = None
         if(self.point):
-            self.point_file = ("{}/resistens-overview.txt"
-                               .format(self.db_path_point))
-            _ = self.get_abs_path_and_check(self.point_file)
+            if os.path.exists("{}/resistens-overview.txt"
+                    .format(self.db_path_point)):
+                self.point_file = ("{}/resistens-overview.txt"
+                                   .format(self.db_path_point))
+                _ = self.get_abs_path_and_check(self.point_file)
+            elif os.path.exists("{}/phenotypes.txt"
+                    .format(self.db_path_point)):
+                self.point_file = ("{}/phenotypes.txt"
+                                   .format(self.db_path_point))
+                _ = self.get_abs_path_and_check(self.point_file)
+            else:
+                sys.exit("Error: The pointfinder database does not have the "
+                         "'phenotypes.txt' file (new database) neither the "
+                         "'resistens-overview.txt' file (old database)")
         if(not args.acquired):
             self.set_path_resfinderdb(args)
         self.abclassdef_file = ("{}/antibiotic_classes.txt"

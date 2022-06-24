@@ -57,10 +57,20 @@ class PointFinder(CGEFinder):
         # Creat user defined gene_list if given
         if(gene_list is not None):
             self.gene_list = get_user_defined_gene_list(gene_list)
-
-        self.known_mutations, self.drug_genes, self.known_stop_codon = (
-            self.get_db_mutations(self.specie_path + "/resistens-overview.txt",
-                                  self.gene_list))
+        if os.path.exists(self.specie_path + "/phenotypes.txt"):
+            self.known_mutations, self.drug_genes, self.known_stop_codon = (
+                self.get_db_mutations(
+                    self.specie_path + "/phenotypes.txt",
+                    self.gene_list))
+        elif os.path.exists(self.specie_path + "/resistens-overview.txt"):
+            self.known_mutations, self.drug_genes, self.known_stop_codon = (
+                self.get_db_old_mutations(
+                    self.specie_path + "/resistens-overview.txt",
+                    self.gene_list))
+        else:
+            raise OSError("The pointfinder db does not have the "
+                          "'phenotypes.txt' file (new database) neither the "
+                          "'resistens-overview.txt' file (old database)")
 
     def get_user_defined_gene_list(self, gene_list):
         genes_specified = []
@@ -394,9 +404,130 @@ class PointFinder(CGEFinder):
         return blast_run
 
     @staticmethod
+    def get_db_old_mutations(mut_db_path, gene_list):
+        """
+        This function opens the file resistens-overview.txt, and reads
+        the content into a dict of dicts. The dict will contain
+        information about all known mutations given in the database.
+        This dict is returned.
+        This function reads the old pointfinder database
+        """
+
+        # Initiate variables
+        known_mutations = dict()
+        known_stop_codon = dict()
+        drug_genes = dict()
+        indelflag = False
+        stopcodonflag = False
+
+        # Go throug mutation file line by line
+
+        with open(mut_db_path, "r") as fh:
+            mutdb_file = fh.readlines()
+        mutdb_file = [line.strip() for line in mutdb_file]
+
+        for line in mutdb_file:
+            # Ignore headers and check where the indel section starts
+            if line.startswith("#"):
+                if "indel" in line.lower():
+                    indelflag = True
+                elif "stop codon" in line.lower():
+                    stopcodonflag = True
+                else:
+                    stopcodonflag = False
+                continue
+
+            mutation = [data.strip() for data in line.split("\t")]
+
+            gene_ID = mutation[0]
+
+            # Only consider mutations in genes found in the gene list
+            if gene_ID in gene_list:
+                gene_name = mutation[1]
+                mut_pos = int(mutation[2])
+                ref_codon = mutation[3]                     # Ref_nuc (1 or 3?)
+                ref_aa = mutation[4]                        # Ref_codon
+                alt_aa = mutation[5].split(",")             # Res_codon
+                res_drug = mutation[6].replace("\t", " ")
+                pmid = mutation[7].split(",")
+
+                # Check if stop codons are predictive for resistance
+                if stopcodonflag is True:
+                    if gene_ID not in known_stop_codon:
+                        known_stop_codon[gene_ID] = {"pos": [],
+                                                     "drug": res_drug}
+                    known_stop_codon[gene_ID]["pos"].append(mut_pos)
+
+                # Add genes associated with drug resistance to drug_genes dict
+                drug_lst = res_drug.split(",")
+                drug_lst = [d.strip().lower() for d in drug_lst]
+                for drug in drug_lst:
+                    if drug not in drug_genes:
+                        drug_genes[drug] = []
+                    if gene_ID not in drug_genes[drug]:
+                        drug_genes[drug].append(gene_ID)
+
+                # Initiate empty dict to store relevant mutation information
+                mut_info = dict()
+
+                # Save need mutation info with pmid cooresponding to the amino
+                # acid change
+                for i in range(len(alt_aa)):
+                    try:
+                        mut_info[alt_aa[i]] = {"gene_name": gene_name,
+                                               "drug": res_drug,
+                                               "pmid": pmid[i]}
+                    except IndexError:
+                        mut_info[alt_aa[i]] = {"gene_name": gene_name,
+                                               "drug": res_drug,
+                                               "pmid": "-"}
+
+                # Add all possible types of mutations to the dict
+                if gene_ID not in known_mutations:
+                    known_mutations[gene_ID] = {"sub": dict(), "ins": dict(),
+                                                "del": dict()}
+                # Check for the type of mutation
+                if indelflag is False:
+                    mutation_type = "sub"
+                else:
+                    mutation_type = ref_aa
+
+                # Save mutations positions with required information given in
+                # mut_info
+                if mut_pos not in known_mutations[gene_ID][mutation_type]:
+                    known_mutations[gene_ID][mutation_type][mut_pos] = dict()
+                for amino in alt_aa:
+                    if (amino in known_mutations[gene_ID][mutation_type]
+                                                [mut_pos]):
+                        stored_mut_info = (known_mutations[gene_ID]
+                                                          [mutation_type]
+                                                          [mut_pos][amino])
+                        if stored_mut_info["drug"] != mut_info[amino]["drug"]:
+                            stored_mut_info["drug"] += "," + (mut_info[amino]
+                                                                      ["drug"])
+                        if stored_mut_info["pmid"] != mut_info[amino]["pmid"]:
+                            stored_mut_info["pmid"] += ";" + (mut_info[amino]
+                                                                      ["pmid"])
+
+                        (known_mutations[gene_ID][mutation_type]
+                                        [mut_pos][amino]) = stored_mut_info
+                    else:
+                        (known_mutations[gene_ID][mutation_type]
+                                        [mut_pos][amino]) = mut_info[amino]
+
+        # Check that all genes in the gene list has known mutations
+        for gene in gene_list:
+            if gene not in known_mutations:
+                known_mutations[gene] = {"sub": dict(), "ins": dict(),
+                                         "del": dict()}
+
+        return known_mutations, drug_genes, known_stop_codon
+
+
+    @staticmethod
     def get_db_mutations(mut_db_path, gene_list):
         """
-        This function opens the file resistenss-overview.txt, and reads
+        This function opens the file phenotypes.txt, and reads
         the content into a dict of dicts. The dict will contain
         information about all known mutations given in the database.
         This dict is returned.

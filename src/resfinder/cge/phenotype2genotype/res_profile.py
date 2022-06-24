@@ -51,7 +51,10 @@ class PhenoDB(dict):
             self.load_disinfectant_db(disinf_file)
 
         if(point_file):
-            self.load_point_db(point_file)
+            if os.path.basename(point_file) == "resistens-overview.txt":
+                self.load_point_old_db(point_file)
+            else:
+                self.load_point_db(point_file)
 
         self.unknown_pheno = Phenotype(unique_id="unknown",
                                        antibiotics=[],
@@ -311,6 +314,136 @@ class PhenoDB(dict):
                     if(len(res_codon) > 1):
                         for codon in res_codon:
                             unique_id_alt = (gene_name + "_" + codon_pos
+                                             + "_" + codon)
+                            self[unique_id_alt] = pheno_lst
+                except IndexError:
+                    eprint("Error in line " + str(line_counter))
+                    eprint("Split line:\n" + str(line_list))
+
+    def load_point_old_db(self, txt_file):
+
+        with open(txt_file, "r") as fh:
+            # Skip headers
+            fh.readline()
+            line_counter = 1
+
+            for line in fh:
+                if(line.startswith("#")):
+                    continue
+
+                try:
+                    line_counter += 1
+
+                    line_list = line.split("\t")
+                    line_list = list(map(str.rstrip, line_list))
+
+                    # ID in DB is just Gene ID and is not unique
+                    phenodb_id = line_list[0]
+                    codon_pos = line_list[2]
+                    res_codon_str = line_list[5].lower()
+
+                    # Check if the entry is with a promoter
+                    phenodb_id = PhenoDB.if_promoter_rename(phenodb_id)
+
+                    unique_id = (phenodb_id + "_" + codon_pos + "_"
+                                 + res_codon_str)
+
+                    pub_phenotype = self.get_csv_tuple(line_list[6].lower())
+                    if("unknown" in pub_phenotype or "none" in pub_phenotype):
+                        pub_phenotype = ()
+
+                    pmid = self.get_csv_tuple(line_list[7].lower())
+
+                    # TODO: Remove this tuple and its dependencies.
+                    sug_phenotype = ()
+
+                    abs = []
+                    for ab_name in pub_phenotype:
+                        # TODO: Fix database
+                        if(ab_name == "see notes"):
+                            continue
+                        classes = self.ab_class_defs.get(ab_name, None)
+                        if(classes is None):
+                            eprint("Entry {id:s} contained antibiotic "
+                                   "'{ab:s}' not found in ab class "
+                                   "def file."
+                                   .format(id=unique_id, ab=ab_name))
+                            continue
+                        ab = Antibiotics(name=ab_name, classes=classes)
+                        abs.append(ab)
+                        for class_ in classes:
+                            if(class_ in self.antibiotics):
+                                self.antibiotics[class_][ab] = True
+                            else:
+                                self.antibiotics[class_] = {}
+                                self.antibiotics[class_][ab] = True
+
+                    if(len(line_list) > 8 and line_list[8]):
+                        res_mechanics = line_list[8]
+                    else:
+                        res_mechanics = None
+
+                    if(len(line_list) > 9 and line_list[9]):
+                        notes = line_list[9]
+                    else:
+                        notes = ""
+
+                    # Load required mutations.
+                    # A mutation can dependent on a group of other
+                    # mutations. It is also possible for a mutation to
+                    # be dependent on either group A, B, C etc.
+                    # The string stored in this field divides each
+                    # group using a semicolon, and each mutation using
+                    # a comma.
+                    # The individual mutation notation is also a little
+                    # different from elsewhere, see MutationGenotype
+                    # class for more info.
+                    # Requied mutations are stored in a tuple of tuples
+                    # of MutationGenotypes. Outer tuple seperate
+                    # groups, inner tuples seperate mutations.
+                    if(len(line_list) > 10 and line_list[10]):
+                        mut_groups_str = PhenoDB.get_csv_tuple(line_list[10],
+                                                               sep=";",
+                                                               lower=False)
+                        if(mut_groups_str):
+                            mut_groups = []
+
+                            for group in mut_groups_str:
+                                group_list = []
+                                mut_strings = PhenoDB.get_csv_tuple(
+                                    group, lower=False)
+                                for mut_str in mut_strings:
+                                    mut = MutationGenotype(mut_str)
+                                    group_list.append(mut)
+
+                                mut_groups.append(tuple(group_list))
+
+                            mut_groups = tuple(mut_groups)
+
+                        else:
+                            mut_groups = None
+                    else:
+                        mut_groups = None
+
+                    pheno = Phenotype(unique_id, abs,
+                                      sug_phenotype, pub_phenotype, pmid,
+                                      notes=notes, res_mechanics=res_mechanics,
+                                      req_muts=mut_groups, res_db="PointFinder"
+                                      )
+
+                    pheno_lst = self.get(unique_id, [])
+                    pheno_lst.append(pheno)
+                    self[unique_id] = pheno_lst
+
+                    # A pointmutation with several different res codons will
+                    # never be found using all the res_codons. Instead it will
+                    # be found with just one.
+                    # Alternative unique ids are therefore made using just a
+                    # single res_codon.
+                    res_codon = self.get_csv_tuple(line_list[5].lower())
+                    if(len(res_codon) > 1):
+                        for codon in res_codon:
+                            unique_id_alt = (phenodb_id + "_" + codon_pos
                                              + "_" + codon)
                             self[unique_id_alt] = pheno_lst
                 except IndexError:

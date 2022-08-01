@@ -15,6 +15,8 @@ import random
 
 from cgecore.blaster import Blaster
 from cgecore.cgefinder import CGEFinder
+
+from resfinder.cge.phenotype2genotype.res_sumtable import PanelNameError
 from .phenotype2genotype.feature import ResMutation
 from .phenotype2genotype.res_profile import PhenoDB
 
@@ -35,7 +37,11 @@ class GeneListError(Exception):
         super(PanelNameError, self).__init__(message, *args)
 
 
-class PointFinder(CGEFinder):
+class PointFinder():
+    # Variables used by methods to distinguish results created by different
+    # methods.
+    TYPE_BLAST = "blast"
+    TYPE_KMA = "kma"
 
     def __init__(self, db_path, species, gene_list=None, ignore_indels=False,
                  ignore_stop_codons=False):
@@ -56,7 +62,7 @@ class PointFinder(CGEFinder):
 
         # Creat user defined gene_list if given
         if(gene_list is not None):
-            self.gene_list = get_user_defined_gene_list(gene_list)
+            self.gene_list = self.get_user_defined_gene_list(gene_list)
         if os.path.exists(self.specie_path + "/phenotypes.txt"):
             self.known_mutations, self.drug_genes, self.known_stop_codon = (
                 self.get_db_mutations(

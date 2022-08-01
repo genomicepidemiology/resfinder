@@ -16,7 +16,11 @@ from cgecore.cgefinder import CGEFinder
 from .output.table import TableResults
 
 
-class ResFinder(CGEFinder):
+class ResFinder():
+    # Variables used by methods to distinguish results created by different
+    # methods.
+    TYPE_BLAST = "blast"
+    TYPE_KMA = "kma"
 
     def __init__(self, db_conf_file, notes, db_path, db_path_kma,
                  databases=None, pheno_file=None):

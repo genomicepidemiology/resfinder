@@ -28,6 +28,53 @@ from resfinder import __version__
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+
+def handle_results(finder, res, std_result, conf, db_name, method):
+
+    if db_name == "PointFinder":
+        if conf.specific_gene:
+            res = PointFinder.discard_unwanted_results(
+                results=res, wanted=conf.specific_gene)
+
+        if method == PointFinder.TYPE_BLAST:
+            results_pnt = finder.find_best_seqs(res, conf.pf_gene_cov)
+        else:
+            results_pnt = res[finder.species]
+            if results_pnt == "No hit found":
+                results_pnt = {}
+            else:
+                results_pnt["excluded"] = res["excluded"]
+
+            # TODO: make a write method that depends on the json output
+        finder.write_results(out_path=conf.outputPath, result=res,
+                             res_type=method, unknown_flag=conf.unknown_mut,
+                             min_cov=conf.pf_gene_cov,
+                             perc_iden=conf.pf_gene_id)
+
+        PointFinderResultHandler.standardize_results(std_result,
+                                                     results_pnt,
+                                                     "PointFinder")
+
+    else:
+        if method == ResFinder.TYPE_BLAST:
+            # TODO: make a write method that depends on the json output
+            finder.write_results(out_path=conf.outputPath,
+                                 result=res,
+                                 res_type=ResFinder.TYPE_BLAST)
+
+            ResFinderResultHandler.standardize_results(std_result,
+                                                       res.results,
+                                                       db_name)
+        else:
+            finder.write_results(out_path=conf.outputPath,
+                                 result=res,
+                                 res_type=ResFinder.TYPE_KMA)
+
+            ResFinderResultHandler.standardize_results(std_result,
+                                                       res,
+                                                       db_name)
+
+
 def main():
 
     # version = read_version("VERSION")
@@ -214,6 +261,7 @@ def main():
     ##########################################################################
 
     if(conf.acquired is True):
+
         acquired_finder = ResFinder(db_conf_file=conf.db_config_file,
                                     db_path=conf.db_path_res,
                                     pheno_file=conf.phenotype_file,
@@ -221,33 +269,19 @@ def main():
                                     db_path_kma=conf.db_path_res_kma)
 
         if(conf.inputfasta):
-            blast_results = acquired_finder.blast(inputfile=conf.inputfasta,
+            method = ResFinder.TYPE_BLAST
+            resfinder_result = acquired_finder.blast(inputfile=conf.inputfasta,
                                                   out_path=conf.outPath_res_blast,
                                                   min_cov=conf.rf_gene_cov,
                                                   threshold=conf.rf_gene_id,
                                                   blast=conf.blast,
                                                   allowed_overlap=conf.rf_overlap)
-
-            # DEPRECATED
-            # TODO: make a write method that depends on the json output
-            acquired_finder.write_results(out_path=conf.outputPath,
-                                          result=blast_results,
-                                          res_type=ResFinder.TYPE_BLAST)
-
-            ResFinderResultHandler.standardize_results(std_result,
-                                                       blast_results.results,
-                                                       "ResFinder")
-
         else:
+            method = ResFinder.TYPE_KMA
             if(conf.nanopore):
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
                                   output=conf.outPath_res_kma,
-                                  db_path_kma=conf.db_path_res_kma,
-                                  min_cov=conf.rf_gene_cov,
-                                  threshold=conf.rf_gene_id,
-                                  databases=acquired_finder.databases,
-                                  sample_name="",
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
@@ -255,28 +289,22 @@ def main():
             else:
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
-                                  db_path_kma=conf.db_path_res_kma,
                                   output=conf.outPath_res_kma,
-                                  min_cov=conf.rf_gene_cov,
-                                  threshold=conf.rf_gene_id,
-                                  databases=acquired_finder.databases,
-                                  sample_name="",
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True)
 
-            kma_manager = KMAManager(params=kma_params)
-            kma_res_results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
-                                                         kma_params)
+            kma_manager = KMAManager(min_cov=conf.rf_gene_cov,
+                                     threshold=conf.rf_gene_id,
+                                     databases=acquired_finder.databases,
+                                     db_path_kma=conf.db_path_res_kma)
 
-            # TODO: make a write method that depends on the json output
-            acquired_finder.write_results(out_path=conf.outputPath,
-                                          result=kma_res_results,
-                                          res_type=ResFinder.TYPE_KMA)
+            resfinder_result = kma_manager.run_KMAAligner(conf, kma_resultfiles,
+                                                          kma_params)
 
-            ResFinderResultHandler.standardize_results(std_result,
-                                                       kma_res_results,
-                                                       "ResFinder")
+        handle_results(finder=acquired_finder, res=resfinder_result,
+                       std_result=std_result, conf=conf, db_name="ResFinder",
+                       method=method)
 
     ##########################################################################
     # DisinFinder
@@ -291,33 +319,19 @@ def main():
                                   db_path_kma=conf.db_path_disinf_kma)
 
         if(conf.inputfasta):
-            blast_results = disinf_finder.blast(inputfile=conf.inputfasta,
+            method = ResFinder.TYPE_BLAST
+            disin_result = disinf_finder.blast(inputfile=conf.inputfasta,
                                                 out_path=conf.outPath_disinf_blast,
                                                 min_cov=conf.dis_gene_cov,
                                                 threshold=conf.dis_gene_id,
                                                 blast=conf.blast,
                                                 allowed_overlap=conf.dis_overlap)
-
-            # DEPRECATED
-            # TODO: make a write method that depends on the json output
-            disinf_finder.write_results(out_path=conf.outputPath,
-                                        result=blast_results,
-                                        res_type=ResFinder.TYPE_BLAST)
-
-            ResFinderResultHandler.standardize_results(std_result,
-                                                       blast_results.results,
-                                                       "DisinFinder")
-
         else:
+            method = ResFinder.TYPE_KMA
             if(conf.nanopore):
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
                                   output=conf.outPath_disinf_kma,
-                                  db_path_kma=conf.db_path_disinf_kma,
-                                  databases=disinf_finder.databases,
-                                  min_cov=conf.dis_gene_cov,
-                                  threshold=conf.dis_gene_id,
-                                  sample_name="",
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
@@ -326,27 +340,22 @@ def main():
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
                                   output=conf.outPath_disinf_kma,
-                                  db_path_kma=conf.db_path_disinf_kma,
-                                  databases=disinf_finder.databases,
-                                  min_cov=conf.dis_gene_cov,
-                                  threshold=conf.dis_gene_id,
-                                  sample_name="",
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True)
 
-            kma_manager = KMAManager(params=kma_params)
-            kma_disin_results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
+            kma_manager = KMAManager(min_cov=conf.dis_gene_cov,
+                                     threshold=conf.dis_gene_id,
+                                     databases=disinf_finder.databases,
+                                     db_path_kma=conf.db_path_disinf_kma)
+
+            disin_result = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                      kma_params)
 
-            # TODO: make a write method that depends on the json output
-            disinf_finder.write_results(out_path=conf.outputPath,
-                                          result=kma_disin_results,
-                                          res_type=ResFinder.TYPE_KMA)
+        handle_results(finder=disinf_finder, res=disin_result,
+                       std_result=std_result, conf=conf, db_name="DisinFinder",
+                       method=method)
 
-            ResFinderResultHandler.standardize_results(std_result,
-                                                       kma_disin_results,
-                                                       "DisinFinder")
     ##########################################################################
     # PointFinder
     ##########################################################################
@@ -360,9 +369,7 @@ def main():
                              ignore_stop_codons=conf.ignore_stop_codons)
 
         if(conf.inputfasta):
-
             method = PointFinder.TYPE_BLAST
-
             blast_run = finder.blast(inputfile=conf.inputfasta,
                                      out_path=conf.outPath_point_blast,
                                      min_cov=0.01,  # Sorts on coverage later
@@ -372,17 +379,11 @@ def main():
             results = blast_run.results
 
         else:
-
             method = PointFinder.TYPE_KMA
             if(conf.nanopore):
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
                                   output=conf.outPath_point_kma,
-                                  db_path_kma=conf.db_path_point,
-                                  databases=[conf.species_dir],
-                                  min_cov=0.01,
-                                  threshold=conf.pf_gene_id,
-                                  sample_name=conf.sample_name,
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
@@ -391,42 +392,20 @@ def main():
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
                                   output=conf.outPath_point_kma,
-                                  db_path_kma=conf.db_path_point,
-                                  databases=[conf.species_dir],
-                                  min_cov=0.01,
-                                  threshold=conf.pf_gene_id,
-                                  sample_name=conf.sample_name,
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True)
 
-            kma_manager = KMAManager(params=kma_params)
+            kma_manager = KMAManager(db_path_kma=conf.db_path_point,
+                                     databases=[conf.species_dir],
+                                     min_cov=0.01,
+                                     threshold=conf.pf_gene_id,
+                                     sample_name=conf.sample_name)
+
             results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                  kma_params)
 
-
-        if conf.specific_gene:
-            results = PointFinder.discard_unwanted_results(
-                results=results, wanted=conf.specific_gene)
-
-        if method == PointFinder.TYPE_BLAST:
-            results_pnt = finder.find_best_seqs(results, conf.pf_gene_cov)
-        else:
-            results_pnt = results[finder.species]
-            if results_pnt == "No hit found":
-                results_pnt = {}
-            else:
-                results_pnt["excluded"] = results["excluded"]
-
-        # TODO: make a write method that depends on the json output
-        finder.write_results(out_path=conf.outputPath, result=results,
-                             res_type=method, unknown_flag=conf.unknown_mut,
-                             min_cov=conf.pf_gene_cov,
-                             perc_iden=conf.pf_gene_id)
-
-        PointFinderResultHandler.standardize_results(std_result,
-                                                   results_pnt,
-                                                   "PointFinder")
+        handle_results(finder, results, std_result, conf, "PointFinder", method=method)
 
     ##########################################################################
     # Phenotype to genotype

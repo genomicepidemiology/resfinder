@@ -7,21 +7,21 @@ from cgelib.alignment.read_alignment import KMAAlignment
 
 class KMAManager():
 
-    def __init__(self, params):
+    def __init__(self, min_cov, threshold, databases, db_path_kma,
+                 sample_name=''):
 
         self.kma_results = None
-        self.thresholds = dict(min_cov=params['min_cov']*100,
-                               min_id=params['threshold']*100)
-        self.databases = params['databases']
-        self.db_path = params['db_path_kma']
+        self.thresholds = dict(min_cov=min_cov*100,
+                               min_id=threshold*100)
+        self.databases = databases
+        self.db_path = db_path_kma
 
         #todo: find out how to add filename to pointfinder output path.
-        if params['sample_name'] != "":
-            self.sample_name = f"_{params['sample_name']}"
+        if sample_name != "":
+            self.sample_name = f"_{sample_name}"
 
 
     def calibrate_params(self, params, resultfiles):
-        #todo: split parameters into params for kma and others
         params['1t1'] = params['kma_1t1']
 
         for file in resultfiles:
@@ -38,12 +38,7 @@ class KMAManager():
         #remove inputs that do not fit into kma
         params.pop('inputfile_1')
         params.pop('inputfile_2')
-        params.pop('min_cov')
-        params.pop('threshold')
-        params.pop('databases')
-        params.pop('sample_name')
         params.pop('kma_1t1')
-        params.pop('db_path_kma')
 
         return params
 

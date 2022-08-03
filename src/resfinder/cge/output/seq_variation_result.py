@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from ..phenotype2genotype.res_profile import PhenoDB
-from .gene_result import GeneResult
+from .gene_result import GeneResultOld
 
 
 class SeqVariationResult(dict):
@@ -122,7 +122,7 @@ class SeqVariationResult(dict):
 
         unique_key = minimum_key
         while(unique_key in res_collection["seq_variations"]):
-            rnd_str = GeneResult.random_string()
+            rnd_str = GeneResultOld.random_string()
             unique_key = ("{key}{deli}{rnd}"
                           .format(key=minimum_key, deli=delimiter,
                                   rnd=rnd_str))

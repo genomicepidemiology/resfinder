@@ -61,9 +61,9 @@ class KMAManager():
                                              values_iter=dbs)
         kma_aligner.fit_alignment()
 
-        self.conform_result(kma_aligner)
+        # self.conform_result(kma_aligner)
 
-        return self.kma_results
+        return kma_aligner
 
 
     def filter_hits(self, cov, template_id, hit):
@@ -138,3 +138,5 @@ class KMAManager():
             self.kma_results[db][hit]["gaps"] = (
                     self.kma_results[db][hit]['sbjct_string'].count("-")
                     + self.kma_results[db][hit]['query_string'].count("-"))
+
+        return self.kma_results

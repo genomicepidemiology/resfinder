@@ -7,15 +7,36 @@ from ..phenotype2genotype.res_profile import PhenoDB
 from ..phenotype2genotype.feature import ResGene, ResMutation
 
 from .exceptions import DuplicateKeyError
-from .gene_result import GeneResult
+from .gene_result import GeneResult_new, GeneResultOld
 from .seq_variation_result import SeqVariationResult
 from .phenotype_result import PhenotypeResult
+
+from resfinder.cge.resfinder import ResFinder
+from resfinder.cge.pointfinder import PointFinder
+from cgelib.alignment.read_alignment import KMAAlignment
 
 
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results(res_collection, res, ref_db_name):
+    def standardize_results_new(res_collection, alignment_res, ref_db_name):
+
+            gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name)
+
+            if gene_result["key"] is None:
+                return
+            elif gene_result["key"] not in res_collection["seq_regions"]:
+                res_collection.add_class(cl="seq_regions", **gene_result)
+            else:
+                raise DuplicateKeyError(
+                    "About to overwrite dict entry. This should not be "
+                    "happening as all keys are supposed to be unique."
+                    "Non-unique key was: {}".format(gene_result["key"]))
+        # else:
+        #     BLAST
+
+    @staticmethod
+    def standardize_results_old(res_collection, res, ref_db_name):
         """
             Input:
                 res_collection: Result object created by the cge core module.
@@ -34,7 +55,7 @@ class ResFinderResultHandler():
             for unique_id, hit_db in db.items():
                 if(unique_id in res["excluded"]):
                     continue
-                gene_result = GeneResult(res_collection, hit_db, ref_db_name)
+                gene_result = GeneResultOld(res_collection, hit_db, ref_db_name)
 
                 if gene_result["key"] is None:
                     continue
@@ -96,7 +117,54 @@ class ResFinderResultHandler():
 class PointFinderResultHandler():
 
     @staticmethod
-    def standardize_results(res_collection, res, ref_db_name):
+    def standardize_results_new(res_collection, alignment_res, ref_db_name,
+                                method, finder):
+        """
+        todo rewrite method explanations
+            Input:
+                res_collection: Result object created by the cge core module.
+                res: Custom dictionary of results from PointFinder
+                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
+
+            Method loads the given res_collection with results from res.
+        """
+        if method == PointFinder.TYPE_KMA:
+
+            gene_results = [] # used for mismatches - relevance?
+
+            gene_result = GeneResult_new(res_collection, alignment_res,
+                                         ref_db_name)
+
+            res_collection.add_class(cl="seq_regions", **gene_result)
+            gene_results.append(gene_result)
+
+            gene_name = alignment_res['templateID'].split('-', 1)[0]
+            mismatches = finder.find_mismatches(
+                gene=gene_name,
+                sbjct_start=gene_result['ref_start_pos'],
+                sbjct_seq=alignment_res['template_aln'],
+                qry_seq=alignment_res['query_aln'])
+
+            for mismatch in mismatches:
+                seq_var_result = SeqVariationResult(
+                    res_collection, mismatch, gene_results, ref_db_name)
+                res_collection.add_class(cl="seq_variations",
+                                         **seq_var_result)
+            # # BLAST hit
+        # else: #method == PointFinder.TYPE_BLAST
+
+            # if (mismatches is None):
+            #     mismatches = db["mis_matches"]
+            #
+            # for mismatch in mismatches:
+            #     seq_var_result = SeqVariationResult(
+            #         res_collection, mismatch, gene_results, ref_db_name)
+            #     res_collection.add_class(cl="seq_variations",
+            #                              **seq_var_result)
+
+
+    @staticmethod
+    def standardize_results_old(res_collection, res, ref_db_name):
         """
             Input:
                 res_collection: Result object created by the cge core module.
@@ -134,7 +202,7 @@ class PointFinderResultHandler():
                 # Ignore genes found in excluded dict
                 if(unique_id in res["excluded"]):
                     continue
-                gene_result = GeneResult(res_collection, hit_db, ref_db_name)
+                gene_result = GeneResultOld(res_collection, hit_db, ref_db_name)
                 res_collection.add_class(cl="seq_regions", **gene_result)
                 gene_results.append(gene_result)
 

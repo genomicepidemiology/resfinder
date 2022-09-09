@@ -17,6 +17,7 @@ RUN apt-get update -qq; \
 ENV DEBIAN_FRONTEND Teletype
 
 # Install python dependencies
+RUN pip3 install --upgrade pip
 RUN pip3 install -U biopython==1.73 tabulate cgecore gitpython python-dateutil;
 
 # RESFINDER setup
@@ -24,12 +25,13 @@ COPY run_resfinder.py /usr/src/run_resfinder.py
 
 ADD cge /usr/src/cge
 ADD tests /usr/src/tests
+ADD .git /usr/src/.git
 
 # Install kma
-RUN cd /usr/src/cge; \
+RUN cd /usr/src; \
     git clone --depth 1 https://bitbucket.org/genomicepidemiology/kma.git; \
     cd kma && make; \
-    mv kma* /bin/
+    mv kma /usr/bin
 
 
 RUN chmod 755 /usr/src/run_resfinder.py
@@ -50,4 +52,4 @@ RUN echo "alias ls='ls -h --color=tty'\n"\
 WORKDIR "/usr/src/"
 
 # Execute program when running the container
-ENTRYPOINT ["python3", "/usr/src/run_resfinder.py"]
+ENTRYPOINT ["python3", "/usr/src/run_resfinder.py", "-k", "/usr/bin/kma"]

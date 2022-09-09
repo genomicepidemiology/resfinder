@@ -278,6 +278,45 @@ A webserver implementing the methods is available at the [CGE
 website](http://www.genomicepidemiology.org/) and can be found here:
 https://cge.cbs.dtu.dk/services/ResFinder/
 
+### Install ResFinder with Docker
+If you would like to build a docker image with ResFinder, make sure you have cloned the ResFinder directory as well as installed and indexed the databases: `db_pointfinder` and `db_resfinder`. Then run the following commands:
+```bash
+# Go to ResFinder directory
+cd path/to/resfinder
+# Build docker image with name resfinder
+docker build -t resfinder .
+```
+When running the docker make sure to mount the `db_resfinder` and the `db_pointfinder` with the flag -v, as shown in the examples below.
+
+You can test the installation by running the docker with the test files:
+```bash
+cd path/to/resfinder/
+mkdir results
+
+# Run with raw data (this command mounts the results to the local directory "results")
+docker run --rm -it -v $(pwd)/db_resfinder/:/usr/src/db_resfinder -v $(pwd)/results/:/usr/src/results resfinder -ifq /usr/src/tests/data/test_isolate_01_1.fq /usr/src/tests/data/test_isolate_01_2.fq -acq -db_res /usr/src/db_resfinder -o /usr/src/results
+
+# Run with assembled data (this command mounts the results to the local directory "results")
+docker run --rm -it -v $(pwd)/db_resfinder/:/usr/src/db_resfinder  -v $(pwd)/results/:/usr/src/results resfinder -ifa /usr/src/tests/data/test_isolate_01.fa -acq -db_res /usr/src/db_resfinder -o /usr/src/results
+```
+
+### ResFinder result files
+
+ResFinder outputs several files. A brief description of these is given below.
+
+* pheno_table_species.txt: table with species specific AMR phenotypes.
+* pheno_table.txt: table with all AMR phenotypes.
+* PointFinder_prediction.txt: tab seperated table. 1 is given to a predicted resistance against an antibiotic class, 0 is given to not resistance detected.
+* PointFinder_results.txt: tab seperated table with predicted point mutations leading to antibiotic resistance.
+* PointFinder_table.txt: predicted point mutations grouped into genes to which they belong.
+* ResFinder_Hit_in_genome_seq.fsa: fasta sequence of resistance gene hits found in the input data (query).
+* ResFinder_Resistance_gene_seq.fsa: fasta sequence of resistance gene hits found in the database (reference).
+* ResFinder_results_table.txt: predicted resistance genes grouped by antibiotic class.
+* ResFinder_results_tab.txt: tab seperated table with predicted resistance genes.
+* ResFinder_results.txt: predicted resistance genes grouped by antibiotic class and hit alignments to reference resistance genes.
+* std_format_under_development.json: Output written to a CGE standardized json file. All results can be derived from this file. The format is defined here: https://bitbucket.org/genomicepidemiology/cgelib/src/master/src/cgelib/output/templates_json/beone/
+
+
 Citation
 =======
 
@@ -286,7 +325,7 @@ When using the method please cite:
 ResFinder 4.0 for predictions of phenotypes from genotypes.  
 Bortolaia V, Kaas RS, Ruppe E, Roberts MC, Schwarz S, Cattoir V, Philippon A, Allesoe RL, Rebelo AR, Florensa AR, Fagelhauer L,
 Chakraborty T, Neumann B, Werner G, Bender JK, Stingl K, Nguyen M, Coppens J, Xavier BB, Malhotra-Kumar S, Westh H, Pinholt M,
-Anjum MF, Duggett NA, Kempf I, Nyk�senoja S, Olkkola S, Wieczorek K, Amaro A, Clemente L, Mossong J, Losch S, Ragimbeau C, Lund O, Aarestrup FM.
+Anjum MF, Duggett NA, Kempf I, Nykasenoja S, Olkkola S, Wieczorek K, Amaro A, Clemente L, Mossong J, Losch S, Ragimbeau C, Lund O, Aarestrup FM.
 Journal of Antimicrobial Chemotherapy. 2020 Aug 11.  
 PMID: 32780112			doi: 10.1093/jac/dkaa345  
 [Epub ahead of print]  

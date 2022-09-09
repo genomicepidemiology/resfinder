@@ -477,6 +477,11 @@ if __name__ == '__main__':
                               dest="threshold",
                               help="Blast threshold for identity",
                               default=0.90)
+    parser.add_argument("-nano", "--nanopore",
+                        action="store_true",
+                        dest="nanopore",
+                        help="If nanopore data is used",
+                        default=False)
     args = parser.parse_args()
 
     ##########################################################################
@@ -490,7 +495,7 @@ if __name__ == '__main__':
 
     # Check if valid database is provided
     if args.db_path is None:
-            sys.exit("Input Error: No database directory was provided!\n")
+        sys.exit("Input Error: No database directory was provided!\n")
     elif not os.path.exists(args.db_path):
         sys.exit("Input Error: The specified database directory does not "
                  "exist!\n")
@@ -567,8 +572,13 @@ if __name__ == '__main__':
                            notes=notes_path)
 
         # if input_fastq2 is None, it is ignored by the kma method.
-        kma_run = finder.kma(inputfile_1=input_fastq1,
-                             inputfile_2=input_fastq2)
+        if args.nanopore:
+            kma_run = finder.kma(inputfile_1=input_fastq1,
+                                 inputfile_2=input_fastq2,
+                                 kma_add_args='-ont -md 5')
+        else:
+            kma_run = finder.kma(inputfile_1=input_fastq1,
+                                 inputfile_2=input_fastq2)
 
         finder.write_results(out_path=out_path, result=kma_run,
                              res_type=ResFinder.TYPE_KMA)

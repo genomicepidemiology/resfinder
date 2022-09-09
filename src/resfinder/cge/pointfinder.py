@@ -1511,8 +1511,8 @@ class PointFinder(CGEFinder):
                     # in the current codon.
                     # Find the number of individul gaps in the
                     # evaluated sequence.
-                    no_of_indels = (len(re.findall("\-\w", sbjct_rf_indel))
-                                    + len(re.findall("\-\w", qry_rf_indel)))
+                    no_of_indels = (len(re.findall(r"\-\w", sbjct_rf_indel))
+                                    + len(re.findall(r"\-\w", qry_rf_indel)))
 
                     if no_of_indels > 1:
 

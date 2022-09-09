@@ -41,6 +41,17 @@ class Feature(object):
                 return None
         return entry
 
+    def __eq__(self, other):
+        if isinstance(other, Feature):
+            return other.unique_id == self.unique_id
+        elif isinstance(other, str):
+            return other == self.unique_id
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash(self.unique_id)
+
 
 class Resistance(object):
     """ Proposal for resistance class"""

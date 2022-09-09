@@ -12,48 +12,17 @@ Instead we recommend installing ResFinder using pip as described below.
 
 There are several good reasons why the recommended installation procedure has changed, among those are the increasing size of the repository that has risen to several hundreds of megabytes, due to the long history of ResFinder. Its easier for users. And it makes sure your installation will be a tested release of the application.
 
-## Content of the repository
-* run_resfinder.py     - Use this script to run ResFinder.
-* README.md            - This file.
-* amr_abbreviations.md - List of antibiotic abbreviations used by ResFinder.
-* tests/data           - Contains fasta and fastq data for testing.
-* scripts/             - All scripts in this directory is unsupported but has been uploaded as they may be useful.
-* cge/                 - ResFinder code
-* dockerfile           - Used to build ResFinder docker image (See Docker section near the end)
-* database_tests.md    - Doctests for use whenever parts of the database has been altered.
-
 ## Installation
 ResFinder consists of an application and 1-3 databases. The databases can be used without the application, but not the other way around. Below ResFinder the application will be installed first and then the databases will be installed and configured to work with ResFinder the application.
 
-### ResFinder the application
-Install ResFinder the application.
+### Dependencies
 
-```bash
+ResFinder uses two external alignment tools that must be installed.
+* BLAST
+* KMA
 
-pip install resfinder
-
-```
-
-### Dependencies:
-Depending on how you plan to run ResFinder BLAST and KMA can be optional.
-BLAST is used to analyse assemblies (ie. FASTA files).
-KMA is used to analyse read data (ie. FASTQ files).
-
-#### Python modules: Tabulate, BioPython, CGECore and CGELib
-To install the needed python modules you can use pip
-```bash
-pip3 install tabulate biopython cgecore cgelib
-```
-For more information visit the respective website
-```url
-https://bitbucket.org/astanin/python-tabulate
-https://biopython.org
-https://bitbucket.org/genomicepidemiology/cge_core_module
-https://bitbucket.org/genomicepidemiology/cgelib
-```
-
-#### BLAST (optional)
-If you don't want to specify the path of blastn every time you run ResFinder, make sure that blastn is in you PATH or set the environment variable specified in the "Environment Variables Table" in this README.
+#### BLAST
+If you don't want to specify the path of BLAST every time you run ResFinder, make sure that "blastn" is in you PATH or set the environment variable specified in the "Environment Variables Table" in this README.
 
 Blastn can be obtained from:
 ```url
@@ -62,104 +31,56 @@ https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
 ```
 
 ```bash
-# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to  your .bashrc, .zshrc file.
 export CGE_BLASTN="/path/to/some/dir/blastn"
 ```
 
-#### KMA (optional)
+#### KMA
 If you don't want to specify the path of KMA every time you run ResFinder, make sure that KMA is in you PATH or set the environment variable specified in the "Environment Variables Table" in this README.
+
+KMA can be obtained from:
+```url
+https://bitbucket.org/genomicepidemiology/kma.git
+```
+
 ```bash
-# Go to wanted location for kma
-cd /path/to/some/dir
-# Clone version 1.3.25. You can also clone latest version by omitting --branch 1.3.23 or change the version number.
-git clone --depth 1 --branch 1.3.23 https://bitbucket.org/genomicepidemiology/kma.git
-# Compile KMA
-cd kma && make
-# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
+# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to  your .bashrc, .zshrc file.
 export CGE_KMA="/path/to/some/dir/kma/kma"
 ```
 
-### Databases
+### Install ResFinder the application using pip
+Install ResFinder the application.
+
+**Important**: This will install ResFinder in the environment where you run pip and potenitally update the python modules ResFinder depends on.
+
+```bash
+
+pip install resfinder
+
+```
+
+#### Databases
 If you don't want to specify the path to the databases every time you run ResFinder, you need to set the environment variable specified in the "Environment Variables Table" in this README.
 
-#### ResFinder database
+See installation instructions for each database:
+* [ResFinder](https://bitbucket.org/genomicepidemiology/resfinder_db/)
+* [PointFinder](https://bitbucket.org/genomicepidemiology/pointfinder_db/)
+* [DisinFinder](https://bitbucket.org/genomicepidemiology/disinfinder_db/)
+
 ```bash
-# Go to wanted location for the ResFinder database.
-cd /path/to/some/dir/
-git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git
+
 # Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
 export CGE_RESFINDER_RESGENE_DB="/path/to/some/dir/resfinder_db"
-```
-
-#### PointFinder database
-```bash
-# Go to wanted location for the PointFinder database.
-cd /path/to/some/dir/
-git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
-# Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
 export CGE_RESFINDER_RESPOINT_DB="/path/to/some/dir/pointfinder_db"
+export CGE_DISINFINDER_DB="/path/to/some/dir/pointfinder_db"
+
 ```
-
-#### Indexing databases with KMA
-If you have KMA installed you either need to have the kma_index in your PATH or
-you need to provide the path to kma_index to INSTALL.py
-
-**NOTE**: The documentation given here describes the procedure for the ResFinder database, but the procedure is identical for the PointFinder database.
-**PointFinder database documentation**: [https://bitbucket.org/genomicepidemiology/pointfinder_db]
-
-##### a) Run INSTALL.py in non_interactive mode
-```bash
-# Go to the database directory
-cd path/to/resfinder_db
-python3 INSTALL.py /path/to/some/dir/kma/kma_index non_interactive
-```
-The path to kma_index can be omitted if it exists in PATH or if the script
-should attempt to do an automatic temporary installation of KMA.
-
-##### b) Run INSTALL.py in interactive mode
-```bash
-# Go to the database directory
-cd path/to/resfinder_db
-python3 INSTALL.py
-```
-If kma_index was found in your path a lot of indexing information will be
-printed to your terminal, and will end with the word "done".
-
-If kma_index wasn't found you will recieve the following output:
-```bash
-KMA index program, kma_index, does not exist or is not executable
-Please input path to executable kma_index program or choose one of the options below:
-	1. Install KMA using make, index db, then remove KMA.
-	2. Exit
-```
-You can now write the path to kma_index and finish with <enter> or you can
-enter "1" or "2" and finish with <enter>.
-
-If "1" is chosen, the script will attempt to install kma in your systems
-default temporary location. If the installation is successful it will proceed
-to index your database, when finished it will delete the kma installation again.
 
 ### Install ResFinder with Docker
-If you would like to build a docker image with ResFinder, make sure you have cloned the ResFinder directory as well as installed and indexed the databases: `db_pointfinder` and `db_resfinder`. Then run the following commands:
-```bash
-# Go to ResFinder directory
-cd path/to/resfinder
-# Build docker image with name resfinder
-docker build -t resfinder .
-```
-When running the docker make sure to mount the `db_resfinder` and the `db_pointfinder` with the flag -v, as shown in the examples below.
 
-You can test the installation by running the docker with the test files:
-```bash
-cd path/to/resfinder/
-mkdir results
+We are currently working on a new solution for docker. We aim to build montly images that contains the latest versions of all the databases.
 
-# Run with raw data (this command mounts the results to the local directory "results")
-docker run --rm -it -v $(pwd)/db_resfinder/:/usr/src/db_resfinder -v $(pwd)/results/:/usr/src/results resfinder -ifq /usr/src/tests/data/test_isolate_01_1.fq /usr/src/tests/data/test_isolate_01_2.fq -acq -db_res /usr/src/db_resfinder -o /usr/src/results
-
-# Run with assembled data (this command mounts the results to the local directory "results")
-docker run --rm -it -v $(pwd)/db_resfinder/:/usr/src/db_resfinder  -v $(pwd)/results/:/usr/src/results resfinder -ifa /usr/src/tests/data/test_isolate_01.fa -acq -db_res /usr/src/db_resfinder -o /usr/src/results
-```
+If you wish to build the docker image yourself and include databases yourself, you can finnd inspiration in the dockerfile stored in this repository.
 
 ### Test ResFinder intallation
 (This will not function with the docker installation.)
@@ -168,11 +89,13 @@ and 4 will fail.
 The 4 tests will in total take approximately take 5-60 seconds, depending on your system.
 
 #### Test if no paths needs to be specified
+
 **Requirements**
 * blastn/kma is in your PATH or specified via environment variables.
 * ResFinder database and PointFinder database paths are specified via environment variables.
 
 ```bash
+
 cd /path/to/some/dir/resfinder
 
 # Run tests
@@ -184,9 +107,11 @@ python3 tests/functional_tests.py
 Ran 4 tests in 8.263s
 
 OK
+
 ```
 
 #### Test if paths needs to be specified
+
 If blastn/kma is not in your PATH or set as environment variables or the paths to the ResFinder and PointFinder databases is not set in environment variables, you need to specify the paths to these in the test script.
 
 ```bash

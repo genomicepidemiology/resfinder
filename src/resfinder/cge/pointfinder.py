@@ -12,6 +12,7 @@ import math
 import argparse
 import subprocess
 import random
+import copy
 
 from cgecore.blaster import Blaster
 from cgecore.cgefinder import CGEFinder
@@ -37,6 +38,12 @@ class GeneListError(Exception):
 
 class PointFinder(CGEFinder):
 
+    GENE_FILE = "genes.txt"
+    RNA_GENE_FILE = "RNA_genes.txt"
+    PHENOTYPE_FILE = "phenotypes.txt"
+    # Deprecated variable, use phenotype (kept for legacy dbs)
+    RES_OVERVIEW_FILE = "resistens-overview.txt"
+
     def __init__(self, db_path, species, gene_list=None, ignore_indels=False,
                  ignore_stop_codons=False):
         """
@@ -48,29 +55,32 @@ class PointFinder(CGEFinder):
         self.ignore_stop_codons = ignore_stop_codons
 
         self.gene_list = PointFinder.get_file_content(
-            self.specie_path + "/genes.txt")
+            f"{self.specie_path}/{self.GENE_FILE}")
 
-        if os.path.isfile(self.specie_path + "/RNA_genes.txt"):
+        if os.path.isfile(f"{self.specie_path}/{self.RNA_GENE_FILE}"):
             self.RNA_gene_list = PointFinder.get_file_content(
-                self.specie_path + "/RNA_genes.txt")
+                f"{self.specie_path}/{self.RNA_GENE_FILE}")
 
         # Creat user defined gene_list if given
         if(gene_list is not None):
             self.gene_list = get_user_defined_gene_list(gene_list)
-        if os.path.exists(self.specie_path + "/phenotypes.txt"):
+
+        # Depends on database format, current or legacy
+        if os.path.exists(f"{self.specie_path}/{self.PHENOTYPE_FILE}"):
             self.known_mutations, self.drug_genes, self.known_stop_codon = (
                 self.get_db_mutations(
-                    self.specie_path + "/phenotypes.txt",
+                    f"{self.specie_path}/{self.PHENOTYPE_FILE}",
                     self.gene_list))
-        elif os.path.exists(self.specie_path + "/resistens-overview.txt"):
+        elif os.path.exists(f"{self.specie_path}/{self.RES_OVERVIEW_FILE}"):
             self.known_mutations, self.drug_genes, self.known_stop_codon = (
                 self.get_db_old_mutations(
-                    self.specie_path + "/resistens-overview.txt",
+                    f"{self.specie_path}/{self.RES_OVERVIEW_FILE}",
                     self.gene_list))
         else:
-            raise OSError("The pointfinder db does not have the "
-                          "'phenotypes.txt' file (new database) neither the "
-                          "'resistens-overview.txt' file (old database)")
+            raise OSError("The pointfinder db does not have neither the"
+                          f"'{self.PHENOTYPE_FILE}' file (current database) or"
+                          "the '{self.RES_OVERVIEW_FILE}' file "
+                          "(legacy database)")
 
     def get_user_defined_gene_list(self, gene_list):
         genes_specified = []
@@ -363,33 +373,60 @@ class PointFinder(CGEFinder):
 
     def write_results(self, out_path, result, res_type, unknown_flag, min_cov,
                       perc_iden):
-       """
-       """
+        result_str = self.results_to_str(res_type=res_type,
+                                         results=result,
+                                         unknown_flag=unknown_flag,
+                                         min_cov=min_cov,
+                                         perc_iden=perc_iden)
 
-       result_str = self.results_to_str(res_type=res_type,
-                                        results=result,
-                                        unknown_flag=unknown_flag,
-                                        min_cov=min_cov,
-                                        perc_iden=perc_iden)
-
-       with open(out_path + "/PointFinder_results.txt", "w") as fh:
-          fh.write(result_str[0])
-       with open(out_path + "/PointFinder_table.txt", "w") as fh:
-          fh.write(result_str[1])
-       with open(out_path + "/PointFinder_prediction.txt", "w") as fh:
-          fh.write(result_str[2])
+        with open(out_path + "/PointFinder_results.txt", "w") as fh:
+            fh.write(result_str[0])
+        with open(out_path + "/PointFinder_table.txt", "w") as fh:
+            fh.write(result_str[1])
+        with open(out_path + "/PointFinder_prediction.txt", "w") as fh:
+            fh.write(result_str[2])
 
     @staticmethod
-    def discard_unwanted_results(results, wanted):
+    def discard_unknown_muts(results_pnt, phenodb):
+        for gene_hits in results_pnt.values():
+            try:
+
+                hits = gene_hits.get("hits", {})
+
+                # Should only be one hit (the best)
+                for hit_key, entry in hits.items():
+                    known_muts = PointFinder._get_known_mis_matches(
+                        hit_key, entry["mis_matches"], phenodb)
+                    entry["mis_matches"] = known_muts
+                    gene_hits["mis_matches"] = known_muts
+
+            except AttributeError:
+                pass
+        return results_pnt
+
+    @staticmethod
+    def _get_known_mis_matches(entry_key, mis_matches, phenodb):
+        gene_ref_id = entry_key.split(":")[2]
+        gene_db_id = gene_ref_id.replace("_", ";;")
+        known = []
+        for mis_match in mis_matches:
+            mis_match_key = (f"{gene_db_id}_{mis_match[1]}"
+                             f"_{mis_match[8].lower()}")
+            if mis_match_key in phenodb:
+                known.append(mis_match)
+        return known
+
+    @staticmethod
+    def discard_from_dict(in_dict, wanted_list):
         """
             Takes a dict and a list of keys.
             Returns a dict containing only the keys from the list.
         """
-        cleaned_results = dict()
-        for key, val in results.items():
-            if(key in wanted):
-                cleaned_results[key] = val
-        return cleaned_results
+        out_dict = dict()
+        for key, val in in_dict.items():
+            if(key in wanted_list):
+                out_dict[key] = val
+        return out_dict
 
     def blast(self, inputfile, out_path, min_cov=0.6, threshold=0.9,
               blast="blastn", cut_off=True):
@@ -523,11 +560,10 @@ class PointFinder(CGEFinder):
 
         return known_mutations, drug_genes, known_stop_codon
 
-
     @staticmethod
     def get_db_mutations(mut_db_path, gene_list):
         """
-        This function opens the file phenotypes.txt, and reads
+        This function opens the file self.PHENOTYPE_FILE, and reads
         the content into a dict of dicts. The dict will contain
         information about all known mutations given in the database.
         This dict is returned.
@@ -569,13 +605,6 @@ class PointFinder(CGEFinder):
                 res_drug = mutation[8].replace("\t", " ")
                 pmid = mutation[9].split(",")
 
-                # Check if stop codons are predictive for resistance
-                if stopcodonflag is True:
-                    if gene_name not in known_stop_codon:
-                        known_stop_codon[gene_name] = {"pos": [],
-                                                     "drug": res_drug}
-                    known_stop_codon[gene_name]["pos"].append(mut_pos)
-
                 # Add genes associated with drug resistance to drug_genes dict
                 drug_lst = res_drug.split(",")
                 drug_lst = [d.strip().lower() for d in drug_lst]
@@ -585,25 +614,32 @@ class PointFinder(CGEFinder):
                     if gene_name not in drug_genes[drug]:
                         drug_genes[drug].append(gene_name)
 
+                # Check if stop codons are predictive for resistance
+                if stopcodonflag is True:
+                    if gene_name not in known_stop_codon:
+                        known_stop_codon[gene_name] = {"pos": [],
+                                                       "drug": res_drug}
+                    known_stop_codon[gene_name]["pos"].append(mut_pos)
+
                 # Initiate empty dict to store relevant mutation information
                 mut_info = dict()
 
-                # Save need mutation info with pmid cooresponding to the amino
-                # acid change
+                # Save needed mutation info with pmid cooresponding to the
+                # amino acid change
                 for i in range(len(alt_aa)):
                     try:
                         mut_info[alt_aa[i]] = {"gene_name": gene_name,
-                                               "drug": res_drug,
-                                               "pmid": pmid[i]}
+                                               "drug": drug_lst,
+                                               "pmid": [pmid[i]]}
                     except IndexError:
                         mut_info[alt_aa[i]] = {"gene_name": gene_name,
-                                               "drug": res_drug,
+                                               "drug": drug_lst,
                                                "pmid": "-"}
 
                 # Add all possible types of mutations to the dict
                 if gene_name not in known_mutations:
                     known_mutations[gene_name] = {"sub": dict(), "ins": dict(),
-                                                "del": dict()}
+                                                  "del": dict()}
                 # Check for the type of mutation
                 if indelflag is False:
                     mutation_type = "sub"
@@ -614,21 +650,16 @@ class PointFinder(CGEFinder):
                 # mut_info
                 if mut_pos not in known_mutations[gene_name][mutation_type]:
                     known_mutations[gene_name][mutation_type][mut_pos] = dict()
-                for amino in alt_aa:
-                    if (amino in known_mutations[gene_name][mutation_type]
-                                                [mut_pos]):
-                        stored_mut_info = (known_mutations[gene_name]
-                                                          [mutation_type]
-                                                          [mut_pos][amino])
-                        if stored_mut_info["drug"] != mut_info[amino]["drug"]:
-                            stored_mut_info["drug"] += "," + (mut_info[amino]
-                                                                      ["drug"])
-                        if stored_mut_info["pmid"] != mut_info[amino]["pmid"]:
-                            stored_mut_info["pmid"] += ";" + (mut_info[amino]
-                                                                      ["pmid"])
 
+                for amino in alt_aa:
+                    stored_info = (known_mutations[gene_name][mutation_type]
+                                   [mut_pos].get(amino, False))
+                    if stored_info:
+                        merged_info = PointFinder.merge_mut_info(stored_info,
+                                                                 amino,
+                                                                 mut_info)
                         (known_mutations[gene_name][mutation_type]
-                                        [mut_pos][amino]) = stored_mut_info
+                                        [mut_pos][amino]) = merged_info
                     else:
                         (known_mutations[gene_name][mutation_type]
                                         [mut_pos][amino]) = mut_info[amino]
@@ -640,7 +671,19 @@ class PointFinder(CGEFinder):
                                          "del": dict()}
         return known_mutations, drug_genes, known_stop_codon
 
-    def find_best_seqs(self, blast_results, min_cov):
+    @staticmethod
+    def merge_mut_info(stored_info, amino, mut_info):
+        for drug in mut_info[amino]["drug"]:
+            if drug not in stored_info["drug"]:
+                stored_info["drug"].append(drug)
+
+        for pmid in mut_info[amino]["pmid"]:
+            if pmid not in stored_info["pmid"]:
+                stored_info["pmid"].append(pmid)
+
+        return stored_info
+
+    def find_best_seqs(self, org_blast_results, min_cov):
         """
         This function finds gene sequences with the largest coverage based on
         the blast results. If more hits covering different sequences parts
@@ -651,6 +694,10 @@ class PointFinder(CGEFinder):
         the new concatinated hit. If no gene is found the value is a string
         with info of why the gene wasn't found.
         """
+
+        # Very inefficient to create a deep copy but safest option until
+        # pointfinder code gets rewritten.
+        blast_results = copy.deepcopy(org_blast_results)
 
         GENES = dict()
         for gene, hits in blast_results.items():
@@ -1777,6 +1824,12 @@ class PointFinder(CGEFinder):
             gene_mut_name, resistence, pmid = self.look_up_known_muts(
                 gene, look_up_pos, look_up_mut, m_type, gene_name)
 
+            # Make lists to strings
+            if resistence != "Unknown":
+                resistence = ", ".join(resistence).title()
+
+            pmid = ", ".join(pmid)
+
             gene_mut_name = gene_mut_name + " " + mut_name
 
             output_mut[i] = [gene_mut_name, codon_change, aa_change,
@@ -1803,6 +1856,7 @@ class PointFinder(CGEFinder):
 
                 if unknown_flag is True:
                     all_results_lst += ["\t".join(output_mut[i])]
+
 
             # Check that you do not print two equal lines (can happen
             # if two indels occure in the same codon)

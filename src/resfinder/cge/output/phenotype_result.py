@@ -43,22 +43,29 @@ class PhenotypeResult(dict):
         ref_id, type = PhenotypeResult.get_ref_id_and_type(feature, isolate)
         feature_keys = PhenotypeResult.get_keys_matching_ref_id(
             ref_id, res_collection[type])
+
         # Add keys to phenotype results
         pheno_feat_keys = self.get(type, [])
-        pheno_feat_keys = pheno_feat_keys + feature_keys
+        for feature_key in feature_keys:
+            if feature_key not in pheno_feat_keys:
+                pheno_feat_keys.append(feature_key)
         self[type] = pheno_feat_keys
+
         # Add phenotype keys to feature results
         features = res_collection[type]
         for feat_key in feature_keys:
             feat_result = features[feat_key]
             pheno_keys = feat_result.get("phenotypes", [])
-            pheno_keys.append(self["key"])
+            if self["key"] not in pheno_keys:
+                pheno_keys.append(self["key"])
             feat_result["phenotypes"] = pheno_keys
+
         # Add unique PMIDs to feature results
         if(feature.pmids is not None):
             for pmid in feature.pmids:
                 if pmid not in feat_result["pmids"]:
                     feat_result["pmids"].append(pmid)
+
         # Add unique Notes to feature results
         if(feature.notes is not None):
             if feature.notes not in feat_result["notes"]:
@@ -67,7 +74,6 @@ class PhenotypeResult(dict):
         if(type == "seq_regions"):
             db_key = res_collection.get_db_key(db_name)[0]
         elif(type == "seq_variations"):
-            #db_key = res_collection.get_db_key("PointFinder")[0]
             db_key = res_collection.get_db_key(db_name)[0]
         self["ref_database"] = [db_key]
 
@@ -100,10 +106,10 @@ class PhenotypeResult(dict):
             Input:
                 ref_id: Key/ID to search for
                 res_collection: Result object created by the cgelib package.
-                                The Result object used with this method found is
-                                within the main Result object and is accessed
-                                either by main_result["genes"] or by
-                                main_result["seq_variations"].
+                                The Result object used with this method is
+                                found within the main Result object and is
+                                accessed either by main_result["seq_regions"]
+                                or by main_result["seq_variations"].
             Output (list):
                 out_keys: Returns a list of keys where the
                           input ref_id == res_collection[key]["ref_id"].

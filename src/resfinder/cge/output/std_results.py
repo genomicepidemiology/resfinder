@@ -60,21 +60,45 @@ class ResFinderResultHandler():
             # For each antibiotic in current class
             for phenodb_ab in isolate.resprofile.phenodb.antibiotics[ab_class]:
                 phenotype = PhenotypeResult(phenodb_ab, isolate)
+
                 # Isolate is resistant towards the antibiotic
                 if(phenodb_ab in isolate.resprofile.resistance):
-                    phenotype.set_resistant(True)
-                    isolate_ab = isolate.resprofile.resistance[phenodb_ab]
-                    for unique_id, feature_lst in isolate_ab.features.items():
-                        for feature in feature_lst:
-                            if(isinstance(feature, ResGene)
-                               or isinstance(feature, ResMutation)):
-                                phenotype.add_feature(res_collection, isolate,
-                                                      feature)
+                    ResFinderResultHandler._load_resistant_phenotype(
+                        phenotype, isolate, phenodb_ab, res_collection)
+
                 res_collection.add_class(cl="phenotypes", **phenotype)
 
         amr_sum = ResFinderResultHandler.create_amr_summary_str(
             res_collection, amr_abbreviations)
         res_collection.add(**{"result_summary": amr_sum})
+
+    @staticmethod
+    def _load_resistant_phenotype(phenotype, isolate, antibiotic,
+                                  res_collection):
+        phenotype.set_resistant(True)
+        isolate_ab = isolate.resprofile.resistance[antibiotic]
+
+        for feature_lst in isolate_ab.features.values():
+            for feature_entry in feature_lst:
+                # feature_entry is either a Feature object or a dict of Feature
+                # objects.
+                try:
+                    for unique_id, feature in feature_entry.items():
+                        ResFinderResultHandler._add_feat_to_phenotype_and_res(
+                            res_collection, isolate, feature, phenotype)
+                # Feature object has no items attribute.
+                except AttributeError:
+                    ResFinderResultHandler._add_feat_to_phenotype_and_res(
+                        res_collection, isolate, feature_entry, phenotype)
+
+    @staticmethod
+    def _add_feat_to_phenotype_and_res(res_collection, isolate, feature,
+                                       phenotype):
+        if isinstance(feature, ResGene) or isinstance(feature, ResMutation):
+            if isinstance(feature, ResMutation):
+                if feature.unique_id in phenotype.get("seq_variations", ()):
+                    return
+            phenotype.add_feature(res_collection, isolate, feature)
 
     @staticmethod
     def create_amr_summary_str(res_collection, amr_abbreviations):

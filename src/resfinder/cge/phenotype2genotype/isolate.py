@@ -221,11 +221,16 @@ class Isolate(dict):
 
             # Not Amino acid mutation
             if(var_aa is None):
-                phenodb_id = ref_id
+                #phenodb_id = ref_id
+                return feat_res_dict["seq_regions"][0]
             # Amino acid mutation
             else:
-                phenodb_id = ref_id[:-1] + feat_res_dict["var_aa"]
-            return phenodb_id.replace(";;", "_")
+                #phenodb_id = ref_id[:-1] + feat_res_dict["var_aa"]
+                return (f"{feat_res_dict['seq_regions'][0]}"
+                        f"_{feat_res_dict['ref_start_pos']}"
+                        f"_{feat_res_dict['var_aa']}")
+
+            #return phenodb_id.replace(";;", "_")
 
         elif(type == "seq_regions"):
             return "{}_{}".format(feat_res_dict["name"],
@@ -243,9 +248,7 @@ class Isolate(dict):
             Method loads Isolate object
         """
         for key, feat_info in std_table[type].items():
-
             # Skip genes from PointFinder database (not resistance genes).
-
             if(type == "seq_regions"
                and any(re.search("PointFinder", entry)
                        for entry in feat_info["ref_database"])):
@@ -253,12 +256,15 @@ class Isolate(dict):
 
             unique_id = Isolate.get_phenodb_id(feat_info, type)
             feat_list = self.get(unique_id, [])
+
             phenotypes = phenodb.get(unique_id, None)
+
             if(phenotypes):
                 for p in phenotypes:
                     res_feature = self.new_res_feature(type, feat_info,
                                                        unique_id, p)
-                    feat_list.append(res_feature)
+                    if(res_feature not in feat_list):
+                        feat_list.append(res_feature)
             else:
                 res_feature = self.new_res_feature(type, feat_info, unique_id)
                 feat_list.append(res_feature)
@@ -266,6 +272,7 @@ class Isolate(dict):
 
     def new_res_feature(self, type, feat_info, unique_id, phenotype=None):
         ab_class = set()
+
         if phenotype is None:
             ab_class.add(Isolate.NO_AB_CLASS)
             db_pheno = None
@@ -273,45 +280,65 @@ class Isolate(dict):
             for ab in phenotype.antibiotics:
                 ab_class.update(ab.classes)
             db_pheno = phenotype.res_database
+
         if(type == "seq_regions"):
             res_feature = self.new_res_gene(feat_info, unique_id, ab_class,
                                             phenotype)
         elif(type == "seq_variations"):
             res_feature = self.new_res_mut(feat_info, unique_id, ab_class,
                                            phenotype)
+
         ResProfile.update_classes_dict_of_feature_sets(
             self.feature_classes, res_feature)
         return res_feature
 
     def new_res_mut(self, feat_info, unique_id, ab_class, phenotype):
         ref_aa = feat_info.get("ref_aa", None)
+
         if(ref_aa is None or ref_aa.upper() == "NA"):
             nucleotide_mut = True
         else:
             nucleotide_mut = False
-        feat_res = ResMutation(unique_id=unique_id,
-                               seq_region=";;".join(feat_info["seq_regions"]),
-                               pos=feat_info["ref_start_pos"],
-                               ref_codon=feat_info["ref_codon"],
-                               mut_codon=feat_info["var_codon"],
-                               ref_aa=feat_info.get("ref_aa", None),
-                               mut_aa=feat_info.get("var_aa", None),
-                               isolate=self,
-                               insertion=feat_info["insertion"],
-                               deletion=feat_info["deletion"],
-                               end=feat_info["ref_end_pos"],
-                               nuc=nucleotide_mut,
-                               ab_class=ab_class,
-                               pmids=phenotype.pmid,
-                               notes=phenotype.notes,
-                               ref_db=phenotype.res_database)
+
+        if phenotype:
+            feat_res = ResMutation(
+                unique_id=unique_id,
+                seq_region=";;".join(feat_info["seq_regions"]),
+                pos=feat_info["ref_start_pos"],
+                ref_codon=feat_info["ref_codon"],
+                mut_codon=feat_info["var_codon"],
+                ref_aa=feat_info.get("ref_aa", None),
+                mut_aa=feat_info.get("var_aa", None),
+                isolate=self,
+                insertion=feat_info["insertion"],
+                deletion=feat_info["deletion"],
+                end=feat_info["ref_end_pos"],
+                nuc=nucleotide_mut,
+                ab_class=ab_class,
+                pmids=phenotype.pmid,
+                notes=phenotype.notes,
+                ref_db=phenotype.res_database
+            )
+        else:
+            feat_res = ResMutation(
+                unique_id=unique_id,
+                seq_region=";;".join(feat_info["seq_regions"]),
+                pos=feat_info["ref_start_pos"],
+                ref_codon=feat_info["ref_codon"],
+                mut_codon=feat_info["var_codon"],
+                ref_aa=feat_info.get("ref_aa", None),
+                mut_aa=feat_info.get("var_aa", None),
+                isolate=self,
+                insertion=feat_info["insertion"],
+                deletion=feat_info["deletion"],
+                end=feat_info["ref_end_pos"],
+                nuc=nucleotide_mut,
+                ab_class=ab_class
+            )
 
         return feat_res
 
     def new_res_gene(self, gene_info, unique_id, ab_class, phenotype):
-#todo delete
-        if(phenotype is None):
-            sys.exit(f"PHENO: {phenotype}\nGENE: {gene_info}")
         hit = DBHit(name=gene_info["name"],
                     identity=gene_info["identity"],
                     match_length=gene_info["alignment_length"],

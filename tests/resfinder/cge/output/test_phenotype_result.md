@@ -50,7 +50,7 @@
 >>> amr_panel_file = f"{resfinder_db_path}/phenotype_panels.txt"
 >>> abclassdef_file= "{}/antibiotic_classes.txt".format(resfinder_db_path)
 >>> acquired_file= "{}/phenotypes.txt".format(resfinder_db_path)
->>> point_file = ("{}/escherichia_coli/resistens-overview.txt"
+>>> point_file = ("{}/escherichia_coli/phenotypes.txt"
 ...               .format(pointfinder_db_path))
 >>> res_pheno_db = PhenoDB(abclassdef_file=abclassdef_file,
 ...                        acquired_file=acquired_file,

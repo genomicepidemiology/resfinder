@@ -268,14 +268,14 @@ class Config():
     def set_phenotype_opts(self, args):
         self.point_file = None
         if(self.point):
-            if os.path.exists("{}/resistens-overview.txt"
-                    .format(self.db_path_point)):
-                self.point_file = ("{}/resistens-overview.txt"
+            if os.path.exists("{}/phenotypes.txt"
+                              .format(self.db_path_point)):
+                self.point_file = ("{}/phenotypes.txt"
                                    .format(self.db_path_point))
                 _ = self.get_abs_path_and_check(self.point_file)
-            elif os.path.exists("{}/phenotypes.txt"
-                    .format(self.db_path_point)):
-                self.point_file = ("{}/phenotypes.txt"
+            elif os.path.exists("{}/resistens-overview.txt"
+                                .format(self.db_path_point)):
+                self.point_file = ("{}/resistens-overview.txt"
                                    .format(self.db_path_point))
                 _ = self.get_abs_path_and_check(self.point_file)
             else:

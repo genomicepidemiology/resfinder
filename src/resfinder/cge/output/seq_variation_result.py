@@ -70,15 +70,15 @@ class SeqVariationResult(dict):
             Input:
                 res_collection: Result object created by the cge core module.
                 minimum_key: The smallest key possible. If minimum_key is
-                             already unique, minimum_key will be returned by the
-                             method.
+                             already unique, minimum_key will be returned by
+                             the method.
                 delimiter: String used as delimiter inside the returned key.
 
             Returns a unique seq_variations key. If minimum_key is unique it
             will be returned. Else a random string will be appended after an
             additional delimiter.
         """
-        region_name = region_results[0]["name"]
+        region_name = region_results[0]["ref_id"].replace("_", ";;")
         region_name = PhenoDB.if_promoter_rename(region_name)
 
         if(len(mismatch) > 7):
@@ -111,8 +111,8 @@ class SeqVariationResult(dict):
             Input:
                 res_collection: Result object created by the cge core module.
                 minimum_key: The smallest key possible. If minimum_key is
-                             already unique, minimum_key will be returned by the
-                             method.
+                             already unique, minimum_key will be returned by
+                             the method.
                 delimiter: String used as delimiter inside the returned key.
 
             Returns a unique seq_variations key. If minimum_key is unique it

@@ -18,7 +18,8 @@ ResFinder consists of an application and 1-3 databases. The databases can be use
 ### Dependencies
 
 ResFinder uses two external alignment tools that must be installed.
-* BLAST
+
+* BLAST 
 * KMA
 
 #### BLAST
@@ -26,7 +27,6 @@ If you don't want to specify the path of BLAST every time you run ResFinder, mak
 
 Blastn can be obtained from:
 ```url
-ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
 https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
 ```
 
@@ -99,7 +99,7 @@ Set approximate environment variables.
 # Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
 export CGE_RESFINDER_RESGENE_DB="/path/to/some/dir/resfinder_db"
 export CGE_RESFINDER_RESPOINT_DB="/path/to/some/dir/pointfinder_db"
-export CGE_DISINFINDER_DB="/path/to/some/dir/pointfinder_db"
+export CGE_DISINFINDER_DB="/path/to/some/dir/disinfinder_db"
 
 ```
 
@@ -232,7 +232,7 @@ ResFinder understands the species abbreviations listed in the Species Abbreviati
 
 A webserver implementing the methods is available at the [CGE
 website](http://www.genomicepidemiology.org/) and can be found here:
-https://cge.cbs.dtu.dk/services/ResFinder/
+https://cge.food.dtu.dk/services/ResFinder/
 
 ### ResFinder result files
 

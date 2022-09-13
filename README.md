@@ -105,7 +105,13 @@ export CGE_DISINFINDER_DB="/path/to/some/dir/pointfinder_db"
 
 ### Install ResFinder with Docker
 
-We are currently working on a new solution for docker.
+The ResFinder application and the 3 databases has been build into a single image on docker hub named "genomicepidemiology/resfinder". Below is an example run, where the current working directory is bound to the container "/app" path which is the container working directory.
+
+```bash
+
+docker run -v "$(pwd):/app" genomicepidemiology/resfinder -ifa data/test_isolate_01.fa -o test1 -s ecoli --acquired --point
+
+```
 
 ### Test data
 Test data can be found in the sub-directory tests/data

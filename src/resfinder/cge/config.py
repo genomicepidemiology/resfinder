@@ -84,6 +84,7 @@ class Config():
         self.point = bool(args.point)
         self.disinf = bool(args.disinfectant)
         self.species = Config.get_species(args.species, self.species_abbr_file)
+        self.db_panels_file = None
 
         if(args.inputfasta):
             self.set_fasta_related_opts(args)

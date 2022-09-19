@@ -84,6 +84,7 @@ class Config():
         self.point = bool(args.point)
         self.disinf = bool(args.disinfectant)
         self.species = Config.get_species(args.species, self.species_abbr_file)
+        self.db_panels_file = None
 
         if(args.inputfasta):
             self.set_fasta_related_opts(args)
@@ -207,6 +208,16 @@ class Config():
             sys.exit("Input Error: The database config or notes.txt file could"
                      " not be found in the DisinFinder database directory.")
 
+        # Look for phenotype_panels first in disinf database, then in resfinder
+        # database if that is given, or else leave it harmlessly unset.
+        # BTW: there's a funny 'or' inside an 'os.path.exists' 7 lines up
+        if not self.db_panels_file:
+            self.db_panels_file = f"{self.db_path_disinf}/phenotype_panels.txt"
+        if not os.path.exists(self.db_panels_file) and args.db_path_res:
+            self.db_panels_file = f"{args.db_path_res}/phenotype_panels.txt"
+        if not os.path.exists(self.db_panels_file):
+            self.db_panels_file = None
+
         args.min_cov = float(args.min_cov)
         args.threshold = float(args.threshold)
 
@@ -240,6 +251,15 @@ class Config():
         if(self.db_path_point is None):
             self.point = False
             return
+
+        # Look for phenotype_panels first in pointfinder database, then in
+        # resfinder database if that is given, else give up.  TODO: warn or error?
+        if not self.db_panels_file:
+            self.db_panels_file = f"{self.db_path_point}/phenotype_panels.txt"
+        if not os.path.exists(self.db_panels_file) and args.db_path_res:
+            self.db_panels_file = f"{args.db_path_res}/phenotype_panels.txt"
+        if not os.path.exists(self.db_panels_file):
+            self.db_panels_file = None
 
         self.specific_gene = args.specific_gene
 

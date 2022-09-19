@@ -25,9 +25,6 @@ from resfinder.cge.phenotype2genotype.res_sumtable import PanelNameError
 
 from resfinder import __version__
 
-# TODO list:
-# TODO: JSON output summary is not species dependent
-
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -344,6 +341,7 @@ def main():
                     min_cov=conf.dis_gene_cov,
                     threshold=conf.dis_gene_id,
                     kma_path=conf.kma,
+                    databases=disinf_finder.databases,
                     sample_name="",
                     kma_cge=True,
                     kma_apm="p",

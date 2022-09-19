@@ -84,7 +84,6 @@ class Config():
         self.point = bool(args.point)
         self.disinf = bool(args.disinfectant)
         self.species = Config.get_species(args.species, self.species_abbr_file)
-        self.db_panels_file = None
 
         if(args.inputfasta):
             self.set_fasta_related_opts(args)
@@ -203,20 +202,12 @@ class Config():
         self.set_path_disinfinderdb(args)
         self.db_config_disinf_file = "{}/config".format(self.db_path_disinf)
         self.db_notes_disinf_file = "{}/notes.txt".format(self.db_path_disinf)
-        if not os.path.exists(self.db_config_disinf_file
-                              or self.db_notes_disinf_file):
-            sys.exit("Input Error: The database config or notes.txt file could"
-                     " not be found in the DisinFinder database directory.")
-
-        # Look for phenotype_panels first in disinf database, then in resfinder
-        # database if that is given, or else leave it harmlessly unset.
-        # BTW: there's a funny 'or' inside an 'os.path.exists' 7 lines up
-        if not self.db_panels_file:
-            self.db_panels_file = f"{self.db_path_disinf}/phenotype_panels.txt"
-        if not os.path.exists(self.db_panels_file) and args.db_path_res:
-            self.db_panels_file = f"{args.db_path_res}/phenotype_panels.txt"
-        if not os.path.exists(self.db_panels_file):
-            self.db_panels_file = None
+        if not os.path.exists(self.db_config_disinf_file):
+            sys.exit("Input Error: The database config file could not be found"
+                     f" at: {self.db_config_disinf_file}")
+        if not os.path.exists(self.db_notes_disinf_file):
+            sys.exit("Input Error: The database notes.txt file could not be "
+                     f"found at: {self.db_notes_disinf_file}")
 
         args.min_cov = float(args.min_cov)
         args.threshold = float(args.threshold)
@@ -251,15 +242,6 @@ class Config():
         if(self.db_path_point is None):
             self.point = False
             return
-
-        # Look for phenotype_panels first in pointfinder database, then in
-        # resfinder database if that is given, else give up.  TODO: warn or error?
-        if not self.db_panels_file:
-            self.db_panels_file = f"{self.db_path_point}/phenotype_panels.txt"
-        if not os.path.exists(self.db_panels_file) and args.db_path_res:
-            self.db_panels_file = f"{args.db_path_res}/phenotype_panels.txt"
-        if not os.path.exists(self.db_panels_file):
-            self.db_panels_file = None
 
         self.specific_gene = args.specific_gene
 
@@ -304,8 +286,11 @@ class Config():
                          "'resistens-overview.txt' file (old database)")
         if(not args.acquired):
             self.set_path_resfinderdb(args)
-        self.abclassdef_file = ("{}/antibiotic_classes.txt"
-                                .format(self.db_path_res))
+
+        self.db_panels_file = f"{self.db_path_res}/phenotype_panels.txt"
+        _ = self.get_abs_path_and_check(self.db_panels_file)
+
+        self.abclassdef_file = f"{self.db_path_res}/antibiotic_classes.txt"
         _ = self.get_abs_path_and_check(self.abclassdef_file)
 
         if(self.point or self.acquired):
@@ -401,8 +386,14 @@ class Config():
             self.db_path_res = Config.get_abs_path_and_check(
                 self.db_path_res, allow_exit=False)
         except FileNotFoundError:
-            sys.exit("Could not locate ResFinder database path: {}"
-                     .format(self.db_path_res))
+            if not self.acquired:
+                sys.exit("ResFinder database is needed even if only searching "
+                         "for point mutations or disinfectant genes. Could not"
+                         " locate ResFinder database path: "
+                         f"{self.db_path_res}")
+            else:
+                sys.exit("Could not locate ResFinder database path: "
+                         f"{self.db_path_res}")
 
         try:
             self.db_path_res_kma = Config.get_abs_path_and_check(

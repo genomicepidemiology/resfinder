@@ -248,7 +248,8 @@ def main():
             # TODO: make a write method that depends on the json output
             acquired_finder.write_results(out_path=conf.outputPath,
                                           result=blast_results,
-                                          res_type=ResFinder.TYPE_BLAST)
+                                          res_type=ResFinder.TYPE_BLAST,
+                                          software="ResFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        blast_results.results,
@@ -291,7 +292,8 @@ def main():
             # TODO: make a write method that depends on the json output
             acquired_finder.write_results(out_path=conf.outputPath,
                                           result=kma_run.results,
-                                          res_type=ResFinder.TYPE_KMA)
+                                          res_type=ResFinder.TYPE_KMA,
+                                          software="ResFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        kma_run.results,
@@ -325,7 +327,8 @@ def main():
             # TODO: make a write method that depends on the json output
             disinf_finder.write_results(out_path=conf.outputPath,
                                         result=blast_results,
-                                        res_type=ResFinder.TYPE_BLAST)
+                                        res_type=ResFinder.TYPE_BLAST,
+                                        software="DisinFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        blast_results.results,
@@ -368,7 +371,8 @@ def main():
             # TODO: make a write method that depends on the json output
             disinf_finder.write_results(out_path=conf.outputPath,
                                         result=kma_run.results,
-                                        res_type=ResFinder.TYPE_KMA)
+                                        res_type=ResFinder.TYPE_KMA,
+                                        software="DisinFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        kma_run.results,

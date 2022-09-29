@@ -69,8 +69,8 @@ hit.
   'substitution': True,
   'deletion': False,
   'insertion': False,
-  'ref_id': 'gyrA_81_d',
-  'key': 'gyrA;;81;;d',
+  'ref_id': 'gyrA;;1;;CP073768.1_81_d',
+  'key': 'gyrA;;1;;CP073768.1;;81;;d',
   'ref_database': 'PointFinder-...',...
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
@@ -102,8 +102,8 @@ hit.
   'substitution': True,
   'deletion': False,
   'insertion': False,
-  'ref_id': 'gyrA_81_gat',
-  'key': 'gyrA;;81;;gat',
+  'ref_id': 'gyrA;;1;;CP073768.1_81_gat',
+  'key': 'gyrA;;1;;CP073768.1;;81;;gat',
   'ref_database': 'PointFinder-...',...
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
@@ -139,12 +139,13 @@ hit.
 >>> res.add_class(cl="seq_variations", **seqvar_result)
 >>> for k in res["seq_variations"].keys():
 ...     print(k)
-gyrA;;81;;d
+gyrA;;1;;CP073768.1;;81;;d
 
 >>> SeqVariationResult._get_rnd_unique_seqvar_key(res, "minkey", delimiter="||")
 'minkey'
->>> SeqVariationResult._get_rnd_unique_seqvar_key(res, "gyrA;;81;;d")
+>>> SeqVariationResult._get_rnd_unique_seqvar_key(res,
+...                                               "gyrA;;1;;CP073768.1;;81;;d")
 ... #doctest: +ELLIPSIS
-'gyrA;;81;;d;;...'
+'gyrA;;1;;CP073768.1;;81;;d;;...'
 
 ```

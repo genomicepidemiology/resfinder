@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+## [4.2.2] - 2022-09-19
+
+### Added
+- ResFinder will now complain and exit if the ResFinder database is not found, as it is necessary, even if only looking for point mutations or disinfectant genes.
+
+### Fixed
+- Issue where the application failed when run using only the pointfinder option (--point)
+- Changelog version format from d.d.d to [d.d.d]
+
+
+## [4.2.1] - 2022-09-12
 
 ### Added
 - Several environmental variables for ResFinder settings (see README.md).
@@ -33,5 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The flag "-l_p" will in the next major update not be supported.Instead use "--min_cov_point".
 - The flag "-t_p" will in the next major update not be supported.Instead use "--threshold_point".
 
+### Fixed
+- Issue in PointFinder where a phenotype depending on several mutations would not be written in the phenotypes results files.
+- Output in PointFinder, where some antibiotics would be listed twice.
+- Issue in json ouptput where unknown mutations were listed even if option wasn't enabled.
 
-## 2.4.0 - 2022-04-21 [YANKED]
+
+## [4.2.0] - 2022-04-21 [YANKED]

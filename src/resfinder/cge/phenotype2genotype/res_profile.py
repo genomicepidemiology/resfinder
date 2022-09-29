@@ -210,14 +210,13 @@ class PhenoDB(dict):
                     line_list = list(map(str.rstrip, line_list))
                     # ID in DB is Gene-AAMut-Pos and is not unique
                     gene_id = line_list[0]
-#                    unique_id = line_list[2]
                     codon_pos = line_list[3]
                     res_codon_str = line_list[6].lower()
 
                     # Check if the entry is with a promoter
                     gene_id = PhenoDB.if_promoter_rename(gene_id)
 
-                    gene_name = gene_id.split("_")[0]
+                    gene_name = gene_id.replace("_", ";;")
                     pub_phenotype = self.get_csv_tuple(line_list[8].lower())
                     if("unknown" in pub_phenotype or "none" in pub_phenotype):
                         pub_phenotype = ()
@@ -578,15 +577,16 @@ class PhenoDB(dict):
                            .format(line_counter))
                     eprint("Split line:\n{0}".format(str(line_list)))
 
-
     @staticmethod
     def if_promoter_rename(s):
         out_string = s
-        regex = r"^(.+)-promoter-size-\d+bp$"
+
+        regex = r"^(.+-promoter)-size-\d+bp([_;]{1,2}\d+[_;]{1,2}.+)$"
         promoter_match = re.search(regex, s)
-        if(promoter_match):
-            reg_name = promoter_match.group(1)
-            out_string = reg_name + "-promoter"
+
+        if promoter_match:
+            out_string = f"{promoter_match.group(1)}{promoter_match.group(2)}"
+
         return out_string
 
     @staticmethod
@@ -638,7 +638,7 @@ class MutationGenotype(object):
     """
     def __init__(self, mut_string):
         mut_match = re.search(r"^(.+)_(\D+)(\d+)(.+)$", mut_string)
-        self.gene = mut_match.group(1)
+        self.gene = mut_match.group(1).replace("_", ";;")
         self.ref = mut_match.group(2).lower()
         self.pos = mut_match.group(3)
         alt_str = mut_match.group(4).lower()
@@ -665,8 +665,9 @@ class MutationGenotype(object):
             otherwise.
         """
         for feat_id in feat_dict:
-            feat = feat_dict[feat_id]
-            if(self == feat):
+            feats = feat_dict[feat_id]
+            feat = feats[0]
+            if(self == feats[0]):
                 return feat
 
         return False
@@ -680,10 +681,12 @@ class MutationGenotype(object):
             MutationGenotype object.
         """
         if isinstance(other, Mutation):
-            if(self == other.mut_string):
-                return other.mut_aa
-            else:
-                return False
+            other_prefix = f"{other.seq_region}_{other.ref_aa}{other.pos}"
+            if self.mut_id_prefix == other_prefix:
+                if other.mut_aa in self.alternatives:
+                    return other.mut_aa
+            return False
+
         elif isinstance(other, MutationGenotype):
 
             # Returns True if gene, ref base, position and the tuple of
@@ -700,22 +703,8 @@ class MutationGenotype(object):
                 return False
 
         elif isinstance(other, str):
-            mut_match = re.search(r"^(\D+\d+)(.+)$", other)
-            if(mut_match):
-
-                if(mut_match.group(1) == self.mut_id_prefix):
-                    if(mut_match.group(2) in self.alternatives):
-                        return mut_match.group(2)
-                    else:
-                        return False
-                else:
-                    return False
-
-            else:
-                return False
-
-        else:
-            return False
+            raise NotImplementedError("Attempted to compare MutationGenotype "
+                                      "to str.")
 
     def __ne__(self, other):
         result = self.__eq__(other)
@@ -944,6 +933,7 @@ class ResProfile(object):
             mut_groups_found = []
             for mut_group in phenotype.req_muts:
                 feat_group = FeatureGroup([feature])
+
                 # Iterate through the individual mutations.
                 for mut in mut_group:
                     mut_feat = mut.is_in(self.features)

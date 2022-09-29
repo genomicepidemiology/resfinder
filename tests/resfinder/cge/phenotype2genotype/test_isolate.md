@@ -18,7 +18,7 @@
 
 >>> abclassdef_file = "{}/antibiotic_classes.txt".format(resfinder_db_path)
 >>> acquired_file = "{}/phenotypes.txt".format(resfinder_db_path)
->>> point_file = ("{}/escherichia_coli/resistens-overview.txt"
+>>> point_file = ("{}/escherichia_coli/phenotypes.txt"
 ...               .format(pointfinder_db_path))
 >>> res_pheno_db = PhenoDB(abclassdef_file=abclassdef_file,
 ...                        acquired_file=acquired_file,
@@ -52,7 +52,7 @@ std_results test documentation.
 >>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
 
 >>> gyrA_kma_hit = {}
->>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_LR134511.1"
+>>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
 >>> gyrA_kma_hit["perc_ident"] = 99.92
 >>> gyrA_kma_hit["HSP_length"] = 2628
 >>> gyrA_kma_hit["sbjct_length"] = 2628
@@ -144,17 +144,17 @@ False
 
 >>> isolate["blaOXA-384_KF986263"][0].ab_class.pop()
 'beta-lactam'
->>> isolate["gyrA_81_d"][0].ref_codon
+>>> isolate["gyrA;;1;;CP073768.1_81_d"][0].ref_codon
 'ggt'
->>> isolate["gyrA_81_d"][0].mut_codon
+>>> isolate["gyrA;;1;;CP073768.1_81_d"][0].mut_codon
 'gat'
->>> isolate["gyrA_81_d"][0].ab_class.pop()
+>>> isolate["gyrA;;1;;CP073768.1_81_d"][0].ab_class.pop()
 'quinolone'
->>> isolate["gyrA_82_g"][0].ref_codon
+>>> isolate["gyrA;;1;;CP073768.1_82_g"][0].ref_codon
 'gac'
->>> isolate["gyrA_82_g"][0].mut_codon
+>>> isolate["gyrA;;1;;CP073768.1_82_g"][0].mut_codon
 'ggc'
->>> isolate["gyrA_82_g"][0].ab_class.pop()
+>>> isolate["gyrA;;1;;CP073768.1_82_g"][0].ab_class.pop()
 'quinolone'
 
 ```
@@ -175,9 +175,9 @@ False
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_regions")
 'blaOXA-384_KF986263'
 
->>> feat_res_dict = res["seq_variations"]["gyrA;;81;;d"]
+>>> feat_res_dict = res["seq_variations"]["gyrA;;1;;CP073768.1;;81;;d"]
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_variations")
-'gyrA_81_d'
+'gyrA;;1;;CP073768.1_81_d'
 
 ```
 

@@ -134,7 +134,7 @@ Create the phenoDB object.
 
 >>> abclassdef_file= "{}/antibiotic_classes.txt".format(resfinder_db_path)
 >>> acquired_file= "{}/phenotypes.txt".format(resfinder_db_path)
->>> point_file = ("{}/escherichia_coli/resistens-overview.txt"
+>>> point_file = ("{}/escherichia_coli/phenotypes.txt"
 ...               .format(pointfinder_db_path))
 >>> res_pheno_db = PhenoDB(abclassdef_file=abclassdef_file,
 ...                        acquired_file=acquired_file,
@@ -230,8 +230,8 @@ gyrA;;1;;CP073768.1
 
 >>> for k in res["seq_variations"]:
 ...   print(k)
-gyrA;;81;;d
-gyrA;;82;;g
+gyrA;;1;;CP073768.1;;81;;d
+gyrA;;1;;CP073768.1;;82;;g
 
 ```
 
@@ -254,8 +254,8 @@ gyrA;;1;;CP073768.1
 
 >>> for k in res_kma_test["seq_variations"]:
 ...   print(k)
-gyrA;;81;;d
-gyrA;;82;;g
+gyrA;;1;;CP073768.1;;81;;d
+gyrA;;1;;CP073768.1;;82;;g
 
 ```
 

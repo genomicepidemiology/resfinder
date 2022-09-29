@@ -176,7 +176,7 @@ class ResSumTable(dict):
                 "# The 'Match' column stores one of the integers 0, 1, 2, 3.\n"
                 "#      0: No match found\n"
                 "#      1: Match < 100% ID AND match length < ref length\n"
-                "#      2: Match = 100% ID AND match length < ref length\n"
+                "#      2: Match < 100% ID AND match length = ref length\n"
                 "#      3: Match = 100% ID AND match length = ref length\n"
                 "# If several hits causing the same resistance are found,\n"
                 "# the highest number will be stored in the 'Match' column.\n"

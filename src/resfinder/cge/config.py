@@ -202,10 +202,12 @@ class Config():
         self.set_path_disinfinderdb(args)
         self.db_config_disinf_file = "{}/config".format(self.db_path_disinf)
         self.db_notes_disinf_file = "{}/notes.txt".format(self.db_path_disinf)
-        if not os.path.exists(self.db_config_disinf_file
-                              or self.db_notes_disinf_file):
-            sys.exit("Input Error: The database config or notes.txt file could"
-                     " not be found in the DisinFinder database directory.")
+        if not os.path.exists(self.db_config_disinf_file):
+            sys.exit("Input Error: The database config file could not be found"
+                     f" at: {self.db_config_disinf_file}")
+        if not os.path.exists(self.db_notes_disinf_file):
+            sys.exit("Input Error: The database notes.txt file could not be "
+                     f"found at: {self.db_notes_disinf_file}")
 
         args.min_cov = float(args.min_cov)
         args.threshold = float(args.threshold)
@@ -268,14 +270,14 @@ class Config():
     def set_phenotype_opts(self, args):
         self.point_file = None
         if(self.point):
-            if os.path.exists("{}/resistens-overview.txt"
-                    .format(self.db_path_point)):
-                self.point_file = ("{}/resistens-overview.txt"
+            if os.path.exists("{}/phenotypes.txt"
+                              .format(self.db_path_point)):
+                self.point_file = ("{}/phenotypes.txt"
                                    .format(self.db_path_point))
                 _ = self.get_abs_path_and_check(self.point_file)
-            elif os.path.exists("{}/phenotypes.txt"
-                    .format(self.db_path_point)):
-                self.point_file = ("{}/phenotypes.txt"
+            elif os.path.exists("{}/resistens-overview.txt"
+                                .format(self.db_path_point)):
+                self.point_file = ("{}/resistens-overview.txt"
                                    .format(self.db_path_point))
                 _ = self.get_abs_path_and_check(self.point_file)
             else:
@@ -284,8 +286,11 @@ class Config():
                          "'resistens-overview.txt' file (old database)")
         if(not args.acquired):
             self.set_path_resfinderdb(args)
-        self.abclassdef_file = ("{}/antibiotic_classes.txt"
-                                .format(self.db_path_res))
+
+        self.db_panels_file = f"{self.db_path_res}/phenotype_panels.txt"
+        _ = self.get_abs_path_and_check(self.db_panels_file)
+
+        self.abclassdef_file = f"{self.db_path_res}/antibiotic_classes.txt"
         _ = self.get_abs_path_and_check(self.abclassdef_file)
 
         if(self.point or self.acquired):
@@ -381,8 +386,14 @@ class Config():
             self.db_path_res = Config.get_abs_path_and_check(
                 self.db_path_res, allow_exit=False)
         except FileNotFoundError:
-            sys.exit("Could not locate ResFinder database path: {}"
-                     .format(self.db_path_res))
+            if not self.acquired:
+                sys.exit("ResFinder database is needed even if only searching "
+                         "for point mutations or disinfectant genes. Could not"
+                         " locate ResFinder database path: "
+                         f"{self.db_path_res}")
+            else:
+                sys.exit("Could not locate ResFinder database path: "
+                         f"{self.db_path_res}")
 
         try:
             self.db_path_res_kma = Config.get_abs_path_and_check(

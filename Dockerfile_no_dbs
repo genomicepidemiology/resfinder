@@ -22,16 +22,9 @@ RUN cd /usr/src/; \
 # Install ResFinder
 RUN pip install --no-cache-dir resfinder==4.2.1
 
-# Install databases
-RUN cd /; \
-    mkdir databases; \
-    cd /databases/; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/resfinder_db.git; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/disinfinder_db.git;
-
 # Setup environment
 RUN cd /; \
+    mkdir databases; \
     mkdir app;
 WORKDIR /app
 

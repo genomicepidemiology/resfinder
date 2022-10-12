@@ -64,7 +64,7 @@ class Isolate(dict):
         Isolate._merge_inclusions(panels, inclusions)
 
         species_key = Isolate.check_panel_name(species, panels)
-        return set(panels[species_key])
+        return set(panels[species_key]) if species_key else set()
 
     @staticmethod
     def _get_antibiotics(line, panel_name, panels):

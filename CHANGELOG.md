@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+### Fixed
+- Issue where the application failed when species was specified but did not have a phenotype panel.
+- DisinFinder overwriting ResFinder results.
+- Issue with phenotype results showing integers or nothing instead of gene names in the 'Genetic background' column.
+
+
 ## [4.2.2] - 2022-09-19
 
 ### Added
@@ -12,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Issue where the application failed when run using only the pointfinder option (--point)
+- Issue where application would crash if using the --disinfectant and --nanopore flags.
 - Changelog version format from d.d.d to [d.d.d]
 
 

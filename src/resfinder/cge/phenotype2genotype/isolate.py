@@ -64,7 +64,8 @@ class Isolate(dict):
         Isolate._merge_inclusions(panels, inclusions)
 
         species_key = Isolate.check_panel_name(species, panels)
-        return set(panels[species_key]) if species_key else set()
+
+        return set(panels[species_key]) if species_key else None
 
     @staticmethod
     def _get_antibiotics(line, panel_name, panels):
@@ -103,12 +104,6 @@ class Isolate(dict):
             for incl_panel in include_list:
                 include_abs = include_abs + panels[incl_panel]
             panels[panel] = panel_list + include_abs
-
-    #@staticmethod
-    #def _remove_redundancy(panels):
-    #    for panel in panels:
-    #        panel_list = panels[panel]
-    #        panels[panel] = list(set(panel_list))
 
     @staticmethod
     def check_panel_name(name, panels):
@@ -221,16 +216,12 @@ class Isolate(dict):
 
             # Not Amino acid mutation
             if(var_aa is None):
-                #phenodb_id = ref_id
                 return feat_res_dict["seq_regions"][0]
             # Amino acid mutation
             else:
-                #phenodb_id = ref_id[:-1] + feat_res_dict["var_aa"]
                 return (f"{feat_res_dict['seq_regions'][0]}"
                         f"_{feat_res_dict['ref_start_pos']}"
                         f"_{feat_res_dict['var_aa']}")
-
-            #return phenodb_id.replace(";;", "_")
 
         elif(type == "seq_regions"):
             return "{}_{}".format(feat_res_dict["name"],

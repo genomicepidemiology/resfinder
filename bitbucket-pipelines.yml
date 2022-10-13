@@ -11,7 +11,7 @@ pipelines:
             - pip
           script:
             - git clone https://git@bitbucket.org/genomicepidemiology/resfinder_db.git
-            - git clone -b develop https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
+            - git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git
             - curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
             - mkdir tools
             - wget "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.13.0/ncbi-blast-2.13.0+-x64-linux.tar.gz"

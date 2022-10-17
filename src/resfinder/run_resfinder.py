@@ -84,6 +84,10 @@ def main():
                               "is not found. Point mutations will silently "
                               "be ignored."),
                         default=False)
+    parser.add_argument("--output_aln",
+                        action="store_true",
+                        help="will add the alignments in the json output.",
+                        default=False)
 
     # Acquired resistance options
     parser.add_argument("-db_res", "--db_path_res",
@@ -253,7 +257,8 @@ def main():
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        blast_results.results,
-                                                       "ResFinder")
+                                                       "ResFinder",
+                                                       conf)
 
         else:
             if(conf.nanopore):
@@ -297,7 +302,8 @@ def main():
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        kma_run.results,
-                                                       "ResFinder")
+                                                       "ResFinder",
+                                                       conf)
     ##########################################################################
     # DisinFinder
     ##########################################################################
@@ -332,7 +338,8 @@ def main():
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        blast_results.results,
-                                                       "DisinFinder")
+                                                       "DisinFinder",
+                                                       conf)
 
         else:
             if(conf.nanopore):
@@ -376,7 +383,8 @@ def main():
 
             ResFinderResultHandler.standardize_results(std_result,
                                                        kma_run.results,
-                                                       "DisinFinder")
+                                                       "DisinFinder",
+                                                       conf)
     ##########################################################################
     # PointFinder
     ##########################################################################

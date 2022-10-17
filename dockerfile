@@ -1,5 +1,6 @@
 FROM python:3.10-slim-bullseye
 
+ENV INSIDE_DOCKER true
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update -qq; \
@@ -13,22 +14,33 @@ RUN apt-get update -qq; \
 
 # Install KMA
 RUN cd /usr/src/; \
-    git clone --depth 1 -b 1.4.3 https://bitbucket.org/genomicepidemiology/kma.git; \
+    git clone --depth 1 -b 1.4.7 https://bitbucket.org/genomicepidemiology/kma.git; \
     cd kma && make; \
     mv kma /usr/bin/; \
     cd ..; \
     rm -rf kma/;
 
+ENV RESFINDER_VERSION 4.2.3
+
 # Install ResFinder
-RUN pip install --no-cache-dir resfinder==4.2.1
+RUN pip install --no-cache-dir resfinder==$RESFINDER_VERSION
 
 # Install databases
 RUN cd /; \
     mkdir databases; \
     cd /databases/; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/resfinder_db.git; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git; \
-    git clone --depth 1 https://git@bitbucket.org/genomicepidemiology/disinfinder_db.git;
+    git clone -b resfinder-$RESFINDER_VERSION --depth 1 https://git@bitbucket.org/genomicepidemiology/resfinder_db.git; \
+    git clone -b resfinder-$RESFINDER_VERSION --depth 1 https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git; \
+    git clone -b resfinder-$RESFINDER_VERSION --depth 1 https://git@bitbucket.org/genomicepidemiology/disinfinder_db.git; \
+    cd /databases/resfinder_db; \
+    python INSTALL.py; \
+    rm -rf .git; \
+    cd /databases/pointfinder_db; \
+    python INSTALL.py; \
+    rm -rf .git; \
+    cd /databases/disinfinder_db; \
+    python INSTALL.py; \
+    rm -rf .git;
 
 # Setup environment
 RUN cd /; \

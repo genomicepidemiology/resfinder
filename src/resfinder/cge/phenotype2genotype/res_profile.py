@@ -782,15 +782,10 @@ class Antibiotics(object):
             return result
         return not result
 
-    # TODO: Overwrites identical features. Should check to keep only
-    #       the most resistant feature.
-    # Alfred: now it creates a list
-
     def add_feature(self, feature):
-        if feature.unique_id in self.features:
-            self.features[feature.unique_id].append(feature)
-        else:
-            self.features[feature.unique_id] = [feature]
+        feat_list = self.features.get(feature.unique_id, [])
+        feat_list.append(feature)
+        self.features[feature.unique_id] = feat_list
 
     def get_mut_names(self, _list=False):
         names = {}
@@ -830,15 +825,15 @@ class Antibiotics(object):
 
     def get_gene_names(self, list_=False):
         names = {}
-        for f in self.features:
-            feature = self.features[f]
-            if(not isinstance(feature, ResGene)):
-                continue
+        for feat_list in self.features.values():
+            for feature in feat_list:
+                if(not isinstance(feature, ResGene)):
+                    continue
 
-            if(feature.hit.name):
-                names[feature.unique_id] = feature.hit.name
-            else:
-                names[feature.unique_id] = "Not Available"
+                if(feature.hit and feature.hit.name):
+                    names[feature.unique_id] = feature.hit.name
+                else:
+                    names[feature.unique_id] = "Not Available"
 
         if(list_):
             return names.keys()

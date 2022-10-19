@@ -1392,10 +1392,12 @@ class PointFinder():
         codon_offset = (sbjct_start - 1) % 3
         i_start = 0
 
+        # if codon_offset != 0:
+        #     i_start = 3 - codon_offset
         if codon_offset != 0:
-            i_start = 3 - codon_offset
+            i_start = (int(sbjct_start / 3) + 1) * 3
 
-        sbjct_start = sbjct_start + i_start
+        # sbjct_start = sbjct_start + i_start
 
         # Set sequences in frame
         sbjct_seq = sbjct_seq[i_start:]
@@ -1407,7 +1409,11 @@ class PointFinder():
 
         # Find codon number of the first codon in the sequence, start
         # at 0
-        codon_no = int((sbjct_start - 1) / 3)  # 1,2,3 start on 0
+        # codon_no = int((sbjct_start - 1) / 3)  # 1,2,3 start on 0
+        if sbjct_start == 1:
+            codon_no = 0
+        else:
+            codon_no = (int(sbjct_start / 3) + 1)
 
         # s_shift and q_shift are used when gaps appears
         q_shift = 0

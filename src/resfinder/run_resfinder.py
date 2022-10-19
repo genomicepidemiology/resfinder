@@ -30,7 +30,8 @@ def eprint(*args, **kwargs):
 def handle_results(finder, res, std_result, conf, db_name, method):
 
     if (method == ResFinder.TYPE_BLAST
-        and db_name == 'ResFinder'):
+        and (db_name == 'ResFinder'
+             or db_name == 'DisinFinder')):
 
         ResFinderResultHandler.standardize_results_old(std_result,
                                                        res.results,
@@ -39,10 +40,10 @@ def handle_results(finder, res, std_result, conf, db_name, method):
             and db_name == 'PointFinder'):
         results_pnt = finder.find_best_seqs(res, conf.pf_gene_cov)
 
+    # the new function takes in method as a parameter.
         PointFinderResultHandler.standardize_results_old(std_result,
                                                          results_pnt,
-                                                         db_name,
-                                                         method)
+                                                         db_name) # , method
     else:
         filenames = [x.split('/')[-1] for x in res.alignment_files]
         out_path = \
@@ -71,7 +72,7 @@ def handle_results(finder, res, std_result, conf, db_name, method):
                                                                  db_name,
                                                                  method,
                                                                  finder)
-        else: #method == Resfinder.TYPE_KMA and db_name 'ResFinder:
+        else: #method == Resfinder.TYPE_KMA and (db_name 'ResFinder or db_name 'DisinFinder):
             for kmahit in kma_alignment.parse_hits():
                 if (float(kmahit['template_coverage']) < conf.rf_gene_cov
                         or float(kmahit['template_identity']) < conf.rf_gene_id):
@@ -80,6 +81,7 @@ def handle_results(finder, res, std_result, conf, db_name, method):
                 ResFinderResultHandler.standardize_results_new(std_result,
                                                                kmahit,
                                                                db_name)
+
 
 def main():
 
@@ -299,12 +301,12 @@ def main():
             # DEPRECATED
             # TODO: make a write method that depends on the json output
             acquired_finder.write_results(out_path=conf.outputPath,
-                                          result=blast_results,
+                                          result=resfinder_result,
                                           res_type=ResFinder.TYPE_BLAST,
                                           software="ResFinder")
 
-            ResFinderResultHandler.standardize_results(std_result,
-                                                       blast_results.results,
+            ResFinderResultHandler.standardize_results_old(std_result,
+                                                       resfinder_result.results,
                                                        "ResFinder")
 
         else:
@@ -317,7 +319,8 @@ def main():
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
-                                  custom_args="-ont -md 5")
+                                  ont=True,
+                                  md=5)
             else:
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
@@ -369,7 +372,8 @@ def main():
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
-                                  custom_args="-ont -md 5")
+                                  ont=True,
+                                  md=5)
             else:
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,
@@ -422,7 +426,8 @@ def main():
                                   cge=True,
                                   apm="p",
                                   kma_1t1=True,
-                                  custom_args="-ont -md 5")
+                                  ont=True,
+                                  md=5)
             else:
                 kma_params = dict(inputfile_1=conf.inputfastq_1,
                                   inputfile_2=conf.inputfastq_2,

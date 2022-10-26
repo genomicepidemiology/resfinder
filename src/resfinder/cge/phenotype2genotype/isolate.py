@@ -214,15 +214,20 @@ class Isolate(dict):
             ref_id = feat_res_dict["ref_id"]
             var_aa = feat_res_dict.get("var_aa", None)
             var_codon = feat_res_dict.get("var_codon", None)
-
+            codon_change = feat_res_dict.get("codon_change", None)
             # Not point mutation
-            if(var_aa is None and var_codon is None):
+            if(var_aa is None and var_codon is None and codon_change is None):
                 return feat_res_dict["seq_regions"][0]
             # RNA mutation(single nucleotide)
-            elif(len(var_codon)==1):
+            elif(len(var_codon)==1 and codon_change is None):
                 return (f"{feat_res_dict['seq_regions'][0]}"
                         f"_{feat_res_dict['ref_start_pos']}"
                         f"_{feat_res_dict['var_codon']}")
+            # indels
+            elif (codon_change):
+                return (f"{feat_res_dict['seq_regions'][0]}"
+                        f"_{feat_res_dict['ref_start_pos']}"
+                        f"_{feat_res_dict['codon_change']}")
             # Amino acid mutation
             else:
                 return (f"{feat_res_dict['seq_regions'][0]}"

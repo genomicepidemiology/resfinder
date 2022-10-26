@@ -902,9 +902,10 @@ class PointFinder(CGEFinder):
 
         # Initiate the mis_matches list that will store all found mis matcehs
         mis_matches = []
+        gene_name = gene.split('_')[0]
 
         # Find mis matches in RNA genes
-        if gene in self.RNA_gene_list:
+        if gene_name in self.RNA_gene_list:
             mis_matches += PointFinder.find_nucleotid_mismatches(sbjct_start,
                                                                  sbjct_seq,
                                                                  qry_seq)
@@ -1037,16 +1038,17 @@ class PointFinder(CGEFinder):
                 if sbjct_nuc == "-" or qry_nuc == "-":
                     if sbjct_nuc == "-":
                         mut = "ins"
-                        indel_start_pos = (seq_pos - 1) * factor
-                        indel_end_pos = seq_pos * factor
+                        indel_start_pos = (seq_pos - 1) * factor + sbjct_start
+                        indel_end_pos = seq_pos * factor + sbjct_start
                         indel = PointFinder.find_nuc_indel(sbjct_seq[i:],
                                                            qry_seq[i:])
                     else:
                         mut = "del"
-                        indel_start_pos = seq_pos * factor
+                        indel_start_pos = seq_pos * factor + (sbjct_start - 1)
                         indel = PointFinder.find_nuc_indel(qry_seq[i:],
                                                            sbjct_seq[i:])
-                        indel_end_pos = (seq_pos + len(indel) - 1) * factor
+                        indel_end_pos = (seq_pos + len(indel) - 1) * factor \
+                                        + (sbjct_start - 1)
                         seq_pos += len(indel) - 1
 
                     # Shift the index to the end of the indel
@@ -1067,16 +1069,17 @@ class PointFinder(CGEFinder):
                         mut_name += (str(indel_start_pos) + "_"
                                      + str(indel_end_pos) + mut + indel)
 
-                    mis_matches += [[mut, seq_pos * factor, seq_pos * factor,
+                    mis_matches += [[mut, indel_start_pos, indel_end_pos,
                                     indel, mut_name, mut, indel]]
 
                 # Check for substitutions mutations
                 else:
                     mut = "sub"
-                    mut_name += (str(seq_pos * factor) + sbjct_nuc + ">"
-                                 + qry_nuc)
+                    pos = seq_pos * factor + (sbjct_start - 1)
+                    mut_name += (str(pos)
+                                 + sbjct_nuc + ">" + qry_nuc)
 
-                    mis_matches += [[mut, seq_pos * factor, seq_pos * factor,
+                    mis_matches += [[mut, pos, pos,
                                     qry_nuc, mut_name, sbjct_nuc, qry_nuc]]
 
             # Increment sequence position

@@ -213,10 +213,16 @@ class Isolate(dict):
         if(type == "seq_variations"):
             ref_id = feat_res_dict["ref_id"]
             var_aa = feat_res_dict.get("var_aa", None)
+            var_codon = feat_res_dict.get("var_codon", None)
 
-            # Not Amino acid mutation
-            if(var_aa is None):
+            # Not point mutation
+            if(var_aa is None and var_codon is None):
                 return feat_res_dict["seq_regions"][0]
+            # RNA mutation(single nucleotide)
+            elif(len(var_codon)==1):
+                return (f"{feat_res_dict['seq_regions'][0]}"
+                        f"_{feat_res_dict['ref_start_pos']}"
+                        f"_{feat_res_dict['var_codon']}")
             # Amino acid mutation
             else:
                 return (f"{feat_res_dict['seq_regions'][0]}"

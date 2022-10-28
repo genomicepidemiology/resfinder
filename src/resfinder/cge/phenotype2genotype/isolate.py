@@ -228,7 +228,7 @@ class Isolate(dict):
             elif (indels):
                 return (f"{feat_res_dict['seq_regions'][0]}"
                         f"_{feat_res_dict['ref_start_pos']}"
-                        f"_{feat_res_dict['codon_change']}")
+                        f"_{feat_res_dict['var_aa']}")
             # Amino acid mutation
             else:
                 return (f"{feat_res_dict['seq_regions'][0]}"

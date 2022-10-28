@@ -1803,7 +1803,6 @@ class PointFinder(CGEFinder):
         for i in range(len(mis_matches)):
             m_type = mis_matches[i][0]
             pos = mis_matches[i][1]  # sort on pos?
-            look_up_pos = mis_matches[i][2]
             look_up_mut = mis_matches[i][3]
             mut_name = mis_matches[i][4]
             nuc_ref = mis_matches[i][5]
@@ -1825,7 +1824,7 @@ class PointFinder(CGEFinder):
 
             # Check if mutation is known
             gene_mut_name, resistence, pmid = self.look_up_known_muts(
-                gene, look_up_pos, look_up_mut, m_type, gene_name)
+                gene, pos, look_up_mut, m_type, gene_name)
 
             # Make lists to strings
             if resistence != "Unknown":
@@ -1951,8 +1950,15 @@ class PointFinder(CGEFinder):
         """
         resistence = "Unknown"
         pmid = "-"
-        found_mut = found_mut.upper()
         gene_ID = gene.split("_")[0]
+        regex = r"promoter-size-(\d+)(?:bp)"
+        promtr_gene_objt = re.search(regex, gene_name)
+
+        if gene_ID in self.RNA_gene_list or promtr_gene_objt:
+            found_mut = found_mut.upper()
+        else:
+            found_mut = self.aa(found_mut)
+
         if mut == "del":
             for i, i_pos in enumerate(range(pos, pos + len(found_mut))):
 

@@ -211,12 +211,24 @@ class Isolate(dict):
                   with the ones from the Result object.
         """
         if(type == "seq_variations"):
-            ref_id = feat_res_dict["ref_id"]
             var_aa = feat_res_dict.get("var_aa", None)
+            var_codon = feat_res_dict.get("var_codon", None)
+            codon_change = feat_res_dict.get("codon_change", None)
+            indels = feat_res_dict['deletion'] or feat_res_dict['insertion']
 
-            # Not Amino acid mutation
-            if(var_aa is None):
+            # Not point mutation
+            if(var_aa is None and var_codon is None):
                 return feat_res_dict["seq_regions"][0]
+            # RNA mutation(single nucleotide)
+            elif(len(var_codon)==1 and codon_change is None):
+                return (f"{feat_res_dict['seq_regions'][0]}"
+                        f"_{feat_res_dict['ref_start_pos']}"
+                        f"_{feat_res_dict['var_codon']}")
+            # indels
+            elif (indels):
+                return (f"{feat_res_dict['seq_regions'][0]}"
+                        f"_{feat_res_dict['ref_start_pos']}"
+                        f"_{feat_res_dict['codon_change']}")
             # Amino acid mutation
             else:
                 return (f"{feat_res_dict['seq_regions'][0]}"

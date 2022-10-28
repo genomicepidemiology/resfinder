@@ -40,6 +40,7 @@ class Config():
         "threshold_point": 0.8,
         "ignore_indels": False,
         "ignore_stop_codons": False,
+        "output_aln": False,
         "pickle": False
     }
 
@@ -95,7 +96,7 @@ class Config():
                                   .format(self.resfinder_root))
         self.amr_abbreviations = LoadersMixin.load_md_table_after_keyword(
             amr_abbreviations_file, "## Abbreviations")
-
+        self.output_aln = bool(args.output_aln)
         self.pickle = args.pickle
 
     @staticmethod

@@ -15,7 +15,7 @@ from .phenotype_result import PhenotypeResult
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results(res_collection, res, ref_db_name):
+    def standardize_results(res_collection, res, ref_db_name, conf):
         """
             Input:
                 res_collection: Result object created by the cge core module.
@@ -34,7 +34,8 @@ class ResFinderResultHandler():
             for unique_id, hit_db in db.items():
                 if(unique_id in res["excluded"]):
                     continue
-                gene_result = GeneResult(res_collection, hit_db, ref_db_name)
+                gene_result = GeneResult(res_collection, hit_db, ref_db_name,
+                                         conf)
 
                 if gene_result["key"] is None:
                     continue

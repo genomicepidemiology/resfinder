@@ -90,6 +90,7 @@ Exception is the ResFinder results "unknown <class>". See bottom of list.
 | Lincomycin                                    | LIC          |
 | Linezolid                                     | LIN          |
 | Lividomycin                                   | LIV          |
+| Maduramicin                                   | MAD          |
 | Marbofloxacin                                 | MAR          |
 | Mecillinam                                    | MEC          |
 | Meropenem                                     | MER          |
@@ -99,6 +100,7 @@ Exception is the ResFinder results "unknown <class>". See bottom of list.
 | Moxifloxacin                                  | MOX          |
 | Mupirocin                                     | MUP          |
 | Nalidixic acid                                | NAL          |
+| Narasin                                       | NAR          |
 | Neomycin                                      | NEO          |
 | Netilmicin                                    | NET          |
 | Nitrofurantoin                                | NIT          |
@@ -132,6 +134,7 @@ Exception is the ResFinder results "unknown <class>". See bottom of list.
 | Ribostamycin                                  | RIB          |
 | Rifampicin                                    | RIF          |
 | Roxithromycin                                 | ROX          |
+| Salinomycin                                   | SAL          |
 | Sisomicin                                     | SIS          |
 | Spectinomycin                                 | SPE          |
 | Spiramycin                                    | SPI          |

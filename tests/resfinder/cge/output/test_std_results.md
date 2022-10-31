@@ -1,5 +1,50 @@
 # std_results tests
 
+## setup
+
+```python
+
+>>> from src.resfinder.cge.config import Config
+
+>>> class DummyArgs():
+...     def __init__(self):
+...         self.inputfasta = None
+...         self.inputfastq = None
+...         self.outputPath = "./tests/tmp_out/"
+...         self.blastPath = None
+...         self.kmaPath = None
+...         self.species = None
+...         self.ignore_missing_species = None
+...         self.db_path_res = "resfinder_db"
+...         self.db_path_res_kma = None
+...         self.databases = None
+...         self.acquired = True
+...         self.acq_overlap = None
+...         self.min_cov = None
+...         self.threshold = None
+...         self.point = True
+...         self.db_path_point = "pointfinder_db"
+...         self.db_path_point_kma = None
+...         self.specific_gene = None
+...         self.unknown_mut = None
+...         self.min_cov_point = None
+...         self.threshold_point = None
+...         self.ignore_indels = None
+...         self.ignore_stop_codons = None
+...         self.pickle = False
+...         self.nanopore = False
+...         self.out_json = None
+...         self.disinfectant = False
+...         self.db_path_disinf = None
+...         self.db_path_disinf_kma = None
+...         self.output_aln = False
+...         self.species = "ecoli"
+
+>>> args = DummyArgs()
+>>> conf = Config(args)
+
+```
+
 ## initialize
 
 First part just creates some dummy objects needed for testing the class. A
@@ -151,7 +196,8 @@ Create the phenoDB object.
 >>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 >>> ResFinderResultHandler.standardize_results(res,
 ...                                            rf_custom_kma,
-...                                            "ResFinder")
+...                                            "ResFinder",
+...                                            conf)
 
 >>> for k in res["databases"]:
 ...   print(k)

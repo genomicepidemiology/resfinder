@@ -44,6 +44,7 @@
 ...         self.disinfectant = False  # Tested?
 ...         self.db_path_disinf = None       # Tested?
 ...         self.db_path_disinf_kma = None   # Tested?
+...         self.output_aln = False
 
 >>> args = DummyArgs()
 >>> args1 = DummyArgs()

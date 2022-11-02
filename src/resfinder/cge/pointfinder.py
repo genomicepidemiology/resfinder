@@ -410,8 +410,12 @@ class PointFinder(CGEFinder):
         gene_db_id = gene_ref_id.replace("_", ";;")
         known = []
         for mis_match in mis_matches:
-            mis_match_key = (f"{gene_db_id}_{mis_match[1]}"
-                             f"_{mis_match[-1].lower()}")
+            if mis_match[0] == 'del':
+                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
+                                 f"_{mis_match[-2].lower()}")
+            else:
+                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
+                                 f"_{mis_match[-1].lower()}")
             if mis_match_key in phenodb:
                 known.append(mis_match)
         return known
@@ -1803,6 +1807,7 @@ class PointFinder(CGEFinder):
         for i in range(len(mis_matches)):
             m_type = mis_matches[i][0]
             pos = mis_matches[i][1]  # sort on pos?
+            look_up_pos = mis_matches[i][2]
             look_up_mut = mis_matches[i][3]
             mut_name = mis_matches[i][4]
             nuc_ref = mis_matches[i][5]
@@ -1824,7 +1829,7 @@ class PointFinder(CGEFinder):
 
             # Check if mutation is known
             gene_mut_name, resistence, pmid = self.look_up_known_muts(
-                gene, pos, look_up_mut, m_type, gene_name)
+                gene, look_up_pos, look_up_mut, m_type, gene_name)
 
             # Make lists to strings
             if resistence != "Unknown":
@@ -1955,6 +1960,8 @@ class PointFinder(CGEFinder):
         promtr_gene_objt = re.search(regex, gene_name)
 
         if gene_ID in self.RNA_gene_list or promtr_gene_objt:
+            found_mut = found_mut.upper()
+        elif mut == 'del' or mut == 'ins':
             found_mut = found_mut.upper()
         else:
             found_mut = self.aa(found_mut)

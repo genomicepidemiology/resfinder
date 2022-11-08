@@ -410,9 +410,9 @@ class PointFinder(CGEFinder):
         gene_db_id = gene_ref_id.replace("_", ";;")
         known = []
         for mis_match in mis_matches:
-            if mis_match[0] == 'del':
+            if mis_match[0] != 'sub':
                 mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
-                                 f"_{mis_match[-2].lower()}")
+                                 f"_{mis_match[3].lower()}")
             else:
                 mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
                                  f"_{mis_match[-1].lower()}")
@@ -1451,7 +1451,7 @@ class PointFinder(CGEFinder):
 
                     mut = indel_data[0]
                     codon_no_indel = indel_data[1]
-                    seq_pos = indel_data[2] + sbjct_start - 1
+                    seq_pos = indel_data[2]
                     indel = indel_data[3]
                     indel_no += 1
 
@@ -1938,7 +1938,7 @@ class PointFinder(CGEFinder):
                     return line_lst[0][0]
         return line_lst
 
-    def look_up_known_muts(self, gene, pos, found_mut, mut, gene_name):
+    def  look_up_known_muts(self, gene, pos, found_mut, mut, gene_name):
         """
             This function uses the known_mutations dictionay, a gene a
             string with the gene key name, a gene position as integer,
@@ -1956,15 +1956,8 @@ class PointFinder(CGEFinder):
         resistence = "Unknown"
         pmid = "-"
         gene_ID = gene.split("_")[0]
-        regex = r"promoter-size-(\d+)(?:bp)"
-        promtr_gene_objt = re.search(regex, gene_name)
 
-        if gene_ID in self.RNA_gene_list or promtr_gene_objt:
-            found_mut = found_mut.upper()
-        elif mut == 'del' or mut == 'ins':
-            found_mut = found_mut.upper()
-        else:
-            found_mut = self.aa(found_mut)
+        found_mut = found_mut.upper()
 
         if mut == "del":
             for i, i_pos in enumerate(range(pos, pos + len(found_mut))):

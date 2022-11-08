@@ -216,6 +216,7 @@ class Isolate(dict):
             codon_change = feat_res_dict.get("codon_change", None)
             indels = feat_res_dict['deletion'] or feat_res_dict['insertion']
 
+
             # Not point mutation
             if(var_aa is None and var_codon is None):
                 return feat_res_dict["seq_regions"][0]
@@ -227,8 +228,8 @@ class Isolate(dict):
             # indels
             elif (indels):
                 return (f"{feat_res_dict['seq_regions'][0]}"
-                        f"_{feat_res_dict['ref_start_pos']}"
-                        f"_{feat_res_dict['var_aa']}")
+                        f"_{feat_res_dict['ref_end_pos']}"
+                        f"_{feat_res_dict['nuc_change']}")
             # Amino acid mutation
             else:
                 return (f"{feat_res_dict['seq_regions'][0]}"

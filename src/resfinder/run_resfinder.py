@@ -462,6 +462,7 @@ def main():
             results_pnt=results_pnt, phenodb=res_pheno_db)
 
         # DEPRECATED
+        # mutations in raw reads is only found with write_results.
         # TODO: make a write method that depends on the json output
         finder.write_results(
             out_path=conf.outputPath, result=results, res_type=method,

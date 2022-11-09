@@ -1903,6 +1903,7 @@ class PointFinder(CGEFinder):
         resistence_lst = []
         for mut in output_mut:
             for res in mut[3].split(","):
+                res = res.lstrip()
                 resistence_lst.append(res)
 
         # Save known mutations

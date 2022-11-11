@@ -410,8 +410,12 @@ class PointFinder(CGEFinder):
         gene_db_id = gene_ref_id.replace("_", ";;")
         known = []
         for mis_match in mis_matches:
-            mis_match_key = (f"{gene_db_id}_{mis_match[1]}"
-                             f"_{mis_match[-1].lower()}")
+            if mis_match[0] != 'sub':
+                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
+                                 f"_{mis_match[3].lower()}")
+            else:
+                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
+                                 f"_{mis_match[-1].lower()}")
             if mis_match_key in phenodb:
                 known.append(mis_match)
         return known
@@ -1447,7 +1451,7 @@ class PointFinder(CGEFinder):
 
                     mut = indel_data[0]
                     codon_no_indel = indel_data[1]
-                    seq_pos = indel_data[2] + sbjct_start - 1
+                    seq_pos = indel_data[2]
                     indel = indel_data[3]
                     indel_no += 1
 
@@ -1899,6 +1903,7 @@ class PointFinder(CGEFinder):
         resistence_lst = []
         for mut in output_mut:
             for res in mut[3].split(","):
+                res = res.lstrip()
                 resistence_lst.append(res)
 
         # Save known mutations
@@ -1934,7 +1939,7 @@ class PointFinder(CGEFinder):
                     return line_lst[0][0]
         return line_lst
 
-    def look_up_known_muts(self, gene, pos, found_mut, mut, gene_name):
+    def  look_up_known_muts(self, gene, pos, found_mut, mut, gene_name):
         """
             This function uses the known_mutations dictionay, a gene a
             string with the gene key name, a gene position as integer,
@@ -1951,8 +1956,10 @@ class PointFinder(CGEFinder):
         """
         resistence = "Unknown"
         pmid = "-"
-        found_mut = found_mut.upper()
         gene_ID = gene.split("_")[0]
+
+        found_mut = found_mut.upper()
+
         if mut == "del":
             for i, i_pos in enumerate(range(pos, pos + len(found_mut))):
 

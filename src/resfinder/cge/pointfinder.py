@@ -1806,30 +1806,30 @@ class PointFinder(CGEFinder):
         # Go through each mutation
         for i in range(len(mis_matches)):
             m_type = mis_matches[i][0]
-            pos = mis_matches[i][1]  # sort on pos?
-            look_up_pos = mis_matches[i][2]
+            codon_pos = mis_matches[i][1]  # sort on codon_pos?
+            nuc_pos = mis_matches[i][2]
             look_up_mut = mis_matches[i][3]
             mut_name = mis_matches[i][4]
             nuc_ref = mis_matches[i][5]
             nuc_alt = mis_matches[i][6]
             ref = mis_matches[i][-2]
-            alt = mis_matches[i][-1]
+            aa_alt = mis_matches[i][-1]
 
             # First index in list indicates if mutation is known
             output_mut += [[]]
 
             # Define output vaiables
             codon_change = nuc_ref + " -> " + nuc_alt
-            aa_change = ref + " -> " + alt
+            aa_change = ref + " -> " + aa_alt
 
             if RNA is True:
                 aa_change = "RNA mutations"
-            elif pos < 0:
+            elif codon_pos < 0:
                 aa_change = "Promoter mutations"
 
             # Check if mutation is known
             gene_mut_name, resistence, pmid = self.look_up_known_muts(
-                gene, look_up_pos, look_up_mut, m_type, gene_name)
+                gene, nuc_pos, aa_alt, m_type, gene_name, nuc_alt, codon_pos)
 
             # Make lists to strings
             if resistence != "Unknown":
@@ -1881,7 +1881,7 @@ class PointFinder(CGEFinder):
 
             if "Premature stop codon" in mut_name:
                 sbjct_len = hit['sbjct_length']
-                qry_len = pos * 3
+                qry_len = codon_pos * 3
                 prec_truckat = round(
                     ((float(sbjct_len) - qry_len)
                      / float(sbjct_len))
@@ -1939,7 +1939,8 @@ class PointFinder(CGEFinder):
                     return line_lst[0][0]
         return line_lst
 
-    def  look_up_known_muts(self, gene, pos, found_mut, mut, gene_name):
+    def look_up_known_muts(self, gene, nuc_pos, found_mut, mut, gene_name,
+                           found_nuc, codon_pos):
         """
             This function uses the known_mutations dictionay, a gene a
             string with the gene key name, a gene position as integer,
@@ -1957,42 +1958,68 @@ class PointFinder(CGEFinder):
         resistence = "Unknown"
         pmid = "-"
         gene_ID = gene.split("_")[0]
-
+        found_nuc = found_nuc.upper()
         found_mut = found_mut.upper()
 
         if mut == "del":
-            for i, i_pos in enumerate(range(pos, pos + len(found_mut))):
+            for i, i_pos in enumerate(range(nuc_pos, nuc_pos + len(found_mut))):
 
-                known_indels = self.known_mutations[gene_ID]["del"].get(i_pos, [])
+                known_indels = self.known_mutations[gene_ID]["del"].get(i_pos,
+                                                                        [])
                 for known_indel in known_indels:
                     partial_mut = found_mut[i:len(known_indel) + i]
 
                     # Check if part of found mut is known and check if
                     # found mut and known mut is in the same reading
                     # frame
-                    if(partial_mut == known_indel
-                       and len(found_mut) % 3 == len(known_indel) % 3):
-
-                        resistence = (self.known_mutations[gene_ID]["del"][i_pos]
-                                      [known_indel]['drug'])
+                    if (partial_mut == known_indel
+                            and len(found_mut) % 3 == len(known_indel) % 3):
+                        resistence = (
+                        self.known_mutations[gene_ID]["del"][i_pos]
+                        [known_indel]['drug'])
 
                         pmid = (self.known_mutations[gene_ID]["del"][i_pos]
-                                [known_indel]['pmid'])
+                        [known_indel]['pmid'])
 
                         gene_name = (self.known_mutations[gene_ID]["del"][i_pos]
-                                     [known_indel]['gene_name'])
+                        [known_indel]['gene_name'])
                         break
-        else:
-            if pos in self.known_mutations[gene_ID][mut]:
-                if found_mut in self.known_mutations[gene_ID][mut][pos]:
-                    resistence = (self.known_mutations[gene_ID][mut][pos]
-                                  [found_mut]['drug'])
+        elif mut == 'sub':
+            if codon_pos in self.known_mutations[gene_ID][mut]:
+                if found_mut in self.known_mutations[gene_ID][mut][codon_pos]:
+                    resistence = (self.known_mutations[gene_ID][mut][codon_pos]
+                    [found_mut]['drug'])
 
-                    pmid = (self.known_mutations[gene_ID][mut][pos][found_mut]
-                            ['pmid'])
+                    pmid = (self.known_mutations[gene_ID][mut][codon_pos]
+                    [found_mut]['pmid'])
+
+                    gene_name = (self.known_mutations[gene_ID][mut][codon_pos]
+                    [found_mut]['gene_name'])
+        else:
+            if nuc_pos in self.known_mutations[gene_ID][mut] \
+                    or codon_pos in self.known_mutations[gene_ID][mut]:
+                found_mutation = None
+                pos = None
+                if codon_pos in self.known_mutations[gene_ID][mut] \
+                        and found_mut in self.known_mutations[gene_ID][mut][
+                            codon_pos]:
+                    found_mutation = found_mut
+                    pos = codon_pos
+                if nuc_pos in self.known_mutations[gene_ID][mut] \
+                        and found_nuc in self.known_mutations[gene_ID][mut][
+                            nuc_pos]:
+                    found_mutation = found_nuc
+                    pos = nuc_pos
+                if found_mutation:
+                    resistence = (self.known_mutations[gene_ID][mut][pos]
+                                  [found_mutation]['drug'])
+
+                    pmid = (self.known_mutations[gene_ID][mut][pos]
+                            [found_mutation]['pmid'])
 
                     gene_name = (self.known_mutations[gene_ID][mut][pos]
-                                 [found_mut]['gene_name'])
+                                [found_mutation]['gene_name'])
+
         # Check if stop codons refer resistance
         if "*" in found_mut and gene_ID in self.known_stop_codon:
             if resistence == "Unknown":

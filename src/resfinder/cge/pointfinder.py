@@ -411,12 +411,21 @@ class PointFinder(CGEFinder):
         known = []
         for mis_match in mis_matches:
             if mis_match[0] != 'sub':
-                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
-                                 f"_{mis_match[3].lower()}")
+                mis_match_key_nuc = (f"{gene_db_id}_{mis_match[2]}"
+                                     f"_{mis_match[3].lower()}")
+                mis_match_key_aa = (f"{gene_db_id}_{mis_match[1]}"
+                                    f"_{mis_match[-1].lower()}")
             else:
-                mis_match_key = (f"{gene_db_id}_{mis_match[2]}"
-                                 f"_{mis_match[-1].lower()}")
-            if mis_match_key in phenodb:
+                mis_match_key_aa = (f"{gene_db_id}_{mis_match[2]}"
+                                    f"_{mis_match[-1].lower()}")
+                mis_match_key_nuc = ""
+
+            if phenodb.mut_type_is_defined:
+                mis_match_key_nuc = mis_match_key_nuc + '_NUC'
+                mis_match_key_aa = mis_match_key_aa + '_AA'
+
+            if (mis_match_key_nuc in phenodb
+                    or mis_match_key_aa in phenodb):
                 known.append(mis_match)
         return known
 

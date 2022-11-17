@@ -171,7 +171,8 @@ class Isolate(dict):
                         start_feat = None
                         end_feat = None
 
-                    phenotypes = phenodb.get(unique_id, None)
+                    phenotypes, unique_id = self.get_phenotypes(phenodb,
+                                                                unique_id)
                     ab_class = set()
                     if(phenotypes):
                         for p in phenotypes:
@@ -222,23 +223,31 @@ class Isolate(dict):
                 return feat_res_dict["seq_regions"][0]
             # RNA mutation(single nucleotide)
             elif(len(var_codon)==1 and codon_change is None):
-                return (f"{feat_res_dict['seq_regions'][0]}"
-                        f"_{feat_res_dict['ref_start_pos']}"
-                        f"_{feat_res_dict['var_codon']}")
+                nuc_format = (f"{feat_res_dict['seq_regions'][0]}"
+                              f"_{feat_res_dict['ref_start_pos']}"
+                              f"_{feat_res_dict['var_codon']}")
+                aa_format = ""
+                return nuc_format, aa_format
             # indels
             elif (indels):
-                return (f"{feat_res_dict['seq_regions'][0]}"
-                        f"_{feat_res_dict['ref_end_pos']}"
-                        f"_{feat_res_dict['nuc_change']}")
+                nuc_format = (f"{feat_res_dict['seq_regions'][0]}"
+                              f"_{feat_res_dict['ref_end_pos']}"
+                              f"_{feat_res_dict['nuc_change']}")
+                aa_format = (f"{feat_res_dict['seq_regions'][0]}"
+                             f"_{feat_res_dict['ref_start_pos']}"
+                             f"_{feat_res_dict['var_aa']}")
+                return nuc_format, aa_format
             # Amino acid mutation
             else:
-                return (f"{feat_res_dict['seq_regions'][0]}"
-                        f"_{feat_res_dict['ref_start_pos']}"
-                        f"_{feat_res_dict['var_aa']}")
+                nuc_format = ""
+                aa_format = (f"{feat_res_dict['seq_regions'][0]}"
+                             f"_{feat_res_dict['ref_start_pos']}"
+                             f"_{feat_res_dict['var_aa']}")
+                return nuc_format, aa_format
 
         elif(type == "seq_regions"):
-            return "{}_{}".format(feat_res_dict["name"],
-                                  feat_res_dict["ref_acc"])
+            return ("{}_{}".format(feat_res_dict["name"],
+                                  feat_res_dict["ref_acc"]), "")
 
     def load_finder_results(self, std_table, phenodb, type):
         """
@@ -258,11 +267,11 @@ class Isolate(dict):
                        for entry in feat_info["ref_database"])):
                 continue
 
-            unique_id = Isolate.get_phenodb_id(feat_info, type)
+            unique_id_nuc, unique_id_aa = Isolate.get_phenodb_id(feat_info,
+                                                                 type)
+            phenotypes, unique_id = self.get_phenotypes(phenodb, unique_id_nuc,
+                                                        unique_id_aa)
             feat_list = self.get(unique_id, [])
-
-            phenotypes = phenodb.get(unique_id, None)
-
             if(phenotypes):
                 for p in phenotypes:
                     res_feature = self.new_res_feature(type, feat_info,
@@ -273,6 +282,33 @@ class Isolate(dict):
                 res_feature = self.new_res_feature(type, feat_info, unique_id)
                 feat_list.append(res_feature)
             self[unique_id] = feat_list
+
+    def get_phenotypes(self, phenodb, unique_id_nuc, unique_id_aa):
+        """
+            Input:
+                phenodb: PhenoDB object
+                unique_id: string in key format fitting the phenodb objects
+            Output:
+                returns a phenodb object based on the unique id and the unique
+                id used.
+            Method modifies unique id to account for mutation type (AA/NUC)
+            using the newest pointfinder database.
+        """
+        if phenodb.mut_type_is_defined:
+            unique_id_aa = unique_id_aa + '_AA'
+            unique_id_nuc = unique_id_nuc + '_NUC'
+
+        phenotype_aa = phenodb.get(unique_id_aa, None)
+        phenotype_nuc = phenodb.get(unique_id_nuc, None)
+
+        if phenotype_nuc:
+            phenotypes = phenotype_nuc
+            unique_id_found = unique_id_nuc
+        else:
+            phenotypes = phenotype_aa
+            unique_id_found = unique_id_aa
+
+        return phenotypes, unique_id_found
 
     def new_res_feature(self, type, feat_info, unique_id, phenotype=None):
         ab_class = set()

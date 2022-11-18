@@ -415,6 +415,10 @@ class PointFinder(CGEFinder):
                                      f"_{mis_match[3].lower()}")
                 mis_match_key_aa = (f"{gene_db_id}_{mis_match[1]}"
                                     f"_{mis_match[-1].lower()}")
+            elif mis_match[4].startswith('r.'):#RNA substitution
+                mis_match_key_aa = ""
+                mis_match_key_nuc = (f"{gene_db_id}_{mis_match[2]}"
+                                     f"_{mis_match[3].lower()}")
             else:
                 mis_match_key_aa = (f"{gene_db_id}_{mis_match[2]}"
                                     f"_{mis_match[-1].lower()}")
@@ -1838,7 +1842,8 @@ class PointFinder(CGEFinder):
 
             # Check if mutation is known
             gene_mut_name, resistence, pmid = self.look_up_known_muts(
-                gene, nuc_pos, aa_alt, m_type, gene_name, nuc_alt, codon_pos)
+                gene, nuc_pos, aa_alt, m_type, gene_name, nuc_alt, codon_pos,
+                look_up_mut)
 
             # Make lists to strings
             if resistence != "Unknown":
@@ -1949,7 +1954,7 @@ class PointFinder(CGEFinder):
         return line_lst
 
     def look_up_known_muts(self, gene, nuc_pos, found_mut, mut, gene_name,
-                           found_nuc, codon_pos):
+                           found_nuc, codon_pos, found_nuc_del):
         """
             This function uses the known_mutations dictionay, a gene a
             string with the gene key name, a gene position as integer,
@@ -1971,6 +1976,7 @@ class PointFinder(CGEFinder):
         found_mut = found_mut.upper()
 
         if mut == "del":
+            found_mut = found_nuc_del.upper()
             for i, i_pos in enumerate(range(nuc_pos, nuc_pos + len(found_mut))):
 
                 known_indels = self.known_mutations[gene_ID]["del"].get(i_pos,
@@ -2005,18 +2011,18 @@ class PointFinder(CGEFinder):
                     gene_name = (self.known_mutations[gene_ID][mut][codon_pos]
                     [found_mut]['gene_name'])
         else:
-            if nuc_pos in self.known_mutations[gene_ID][mut] \
-                    or codon_pos in self.known_mutations[gene_ID][mut]:
+            if (nuc_pos in self.known_mutations[gene_ID][mut]
+                    or codon_pos in self.known_mutations[gene_ID][mut]):
                 found_mutation = None
                 pos = None
-                if codon_pos in self.known_mutations[gene_ID][mut] \
+                if (codon_pos in self.known_mutations[gene_ID][mut]
                         and found_mut in self.known_mutations[gene_ID][mut][
-                            codon_pos]:
+                            codon_pos]):
                     found_mutation = found_mut
                     pos = codon_pos
-                if nuc_pos in self.known_mutations[gene_ID][mut] \
+                if (nuc_pos in self.known_mutations[gene_ID][mut]
                         and found_nuc in self.known_mutations[gene_ID][mut][
-                            nuc_pos]:
+                            nuc_pos]):
                     found_mutation = found_nuc
                     pos = nuc_pos
                 if found_mutation:

@@ -34,6 +34,7 @@ class Feature(object):
         self.isolate = Feature.na2none(isolate)
         self.ref_db = Feature.na2none(ref_db)
 
+
     @staticmethod
     def na2none(entry):
         if(isinstance(entry, str)):
@@ -94,7 +95,7 @@ class Mutation(Gene):
                  ref_codon=None, mut_codon=None, ref_aa=None,
                  ref_aa_right=None, mut_aa=None, isolate=None, insertion=None,
                  deletion=None, end=None, nuc=False, premature_stop=0,
-                 frameshift=None, ref_db=None):
+                 frameshift=None, ref_db=None, nuc_format=None, aa_format=None):
         Gene.__init__(self, unique_id=unique_id, seq_region=seq_region,
                       start=pos, end=end, hit=hit, isolate=isolate,
                       ref_db=ref_db)
@@ -111,6 +112,9 @@ class Mutation(Gene):
         # Indicate how many percent the region was truncated.
         self.premature_stop = Feature.na2none(premature_stop)
         self.frameshift = Feature.na2none(frameshift)
+        #key format for indels
+        self.nuc_format = nuc_format
+        self.aa_format = aa_format
 
         # Create mutation description
         if(insertion is True and deletion is True):
@@ -223,7 +227,7 @@ class ResMutation(Mutation, Resistance):
                  ref_aa_right=None, mut_aa=None, isolate=None, insertion=None,
                  deletion=None, end=None, nuc=False, premature_stop=False,
                  frameshift=None, ab_class=None, pmids=None, notes=None,
-                 ref_db=None):
+                 ref_db=None, nuc_format=None, aa_format=None):
         Mutation.__init__(self, unique_id=unique_id, seq_region=seq_region,
                           pos=pos, hit=hit, ref_codon=ref_codon,
                           mut_codon=mut_codon, ref_aa=ref_aa,
@@ -231,5 +235,6 @@ class ResMutation(Mutation, Resistance):
                           isolate=isolate, insertion=insertion,
                           deletion=deletion, end=end, nuc=nuc,
                           premature_stop=premature_stop, frameshift=frameshift,
-                          ref_db=ref_db)
+                          ref_db=ref_db, nuc_format=nuc_format,
+                          aa_format=aa_format)
         Resistance.__init__(self, ab_class=ab_class, pmids=pmids, notes=notes)

@@ -275,13 +275,21 @@ class Isolate(dict):
             if(phenotypes):
                 for p in phenotypes:
                     res_feature = self.new_res_feature(type, feat_info,
-                                                       unique_id, p)
+                                                       unique_id,
+                                                       unique_id_aa,
+                                                       unique_id_nuc,p)
                     if(res_feature not in feat_list):
                         feat_list.append(res_feature)
             else:
-                res_feature = self.new_res_feature(type, feat_info, unique_id)
+                res_feature = self.new_res_feature(type, feat_info,
+                                                   unique_id,
+                                                   unique_id_aa,
+                                                   unique_id_nuc)
                 feat_list.append(res_feature)
-            self[unique_id] = feat_list
+            if unique_id_nuc == "":
+                self[unique_id_aa] = feat_list
+            else:
+                self[unique_id_nuc] = feat_list
 
     def get_phenotypes(self, phenodb, unique_id_nuc, unique_id_aa):
         """
@@ -310,7 +318,8 @@ class Isolate(dict):
 
         return phenotypes, unique_id_found
 
-    def new_res_feature(self, type, feat_info, unique_id, phenotype=None):
+    def new_res_feature(self, type, feat_info, unique_id, aa_format, nuc_format,
+                        phenotype=None):
         ab_class = set()
 
         if phenotype is None:
@@ -326,13 +335,14 @@ class Isolate(dict):
                                             phenotype)
         elif(type == "seq_variations"):
             res_feature = self.new_res_mut(feat_info, unique_id, ab_class,
-                                           phenotype)
+                                           phenotype, nuc_format, aa_format)
 
         ResProfile.update_classes_dict_of_feature_sets(
             self.feature_classes, res_feature)
         return res_feature
 
-    def new_res_mut(self, feat_info, unique_id, ab_class, phenotype):
+    def new_res_mut(self, feat_info, unique_id, ab_class, phenotype, nuc_format,
+                    aa_format):
         ref_aa = feat_info.get("ref_aa", None)
 
         if(ref_aa is None or ref_aa.upper() == "NA"):
@@ -343,6 +353,8 @@ class Isolate(dict):
         if phenotype:
             feat_res = ResMutation(
                 unique_id=unique_id,
+                nuc_format=nuc_format,
+                aa_format=aa_format,
                 seq_region=";;".join(feat_info["seq_regions"]),
                 pos=feat_info["ref_start_pos"],
                 ref_codon=feat_info["ref_codon"],
@@ -362,6 +374,7 @@ class Isolate(dict):
         else:
             feat_res = ResMutation(
                 unique_id=unique_id,
+                nuc_format= nuc_format,
                 seq_region=";;".join(feat_info["seq_regions"]),
                 pos=feat_info["ref_start_pos"],
                 ref_codon=feat_info["ref_codon"],

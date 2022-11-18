@@ -327,8 +327,12 @@ class PhenoDB(dict):
                     res_codon = self.get_csv_tuple(line_list[6].lower())
                     if(len(res_codon) > 1):
                         for codon in res_codon:
-                            unique_id_alt = (gene_name + "_" + codon_pos
-                                             + "_" + codon)
+                            if self.mut_type_is_defined:
+                                unique_id_alt = (gene_name + "_" + codon_pos
+                                                 + "_" + codon + "_" + mut_type)
+                            else:
+                                unique_id_alt = (gene_name + "_" + codon_pos
+                                                 + "_" + codon)
                             self[unique_id_alt] = pheno_lst
                 except IndexError:
                     eprint("Error in line " + str(line_counter))

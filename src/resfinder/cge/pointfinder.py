@@ -63,7 +63,7 @@ class PointFinder(CGEFinder):
 
         # Creat user defined gene_list if given
         if(gene_list is not None):
-            self.gene_list = get_user_defined_gene_list(gene_list)
+            self.gene_list = self.get_user_defined_gene_list(gene_list)
 
         # Depends on database format, current or legacy
         if os.path.exists(f"{self.specie_path}/{self.PHENOTYPE_FILE}"):
@@ -383,8 +383,6 @@ class PointFinder(CGEFinder):
             fh.write(result_str[0])
         with open(out_path + "/PointFinder_table.txt", "w") as fh:
             fh.write(result_str[1])
-        with open(out_path + "/PointFinder_prediction.txt", "w") as fh:
-            fh.write(result_str[2])
 
     @staticmethod
     def discard_unknown_muts(results_pnt, phenodb):

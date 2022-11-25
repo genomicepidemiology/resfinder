@@ -217,7 +217,6 @@ class Isolate(dict):
             codon_change = feat_res_dict.get("codon_change", None)
             indels = feat_res_dict['deletion'] or feat_res_dict['insertion']
 
-
             # Not point mutation
             if(var_aa is None and var_codon is None):
                 return feat_res_dict["seq_regions"][0]
@@ -300,7 +299,7 @@ class Isolate(dict):
                 returns a phenodb object based on the unique id and the unique
                 id used.
             Method modifies unique id to account for mutation type (AA/NUC)
-            using the newest pointfinder database.
+            using the pointfinder database.
         """
         if phenodb.mut_type_is_defined:
             unique_id_aa = unique_id_aa + '_AA'

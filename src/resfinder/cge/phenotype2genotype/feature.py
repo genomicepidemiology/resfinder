@@ -34,7 +34,6 @@ class Feature(object):
         self.isolate = Feature.na2none(isolate)
         self.ref_db = Feature.na2none(ref_db)
 
-
     @staticmethod
     def na2none(entry):
         if(isinstance(entry, str)):

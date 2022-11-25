@@ -269,14 +269,14 @@ class Isolate(dict):
             unique_id_nuc, unique_id_aa = Isolate.get_phenodb_id(feat_info,
                                                                  type)
             phenotypes, unique_id = self.get_phenotypes(phenodb, unique_id_nuc,
-                                                        unique_id_aa)
+                                                        unique_id_aa, type)
             feat_list = self.get(unique_id, [])
             if(phenotypes):
                 for p in phenotypes:
                     res_feature = self.new_res_feature(type, feat_info,
                                                        unique_id,
                                                        unique_id_aa,
-                                                       unique_id_nuc,p)
+                                                       unique_id_nuc, p)
                     if(res_feature not in feat_list):
                         feat_list.append(res_feature)
             else:
@@ -290,7 +290,7 @@ class Isolate(dict):
             else:
                 self[unique_id_nuc] = feat_list
 
-    def get_phenotypes(self, phenodb, unique_id_nuc, unique_id_aa):
+    def get_phenotypes(self, phenodb, unique_id_nuc, unique_id_aa, type):
         """
             Input:
                 phenodb: PhenoDB object
@@ -301,7 +301,8 @@ class Isolate(dict):
             Method modifies unique id to account for mutation type (AA/NUC)
             using the pointfinder database.
         """
-        if phenodb.mut_type_is_defined:
+        if (phenodb.mut_type_is_defined
+                and type == "seq_variations"):
             unique_id_aa = unique_id_aa + '_AA'
             unique_id_nuc = unique_id_nuc + '_NUC'
 

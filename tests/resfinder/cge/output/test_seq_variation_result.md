@@ -62,6 +62,7 @@ hit.
   'ref_codon': 'ggt',
   'var_codon': 'gat',
   'codon_change': 'ggt>gat',
+  'nuc_change': 'd',
   'ref_aa': 'g',
   'var_aa': 'd',
   'ref_start_pos': 81,
@@ -71,7 +72,7 @@ hit.
   'insertion': False,
   'ref_id': 'gyrA;;1;;CP073768.1_81_d',
   'key': 'gyrA;;1;;CP073768.1;;81;;d',
-  'ref_database': 'PointFinder-...',...
+  'ref_database': 'PointFinder-...',...,
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
 ```
@@ -97,13 +98,14 @@ hit.
   'ref_codon': 'ggt',
   'var_codon': 'gat',
   'codon_change': 'ggt>gat',
+  'nuc_change': 'd',
   'ref_start_pos': 81,
   'ref_end_pos': 81,
   'substitution': True,
   'deletion': False,
   'insertion': False,
-  'ref_id': 'gyrA;;1;;CP073768.1_81_gat',
-  'key': 'gyrA;;1;;CP073768.1;;81;;gat',
+  'ref_id': 'gyrA;;1;;CP073768.1_81_d',
+  'key': 'gyrA;;1;;CP073768.1;;81;;d',
   'ref_database': 'PointFinder-...',...
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
 

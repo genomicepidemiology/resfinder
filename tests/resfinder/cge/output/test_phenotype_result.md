@@ -11,10 +11,11 @@
 >>> rg = ResGene(unique_id="blaOXA-384_KF986263", start=1, end=90,
 ...              isolate="isolateA", ab_class=["beta-lactam"],
 ...              ref_db="ResFinder")
->>> rm = ResMutation(unique_id="gyrA_81_d", seq_region="gyrA", pos=81,
+>>> rm = ResMutation(unique_id="gyrA;;1;;CP073768.1_81_d_AA", seq_region="gyrA", pos=81,
 ...                  ref_codon="ggt", mut_codon="gat", ref_aa="g",
 ...                  mut_aa="d", isolate="isolateB", nuc=False,
-...                  ab_class=["fluoroquinolone"], ref_db="PointFinder")
+...                  ab_class=["fluoroquinolone"], ref_db="PointFinder",
+...                  nuc_format="", aa_format="gyrA;;1;;CP073768.1_81_d")
 
 >>> from src.resfinder.cge.phenotype2genotype.res_profile import Antibiotics
 >>> ab_m1 = Antibiotics(name="ciprofloxacin", classes=["fluoroquinolone"],
@@ -106,7 +107,7 @@
 ...  'substitution': True,
 ...  'deletion': False,
 ...  'insertion': False,
-...  'ref_id': 'gyrA_81_d',
+...  'ref_id': 'gyrA;;1;;CP073768.1_81_d',
 ...  'key': 'gyrA;;81;;d',
 ...  'ref_database': ['PointFinder-a2b2ce4'],
 ...  'seq_regions': ['gyrA;;1;;CP073768.1']
@@ -180,7 +181,7 @@ True
 >>> PhenotypeResult.get_ref_id_and_type(rg, isolate)
 ('blaOXA-384_1_KF986263', 'seq_regions')
 >>> PhenotypeResult.get_ref_id_and_type(rm, isolate)
-('gyrA_81_d', 'seq_variations')
+('gyrA;;1;;CP073768.1_81_d', 'seq_variations')
 
 ```
 

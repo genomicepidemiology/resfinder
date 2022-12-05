@@ -97,7 +97,10 @@ class PhenotypeResult(dict):
                 feature.unique_id]
         elif(isinstance(feature, ResMutation)):
             type = "seq_variations"
-            ref_id = feature.unique_id
+            if feature.nuc_format == '':
+                ref_id = feature.aa_format
+            else:
+                ref_id = feature.nuc_format
         return (ref_id, type)
 
     @staticmethod

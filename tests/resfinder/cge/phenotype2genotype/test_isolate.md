@@ -213,11 +213,11 @@ False
 
 >>> feat_res_dict = res["seq_regions"]["blaOXA-384;;1;;KF986263"]
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_regions")
-'blaOXA-384_KF986263'
+('blaOXA-384_KF986263', '')
 
 >>> feat_res_dict = res["seq_variations"]["gyrA;;1;;CP073768.1;;81;;d"]
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_variations")
-'gyrA;;1;;CP073768.1_81_d'
+('', 'gyrA;;1;;CP073768.1_81_d')
 
 ```
 

@@ -30,14 +30,14 @@ class Config():
         "acquired": None,
         "acq_overlap": 30,
         "min_cov": 0.6,
-        "threshold": 0.8,
+        "threshold": 0.9,
+        "min_depth": 5,
         "point": None,
         "db_path_point": None,
         "db_path_point_kma": None,
-        "specific_gene": None,
         "unknown_mut": False,
-        "min_cov_point": 0.01,
-        "threshold_point": 0.8,
+        "min_cov_point": 0.6,
+        "threshold_point": 0.9,
         "ignore_indels": False,
         "ignore_stop_codons": False,
         "pickle": False
@@ -162,6 +162,7 @@ class Config():
         self.method = PointFinder.TYPE_KMA
         self.kma = self.get_prg_path(args.kmaPath)
         self.nanopore = args.nanopore
+        self.min_depth = args.min_depth
 
     def set_resfinder_opts(self, args):
         self.set_path_resfinderdb(args)
@@ -242,8 +243,6 @@ class Config():
         if(self.db_path_point is None):
             self.point = False
             return
-
-        self.specific_gene = args.specific_gene
 
         args.min_cov_point = float(args.min_cov_point)
         args.threshold_point = float(args.threshold_point)

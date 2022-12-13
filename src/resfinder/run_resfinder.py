@@ -137,6 +137,11 @@ def main():
                               "is not found. Point mutations will silently "
                               "be ignored."),
                         default=False)
+    parser.add_argument("-m_d", "--min_depth",
+                        help="Minimum depth of alignment sequences when using "
+                             "KMA.",
+                        type=float,
+                        default=None)
 
     # Acquired resistance options
     parser.add_argument("-db_res", "--db_path_res",
@@ -193,12 +198,6 @@ def main():
                         help=("Path to the PointFinder databases indexed with "
                               "KMA. Defaults to the value of the "
                               "--db_path_point flag."),
-                        default=None)
-    parser.add_argument("-g", "--specific_gene",
-                        nargs='+',
-                        help="Specify genes existing in the database to \
-                              search for - if none is specified all genes are \
-                              included in the search.",
                         default=None)
     parser.add_argument("-u", "--unknown_mut",
                         action="store_true",

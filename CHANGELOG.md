@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+### Added
+- Option (--output_aln) that will output alignment and match sequences in the json output ("seq_regions": "query_string" / "alignment_string" / "ref_string" )
+
+### Fixed
+- Issue with RNA mutations
+- Issue with indels?
+
+
 ## [4.2.3] - 2022-10-13
 
 ### Added

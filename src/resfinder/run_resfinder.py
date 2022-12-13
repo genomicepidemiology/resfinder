@@ -142,6 +142,10 @@ def main():
                              "KMA.",
                         type=float,
                         default=None)
+    parser.add_argument("--output_aln",
+                        action="store_true",
+                        help="will add the alignments in the json output.",
+                        default=False)
 
     # Acquired resistance options
     parser.add_argument("-db_res", "--db_path_res",
@@ -304,9 +308,10 @@ def main():
                                           res_type=ResFinder.TYPE_BLAST,
                                           software="ResFinder")
 
+
             ResFinderResultHandler.standardize_results_old(std_result,
                                                        resfinder_result.results,
-                                                       "ResFinder")
+                                                       "ResFinder", conf)
 
         else:
             method = ResFinder.TYPE_KMA
@@ -354,6 +359,7 @@ def main():
                                   db_path_kma=conf.db_path_disinf_kma)
 
         if(conf.inputfasta):
+
             method = ResFinder.TYPE_BLAST
             disin_result = disinf_finder.blast(inputfile=conf.inputfasta,
                                                 out_path=conf.outPath_disinf_blast,
@@ -361,6 +367,7 @@ def main():
                                                 threshold=conf.dis_gene_id,
                                                 blast=conf.blast,
                                                 allowed_overlap=conf.dis_overlap)
+
         else:
             method = ResFinder.TYPE_KMA
             if(conf.nanopore):
@@ -444,9 +451,9 @@ def main():
             results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                  kma_params)
 
-
         handle_results(finder=finder, res=results, std_result=std_result,
                        conf=conf, db_name="PointFinder", method=method)
+
 
     ##########################################################################
     # Phenotype to genotype

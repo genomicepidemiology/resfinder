@@ -51,6 +51,9 @@ class PhenoDB(dict):
             self.load_disinfectant_db(disinf_file)
 
         if(point_file):
+            # mut_type_is_defined indicates the new db with AA/NUC
+            # instead of DNA/RNA
+            self.mut_type_is_defined = False
             if os.path.basename(point_file) == "resistens-overview.txt":
                 self.load_point_old_db(point_file)
             else:
@@ -210,9 +213,16 @@ class PhenoDB(dict):
                     line_list = list(map(str.rstrip, line_list))
                     # ID in DB is Gene-AAMut-Pos and is not unique
                     gene_id = line_list[0]
+                    mut_type = line_list[1]
                     codon_pos = line_list[3]
                     res_codon_str = line_list[6].lower()
 
+                    if mut_type == 'AA' or mut_type == 'NUC':
+                        self.mut_type_is_defined = True
+
+                    if not self.mut_type_is_defined:
+                        eprint("Warning: Your PointFinder database is not "
+                               "up to date. This may effect the results.")
                     # Check if the entry is with a promoter
                     gene_id = PhenoDB.if_promoter_rename(gene_id)
 
@@ -225,8 +235,13 @@ class PhenoDB(dict):
 
                     # TODO: Remove this tuple and its dependencies.
                     sug_phenotype = ()
-                    unique_id = "%s_%s_%s" % (gene_name, codon_pos,
-                                              res_codon_str)
+                    if self.mut_type_is_defined:
+                        unique_id = "%s_%s_%s_%s" % (gene_name, codon_pos,
+                                                     res_codon_str, mut_type)
+                    else:
+                        unique_id = "%s_%s_%s" % (gene_name, codon_pos,
+                                                     res_codon_str)
+
                     abs = []
                     for ab_name in pub_phenotype:
                         # TODO: Fix database
@@ -312,8 +327,12 @@ class PhenoDB(dict):
                     res_codon = self.get_csv_tuple(line_list[6].lower())
                     if(len(res_codon) > 1):
                         for codon in res_codon:
-                            unique_id_alt = (gene_name + "_" + codon_pos
-                                             + "_" + codon)
+                            if self.mut_type_is_defined:
+                                unique_id_alt = (gene_name + "_" + codon_pos
+                                                 + "_" + codon + "_" + mut_type)
+                            else:
+                                unique_id_alt = (gene_name + "_" + codon_pos
+                                                 + "_" + codon)
                             self[unique_id_alt] = pheno_lst
                 except IndexError:
                     eprint("Error in line " + str(line_counter))
@@ -751,7 +770,6 @@ class Phenotype(object):
         self.res_mechanics = res_mechanics
         self.req_muts = req_muts
         self.res_database = res_db
-
 
 class Antibiotics(object):
     """ Class is implemented to be key in a dict. The class can be tested

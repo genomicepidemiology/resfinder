@@ -22,7 +22,7 @@
 ...         self.kmaPath = None
 ...         self.species = None
 ...         self.ignore_missing_species = None
-...         self.db_path_res = "resfinder_db"
+...         self.db_path_res = None
 ...         self.db_path_res_kma = None
 ...         self.databases = None
 ...         self.acquired = True
@@ -30,7 +30,7 @@
 ...         self.min_cov = None
 ...         self.threshold = None
 ...         self.point = True
-...         self.db_path_point = "pointfinder_db"
+...         self.db_path_point = None
 ...         self.db_path_point_kma = None
 ...         self.specific_gene = None
 ...         self.unknown_mut = None
@@ -44,6 +44,7 @@
 ...         self.disinfectant = False  # Tested?
 ...         self.db_path_disinf = None       # Tested?
 ...         self.db_path_disinf_kma = None   # Tested?
+...         self.output_aln = False
 
 >>> args = DummyArgs()
 >>> args1 = DummyArgs()

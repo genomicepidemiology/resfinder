@@ -26,6 +26,7 @@ class SeqVariationResult(dict):
         if(len(self["ref_codon"]) == 3):
             self["codon_change"] = ("{}>{}".format(self["ref_codon"],
                                                    self["var_codon"]))
+        self["nuc_change"] = mismatch[3].lower()
 
         if(len(mismatch) > 7):
             self["ref_aa"] = mismatch[7].lower()
@@ -81,7 +82,7 @@ class SeqVariationResult(dict):
         region_name = region_results[0]["ref_id"].replace("_", ";;")
         region_name = PhenoDB.if_promoter_rename(region_name)
 
-        if(len(mismatch) > 7):
+        if(len(mismatch) > 7 and mismatch[0] == 'sub'):
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
                                       pos=self["ref_start_pos"],
@@ -93,12 +94,12 @@ class SeqVariationResult(dict):
         else:
             self["ref_id"] = ("{id}{deli}{pos}{deli}{var}"
                               .format(id=region_name,
-                                      pos=self["ref_start_pos"],
-                                      var=self["var_codon"], deli="_"))
+                                      pos=self["ref_end_pos"],
+                                      var=self["nuc_change"], deli="_"))
             minimum_key = ("{id}{deli}{pos}{deli}{var}"
                            .format(id=region_name,
-                                   pos=self["ref_start_pos"],
-                                   var=self["var_codon"], deli=";;"))
+                                   pos=self["ref_end_pos"],
+                                   var=self["nuc_change"], deli=";;"))
 
         gene_key = SeqVariationResult._get_rnd_unique_seqvar_key(
                     res_collection, minimum_key)

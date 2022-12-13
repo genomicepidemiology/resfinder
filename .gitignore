@@ -9,9 +9,9 @@ __pycache__
 __pypackages__
 running_test
 cge/kma
-db_pointfinder
-db_resfinder
-db_disinfinder
+db_pointfinder*
+db_resfinder*
+db_disinfinder*
 ._*
 doctest_tmp
 scripts/wdl/cromwell-*

@@ -5,14 +5,14 @@ import pickle
 import json
 
 from cgelib.output.result import Result
-from cgelib.alignment.read_alignment import KMAAlignment
 
 from resfinder.cge.config import Config
 from resfinder.cge.resfinder import ResFinder
 from resfinder.cge.pointfinder import PointFinder
 from resfinder.cge.output.std_results import ResFinderResultHandler
-from resfinder.cge.output.std_results import PointFinderResultHandler
+from resfinder.cge.output.result_handler import ResultHandler
 from resfinder.cge.kma_manager import KMAManager
+from resfinder.cge.blast_manager import BlastManager
 
 #  Modules used to create the extended ResFinder output (phenotype output)
 from resfinder.cge.phenotype2genotype.isolate import Isolate
@@ -25,63 +25,6 @@ from resfinder import __version__
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
-
-
-def handle_results(finder, res, std_result, conf, db_name, method):
-
-    if (method == ResFinder.TYPE_BLAST
-        and (db_name == 'ResFinder'
-             or db_name == 'DisinFinder')):
-
-        ResFinderResultHandler.standardize_results_old(std_result,
-                                                       res.results,
-                                                       db_name)
-    elif (method == PointFinder.TYPE_BLAST
-            and db_name == 'PointFinder'):
-        results_pnt = finder.find_best_seqs(res, conf.pf_gene_cov)
-
-    # the new function takes in method as a parameter.
-        PointFinderResultHandler.standardize_results_old(std_result,
-                                                         results_pnt,
-                                                         db_name) # , method
-    else:
-        filenames = [x.split('/')[-1] for x in res.alignment_files]
-        out_path = \
-            [x.rsplit('/', 1)[0] for x in res.alignment_files][0]
-
-        kma_alignment = KMAAlignment(
-            output_path=out_path,
-            filenames=filenames,
-            result_file=["Result", "Alignment"])
-
-        if (method == PointFinder.TYPE_KMA
-            and db_name == 'PointFinder'):
-            for kmahit in kma_alignment.parse_hits():
-
-                if (float(kmahit['template_coverage']) < conf.pf_gene_cov
-                        or float(
-                            kmahit['template_identity']) < conf.pf_gene_id):
-                    continue
-
-                if conf.specific_gene:
-                    if kmahit['templateID'].split('-', 1)[0] != conf.specific_gene:
-                        continue
-
-                PointFinderResultHandler.standardize_results_new(std_result,
-                                                                 kmahit,
-                                                                 db_name,
-                                                                 method,
-                                                                 finder)
-        else: #method == Resfinder.TYPE_KMA and (db_name 'ResFinder or db_name 'DisinFinder):
-            for kmahit in kma_alignment.parse_hits():
-                if (float(kmahit['template_coverage']) < conf.rf_gene_cov
-                        or float(kmahit['template_identity']) < conf.rf_gene_id):
-                    continue
-
-                ResFinderResultHandler.standardize_results_new(std_result,
-                                                               kmahit,
-                                                               db_name)
-
 
 def main():
 
@@ -266,6 +209,9 @@ def main():
         std_result.init_database("DisinFinder", conf.db_path_disinf)
 
     kma_resultfiles = ["Result", "Fragments"]
+    #format of blast output  5: "XML", 6: "TSV", 7: "TSV_extra", 10: "CSV"
+    #blast_resultfiles = ["6", "std", "qseq", "sseq", "sstrand"]
+    blast_resultfiles = 5
 
     # Load genotype to phenotype database
     res_pheno_db = PhenoDB(
@@ -276,7 +222,7 @@ def main():
         disclassdef_file=conf.disclassdef_file
     )
 
-
+    result_handler = ResultHandler(conf=conf)
     ##########################################################################
     # ResFinder
     ##########################################################################
@@ -292,33 +238,51 @@ def main():
         if(conf.inputfasta):
 
             method = ResFinder.TYPE_BLAST
-            resfinder_result = acquired_finder.blast(
-                inputfile=conf.inputfasta,
-                out_path=conf.outPath_res_blast,
-                min_cov=conf.rf_gene_cov,
-                threshold=conf.rf_gene_id,
-                blast=conf.blast,
-                allowed_overlap=conf.rf_overlap
-            )
+            # resfinder_result = acquired_finder.blast(
+            #     inputfile=conf.inputfasta,
+            #     out_path=conf.outPath_res_blast,
+            #     min_cov=conf.rf_gene_cov,
+            #     threshold=conf.rf_gene_id,
+            #     blast=conf.blast,
+            #     allowed_overlap=conf.rf_overlap
+            # )
 
-            # DEPRECATED
-            # TODO: make a write method that depends on the json output
-            acquired_finder.write_results(out_path=conf.outputPath,
-                                          result=resfinder_result,
-                                          res_type=ResFinder.TYPE_BLAST,
-                                          software="ResFinder")
+            blast_params = dict(query=conf.inputfasta,
+                                output=conf.outPath_res_blast,
+                                # min_cov=conf.rf_gene_cov,
+                                # threshold=conf.rf_gene_id,
+                                # allowed_overlap=conf.rf_overlap,
+                                outfmt=blast_resultfiles)
+
+            blast_manager = BlastManager(databases=acquired_finder.databases,
+                                         db_path_blast=conf.db_path_res)
+
+            resfinder_result = blast_manager.run_BlastNAligner(
+                                    blast_resultfiles,
+                                    blast_params)
 
 
-            ResFinderResultHandler.standardize_results_old(std_result,
-                                                       resfinder_result.results,
-                                                       "ResFinder", conf)
+            #    # DEPRECATED
+            # # TODO: make a write method that depends on the json output
+            # acquired_finder.write_results(out_path=conf.outputPath,
+            #                               result=resfinder_result,
+            #                               res_type=ResFinder.TYPE_BLAST,
+            #                               software="ResFinder")
 
         else:
             method = ResFinder.TYPE_KMA
+
+            if conf.inputfastq_2 == None:
+                input_int = conf.inputfastq_1
+                input_ipe = None
+            else:
+                input_ipe = [conf.inputfastq_1, conf.inputfastq_2]
+                input_int = None
+
             if(conf.nanopore):
 
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_res_kma,
                                   cge=True,
                                   apm="p",
@@ -326,8 +290,8 @@ def main():
                                   ont=True,
                                   md=5)
             else:
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_res_kma,
                                   cge=True,
                                   apm="p",
@@ -342,9 +306,10 @@ def main():
             resfinder_result = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                           kma_params)
 
-        handle_results(finder=acquired_finder, res=resfinder_result,
-                       std_result=std_result, conf=conf, db_name="ResFinder",
-                       method=method)
+        result_handler.handle_results(finder=acquired_finder,
+                                     res=resfinder_result,
+                                     std_result=std_result, db_name="ResFinder",
+                                     method=method)
 
     ##########################################################################
     # DisinFinder
@@ -361,7 +326,7 @@ def main():
         if(conf.inputfasta):
 
             method = ResFinder.TYPE_BLAST
-            disin_result = disinf_finder.blast(inputfile=conf.inputfasta,
+            disin_result = disinf_finder.blast(query=conf.inputfasta,
                                                 out_path=conf.outPath_disinf_blast,
                                                 min_cov=conf.dis_gene_cov,
                                                 threshold=conf.dis_gene_id,
@@ -370,10 +335,16 @@ def main():
 
         else:
             method = ResFinder.TYPE_KMA
+            if conf.inputfastq_2 == None:
+                input_int = conf.inputfastq_1
+                input_ipe = None
+            else:
+                input_ipe = [conf.inputfastq_1, conf.inputfastq_2]
+                input_int = None
             if(conf.nanopore):
 
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_disinf_kma,
                                   cge=True,
                                   apm="p",
@@ -381,8 +352,8 @@ def main():
                                   ont=True,
                                   md=5)
             else:
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_disinf_kma,
                                   cge=True,
                                   apm="p",
@@ -397,9 +368,9 @@ def main():
             disin_result = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                      kma_params)
 
-        handle_results(finder=disinf_finder, res=disin_result,
-                       std_result=std_result, conf=conf, db_name="DisinFinder",
-                       method=method)
+        result_handler.handle_results(finder=disinf_finder, res=disin_result,
+                                     std_result=std_result,
+                                     db_name="DisinFinder", method=method)
 
     ##########################################################################
     # PointFinder
@@ -409,25 +380,35 @@ def main():
 
         finder = PointFinder(db_path=conf.db_path_point,
                              species=conf.species_dir,
-                             gene_list=conf.specific_gene,
                              ignore_indels=conf.ignore_indels,
                              ignore_stop_codons=conf.ignore_stop_codons)
 
         if(conf.inputfasta):
             method = PointFinder.TYPE_BLAST
-            blast_run = finder.blast(inputfile=conf.inputfasta,
-                                     out_path=conf.outPath_point_blast,
-                                     min_cov=0.01,  # Sorts on coverage later
-                                     threshold=conf.pf_gene_id,
-                                     blast=conf.blast,
-                                     cut_off=False)
-            results = blast_run.results
+
+            blast_params = dict(query=conf.inputfasta,
+                                output=conf.outPath_point_blast,
+                                outfmt=blast_resultfiles)
+
+            blast_manager = BlastManager(databases=[conf.species_dir],
+                                         db_path_blast=conf.db_path_point)
+
+            results = blast_manager.run_BlastNAligner(blast_resultfiles,
+                                                      blast_params)
+
 
         else:
             method = PointFinder.TYPE_KMA
+            if conf.inputfastq_2 == None:
+                input_int = conf.inputfastq_1
+                input_ipe = None
+            else:
+                input_ipe = [conf.inputfastq_1, conf.inputfastq_2]
+                input_int = None
+
             if(conf.nanopore):
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_point_kma,
                                   cge=True,
                                   apm="p",
@@ -435,8 +416,8 @@ def main():
                                   ont=True,
                                   md=5)
             else:
-                kma_params = dict(inputfile_1=conf.inputfastq_1,
-                                  inputfile_2=conf.inputfastq_2,
+                kma_params = dict(input_int=input_int,
+                                  input_ipe=input_ipe,
                                   output=conf.outPath_point_kma,
                                   cge=True,
                                   apm="p",
@@ -451,9 +432,10 @@ def main():
             results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                  kma_params)
 
-        handle_results(finder=finder, res=results, std_result=std_result,
-                       conf=conf, db_name="PointFinder", method=method)
 
+    result_handler.handle_results(finder=finder, res=results,
+                                 std_result=std_result, db_name="PointFinder",
+                                 method=method)
 
     ##########################################################################
     # Phenotype to genotype

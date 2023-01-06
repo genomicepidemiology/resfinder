@@ -5,14 +5,13 @@ import re
 
 from ..phenotype2genotype.res_profile import PhenoDB
 class GeneResult_new(dict):
-    def __init__(self, res_collection, res, db_name):
+    def __init__(self, res_collection, res, db_name, conf=None):
         """
             Input:
                 res_collection: Result object created by the cgelib package.
                 res: Custom dictionary containing information about a single hit
                      from ResFinder.
                 db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
-
             Method creates a seq_region dict as defined in the BeOne template:
             https://bitbucket.org/genomicepidemiology/cgelib/src/master/src/
             cgelib/output/templates_json/beone/
@@ -33,22 +32,33 @@ class GeneResult_new(dict):
         end = re.search("\w+(-*)$", query_aln).start(1)
         self["alignment_length"] = end - start
         self["identity"] = float(res["template_identity"])
-        self["ref_seq_lenght"] = float(res['template_length'])
-        self["depth"] = res.get("depth", None) # todo: check if depth needs to be float if not None
+        self["ref_seq_lenght"] = int(res['template_length'])
+        depth = res.get("depth", None)
+        if depth != None:
+            self["depth"] = float(depth)
         self["ref_start_pos"] = start + 1
         self["ref_end_pos"] = end + 1
+        # todo do we use these three? - do not change json.
         self["query_id"] = "NA"    # Positional essential
         self["query_start_pos"] = "NA"    # Positional essential
         self["query_end_pos"] = "NA"    # Positional essential
         self["pmids"] = []
         self["notes"] = []
+
+        # adding alignment patterns for Resfinder and Disinfinder results
+        if conf and conf.output_aln:
+            self["query_string"] = res["query_string"]
+            self["alignment_string"] = res["homo_string"]
+            self["ref_string"] = res["sbjct_string"]
+
         # BLAST coverage formatted results
+        # todo check if not res['template_coverage'] works in all cases
         coverage = res.get("template_coverage", None)
         if(coverage is None):
             # KMA coverage formatted results
             coverage = res["perc_coverage"]
         else:
-            coverage = float(coverage) * 100
+            coverage = float(coverage)
         self["coverage"] = coverage
 
         self.remove_NAs()

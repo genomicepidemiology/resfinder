@@ -19,8 +19,9 @@ from cgelib.alignment.read_alignment import KMAAlignment
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results_new(res_collection, alignment_res, ref_db_name):
-
+    def standardize_results_new(res_collection, alignment_res, ref_db_name,
+                                method):
+        # if method == ResFinder.TYPE_KMA:
             gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name)
 
             if gene_result["key"] is None:
@@ -32,8 +33,8 @@ class ResFinderResultHandler():
                     "About to overwrite dict entry. This should not be "
                     "happening as all keys are supposed to be unique."
                     "Non-unique key was: {}".format(gene_result["key"]))
-        # else:
-        #     BLAST
+        # else: # type = BLAST
+
 
     @staticmethod
     def standardize_results_old(res_collection, res, ref_db_name, conf):
@@ -144,50 +145,37 @@ class PointFinderResultHandler():
 
     @staticmethod
     def standardize_results_new(res_collection, alignment_res, ref_db_name,
-                                method, finder):
+                                finder):
         """
         todo rewrite method explanations
             Input:
                 res_collection: Result object created by the cge core module.
                 res: Custom dictionary of results from PointFinder
-                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
+                ref_db_name: 'ResFinder', 'PointFinder' or 'DisinFinder'
 
             Method loads the given res_collection with results from res.
         """
-        if method == PointFinder.TYPE_KMA:
 
-            gene_results = [] # used for mismatches - relevance?
+        gene_results = [] # used for mismatches - relevance?
 
-            gene_result = GeneResult_new(res_collection, alignment_res,
-                                         ref_db_name)
+        gene_result = GeneResult_new(res_collection, alignment_res,
+                                     ref_db_name)
 
-            res_collection.add_class(cl="seq_regions", **gene_result)
-            gene_results.append(gene_result)
+        res_collection.add_class(cl="seq_regions", **gene_result)
+        gene_results.append(gene_result)
 
-            gene_name = alignment_res['templateID'].split('-', 1)[0]
-            mismatches = finder.find_mismatches(
-                gene=gene_name,
-                sbjct_start=gene_result['ref_start_pos'],
-                sbjct_seq=alignment_res['template_aln'],
-                qry_seq=alignment_res['query_aln'])
+        gene_name = alignment_res['templateID'].split('_', 1)[0]
+        mismatches = finder.find_mismatches(
+            gene=gene_name,
+            sbjct_start=gene_result['ref_start_pos'],
+            sbjct_seq=alignment_res['template_aln'],
+            qry_seq=alignment_res['query_aln'])
 
-            for mismatch in mismatches:
-                seq_var_result = SeqVariationResult(
-                    res_collection, mismatch, gene_results, ref_db_name)
-                res_collection.add_class(cl="seq_variations",
-                                         **seq_var_result)
-            # # BLAST hit
-        # else: #method == PointFinder.TYPE_BLAST
-
-            # if (mismatches is None):
-            #     mismatches = db["mis_matches"]
-            #
-            # for mismatch in mismatches:
-            #     seq_var_result = SeqVariationResult(
-            #         res_collection, mismatch, gene_results, ref_db_name)
-            #     res_collection.add_class(cl="seq_variations",
-            #                              **seq_var_result)
-
+        for mismatch in mismatches:
+            seq_var_result = SeqVariationResult(
+                res_collection, mismatch, gene_results, ref_db_name)
+            res_collection.add_class(cl="seq_variations",
+                                     **seq_var_result)
 
     @staticmethod
     def standardize_results_old(res_collection, res, ref_db_name):

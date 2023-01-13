@@ -19,21 +19,19 @@ from cgelib.alignment.read_alignment import KMAAlignment
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results_new(res_collection, alignment_res, ref_db_name,
-                                method):
-        # if method == ResFinder.TYPE_KMA:
-            gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name)
+    def standardize_results_new(res_collection, alignment_res, ref_db_name):
 
-            if gene_result["key"] is None:
-                return
-            elif gene_result["key"] not in res_collection["seq_regions"]:
-                res_collection.add_class(cl="seq_regions", **gene_result)
-            else:
-                raise DuplicateKeyError(
-                    "About to overwrite dict entry. This should not be "
-                    "happening as all keys are supposed to be unique."
-                    "Non-unique key was: {}".format(gene_result["key"]))
-        # else: # type = BLAST
+        gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name)
+
+        if gene_result["key"] is None:
+            return
+        elif gene_result["key"] not in res_collection["seq_regions"]:
+            res_collection.add_class(cl="seq_regions", **gene_result)
+        else:
+            raise DuplicateKeyError(
+                "About to overwrite dict entry. This should not be "
+                "happening as all keys are supposed to be unique."
+                "Non-unique key was: {}".format(gene_result["key"]))
 
 
     @staticmethod
@@ -170,6 +168,7 @@ class PointFinderResultHandler():
             sbjct_start=gene_result['ref_start_pos'],
             sbjct_seq=alignment_res['template_aln'],
             qry_seq=alignment_res['query_aln'])
+
 
         for mismatch in mismatches:
             seq_var_result = SeqVariationResult(

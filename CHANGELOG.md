@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Option (--output_aln) that will output alignment and match sequences in the json output ("seq_regions": "query_string" / "alignment_string" / "ref_string" )
 
+### Deprecated
+- The Pointfinder_prediction.txt will no longer be a part of the PointFinder output.
+
 ### Fixed
-- Issue with RNA mutations
-- Issue with indels?
+- Issue with RNA mutations so the genes in RNA_genes.txt is read correctly and mutations found.
+- Issue with indels such that insertions provided both as nucleotide and amino acids will be found. 
 
 
 ## [4.2.3] - 2022-10-13

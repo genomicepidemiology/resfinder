@@ -165,6 +165,8 @@ class ResultHandler():
                     gene_hit, gene_dict[gene][0])
 
                 gene_dict[gene].append(combined_gene)
+                gene_dict[gene].pop(0)
+
             else:
                 keys = [k for k, v in gene_dict.items() if v[0]['contig_name'] == gene_hit['contig_name']]
                 if keys:
@@ -202,6 +204,7 @@ class ResultHandler():
 
         alternative_overlaps = []
         contigs = first_hit_id
+        contig_name = pre_hit['contig_name']
 
         pre_start = int(pre_hit['tmpl_start'])
         pre_end = int(pre_hit['tmpl_end'])
@@ -220,9 +223,10 @@ class ResultHandler():
         next_qry = next_hit['query_string']
         next_tmpl = next_hit['tmpl_string']
         next_id = next_hit['hit_id']
+        next_name = next_hit['contig_name']
 
         contigs += next_id
-
+        contig_name += (', ' + next_name)
         if next_start <= current_end:
             eprint("Info: {} and {} are aligning to the same gene and have "
                    "been combined to one hit".format(pre_id, next_id))
@@ -251,7 +255,7 @@ class ResultHandler():
                 # part of the next sequence
                 final_tmpl += next_tmpl[overlap_len:]
                 final_qry += next_qry[overlap_len:]
-                # final_aln += next_aln[overlap_len:]
+                final_aln += next_aln[overlap_len:]
 
             # Find query overlap sequences
             pre_qry_overlap = pre_qry[overlap_start: (overlap_start
@@ -306,6 +310,7 @@ class ResultHandler():
                          "tmpl_string": final_tmpl,
                          "aln_length": (current_end - all_start + 1),
                          "contigs": contigs,
+                         "contig_name": contig_name,
                          "coverage": coverage,
                          "gene_length": gene_length,
                          "identity": identity}
@@ -326,9 +331,6 @@ class ResultHandler():
             pos_count += 1
         return overlap_start
 
-    # todo: N in query is not included when calculating identity - is it
-    #  identity of the gene or the alignment we want? - now alignment
-    #  excluding N's in the middle.
     def calculate_identity(self, query, subject):
         equal = 0
         not_equal = 0
@@ -461,6 +463,6 @@ class ResultHandler():
                         # and the length is the same both hits are kept.
                         keys_to_keep.append(current_key, next_key)
         print("hit {} was kept".format(keys_to_keep))
-                    # TODO  If new_score == old_score but identity and coverages are not the same.
-                    #  which gene should be chosen?? Now they are both keept.
+        # TODO  If new_score == old_score but identity and coverages are not the same.
+        #  which gene should be chosen?? Now they are both kept.
         return keys_to_keep, keys_to_drop

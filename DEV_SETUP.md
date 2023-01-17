@@ -1,5 +1,4 @@
-Development documentation
-=============
+# Development documentation
 
 This document is intended for developers working on the ResFinder application. It consists of suggestions on how to set up a development environment and guidelines for doing releases of ResFinder.
 
@@ -69,27 +68,86 @@ If a `*.py` file doesn't have a corresponding test file you need to create it if
 
 **Note**: The configuration for recognizing tests are set in the file `pytest.ini` in the root directory.
 
-
 ## Deploy
 
 1. Change version number in `src/resfinder/__init__.py`.
 2. Make sure CHANGELOG.md is up to date and add the current date of release.
-3. Build package:
+3. Push changes to repository.
+4. Tag the commit you just pushed with the correct version number.
+5. Build package:
 
-```bash
+    ```bash
 
-pdm build
+    pdm build
 
-```
+    ```
 
-4. Upload package to pypi:
+6. Upload package to pypi:
 
-```bash
+    ```bash
 
-twine upload dist/*
+    twine upload dist/*
 
-```
+    ```
 
-### Deploy docker image
+### Docker image
 
-**ToDo**
+**Note**: We do not guarentee that all ResFinder releases has a coresponding Docker image release. However, we should strive toward making as many as possible. At least Docker image releases should be done whenever significant changes has been released.
+
+A docker image contains both the ResFinder software and the three databases:
+[ResFinder](https://bitbucket.org/genomicepidemiology/resfinder_db/)
+[PointFinder](https://bitbucket.org/genomicepidemiology/pointfinder_db/)
+[DisinFinder](https://bitbucket.org/genomicepidemiology/disinfinder_db/)
+
+#### Versioning
+
+Versioning is done so that a specific version of a Docker image can always track exactely which version of the ResFinder sofware is included and exactely which databases.
+
+* A Docker release version should match the ResFinder version.
+* All databases included in a Docker image release should be tagged with a version number for that database release.
+* The commits that correspond to the database versions used should be tagged with `resfinder-VERSION`, where `VERSION` matches the ResFinder and therfore also the Docker image version. Hence, all database versions/commits included will contain at least two tags: a database version number and `resfinder-VERSION`.
+
+#### Deploy docker image
+
+1. Make sure each database you want to include is tagged with a version number.
+2. Make sure you have a released (versioned) ResFinder repo.
+3. Tag each database with `resfinder-VERSION`, where `VERSION` matches the ResFinder version number (ex.: `resfinder-4.2.3`).
+4. Update the Dockerfile:
+    * (optional) Bump the KMA version (no major version change).
+    * Change RESFINDER_VERSION environment variable.
+5. Build Docker image. Note `<VERSION>` should be replaced with ResFinder version number:
+
+    ```bash
+
+    # Go to ResFinder root directory
+    cd /path/to/resfinder/
+
+    # Build image
+    docker build -t genomicepidemiology/resfinder:<VERSION> .
+
+    ```
+
+6. Push Docker image:
+
+    ```bash
+
+    docker push genomicepidemiology/resfinder:<VERSION>
+
+    ```
+
+7. Update latest tag:
+
+    ```bash
+
+    # Get image id, replace with <ID> later
+    $ docker images
+    REPOSITORY                     TAG        IMAGE ID       CREATED        SIZE
+    cgetools_front-web             latest     cf74e74364c9   2 months ago   392MB
+    cgetools_front-celery_worker   latest     6524fa33a75a   2 months ago   392MB
+    redis                          7-alpine   39267c75a230   2 months ago   28.1MB
+    rf_test                        latest     6692e77b787f   3 months ago   760MB
+    
+    $ docker tag <ID> genomicepidemiology/resfinder:latest
+    $ docker push genomicepidemiology/resfinder:latest
+
+    ```

@@ -14,13 +14,13 @@ RUN apt-get update -qq; \
 
 # Install KMA
 RUN cd /usr/src/; \
-    git clone --depth 1 -b 1.4.7 https://bitbucket.org/genomicepidemiology/kma.git; \
+    git clone --depth 1 -b 1.4.11 https://bitbucket.org/genomicepidemiology/kma.git; \
     cd kma && make; \
     mv kma /usr/bin/; \
     cd ..; \
     rm -rf kma/;
 
-ENV RESFINDER_VERSION 4.2.3
+ENV RESFINDER_VERSION 4.2.4
 
 # Install ResFinder
 RUN pip install --no-cache-dir resfinder==$RESFINDER_VERSION

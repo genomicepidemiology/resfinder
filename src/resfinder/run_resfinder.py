@@ -458,16 +458,16 @@ def main():
             else:
                 results_pnt["excluded"] = results["excluded"]
 
-        results_pnt = PointFinder.discard_unknown_muts(
-            results_pnt=results_pnt, phenodb=res_pheno_db)
-
         # DEPRECATED
         # TODO: make a write method that depends on the json output
         finder.write_results(
             out_path=conf.outputPath, result=results, res_type=method,
             unknown_flag=conf.unknown_mut, min_cov=conf.pf_gene_cov,
-            perc_iden=conf.pf_gene_id
-        )
+            perc_iden=conf.pf_gene_id)
+
+        if not conf.unknown_mut:
+            results_pnt = PointFinder.discard_unknown_muts(
+                results_pnt=results_pnt, phenodb=res_pheno_db, method=method)
 
         PointFinderResultHandler.standardize_results(std_result,
                                                      results_pnt,

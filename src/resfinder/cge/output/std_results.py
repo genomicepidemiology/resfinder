@@ -17,13 +17,11 @@ def add_gene_result_if_key_not_None(gene_result, res_collection):
         Input:
             gene_result: GeneResult object (seq_region dict)
             res_collection: Result object created by the cge core module.
-        Output:
-            returns None if key is None, and True otherwise
         adds gene_result to res_collection if gene_result['key'] is different
         from None.
             '''
     if gene_result["key"] is None:
-        return None
+        return
     elif gene_result["key"] not in res_collection["seq_regions"]:
         res_collection.add_class(cl="seq_regions", **gene_result)
     else:
@@ -31,7 +29,7 @@ def add_gene_result_if_key_not_None(gene_result, res_collection):
             "About to overwrite dict entry. This should not be "
             "happening as all keys are supposed to be unique."
             "Non-unique key was: {}".format(gene_result["key"]))
-    return True
+
 
 
 class ResFinderResultHandler():
@@ -176,10 +174,10 @@ class PointFinderResultHandler():
                     continue
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
 
-                valid_key = add_gene_result_if_key_not_None(gene_result,
-                                                            res_collection)
-                if valid_key is None:
+                add_gene_result_if_key_not_None(gene_result, res_collection)
+                if gene_result['key'] is None:
                     continue
+
                 gene_results.append(gene_result)
 
                 # KMA hits

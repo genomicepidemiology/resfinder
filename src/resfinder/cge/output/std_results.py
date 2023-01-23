@@ -12,6 +12,26 @@ from .seq_variation_result import SeqVariationResult
 from .phenotype_result import PhenotypeResult
 
 
+def add_gene_result_if_key_not_None(gene_result, res_collection):
+    '''
+        Input:
+            gene_result: GeneResult object (seq_region dict)
+            res_collection: Result object created by the cge core module.
+        adds gene_result to res_collection if gene_result['key'] is different
+        from None.
+            '''
+    if gene_result["key"] is None:
+        return
+    elif gene_result["key"] not in res_collection["seq_regions"]:
+        res_collection.add_class(cl="seq_regions", **gene_result)
+    else:
+        raise DuplicateKeyError(
+            "About to overwrite dict entry. This should not be "
+            "happening as all keys are supposed to be unique."
+            "Non-unique key was: {}".format(gene_result["key"]))
+
+
+
 class ResFinderResultHandler():
 
     @staticmethod
@@ -37,15 +57,8 @@ class ResFinderResultHandler():
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name,
                                          conf)
 
-                if gene_result["key"] is None:
-                    continue
-                elif gene_result["key"] not in res_collection["seq_regions"]:
-                    res_collection.add_class(cl="seq_regions", **gene_result)
-                else:
-                    raise DuplicateKeyError(
-                        "About to overwrite dict entry. This should not be "
-                        "happening as all keys are supposed to be unique."
-                        "Non-unique key was: {}".format(gene_result["key"]))
+                add_gene_result_if_key_not_None(gene_result, res_collection)
+
 
     @staticmethod
     def load_res_profile(res_collection, isolate, amr_abbreviations):
@@ -160,7 +173,11 @@ class PointFinderResultHandler():
                 if(unique_id in res["excluded"]):
                     continue
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name)
-                res_collection.add_class(cl="seq_regions", **gene_result)
+
+                add_gene_result_if_key_not_None(gene_result, res_collection)
+                if gene_result['key'] is None:
+                    continue
+
                 gene_results.append(gene_result)
 
                 # KMA hits

@@ -58,7 +58,7 @@ pdm run tests
 
 All tests are written as doctests. The doctests are stored in markdown formatted files in the `tests` directory. The `tests` directory mirrors the structure of the `src` directory. Tests are written into files named after a corresponding file in the `src` directory tree, but prefixed with `test_`. A test is written into the test file that corresponds to the file in which the tested code resides.
 
-*Example*
+*Example*:
 
 **Code**: `src/resfinder/cge/output/gene_result.py`
 
@@ -70,6 +70,7 @@ If a `*.py` file doesn't have a corresponding test file you need to create it if
 
 ## Deploy
 
+0. If you plan to also make a Docker image release go to section [Deploy docker image](#Deploy docker image) and do steps 1-4.
 1. Change version number in `src/resfinder/__init__.py`.
 2. Make sure CHANGELOG.md is up to date and add the current date of release.
 3. Push changes to repository.
@@ -122,8 +123,8 @@ Versioning is done so that a specific version of a Docker image can always track
     # Go to ResFinder root directory
     cd /path/to/resfinder/
 
-    # Build image
-    docker build -t genomicepidemiology/resfinder:<VERSION> .
+    # Build image - No cache is used as you risc building with an outdated cached database otherwise.
+    docker build --no-cache -t genomicepidemiology/resfinder:<VERSION> .
 
     ```
 

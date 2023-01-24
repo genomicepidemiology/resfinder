@@ -148,7 +148,7 @@ class PointFinderResultHandler():
 
     @staticmethod
     def standardize_results_new(res_collection, alignment_res, ref_db_name,
-                                finder):
+                                finder, pheno_db, conf):
         """
         todo rewrite method explanations
             Input:
@@ -177,6 +177,10 @@ class PointFinderResultHandler():
             sbjct_seq=alignment_res['template_aln'],
             qry_seq=alignment_res['query_aln'])
 
+        # discard unknown muts if unknown_mut flag is not set:
+        if not conf.unknown_mut:
+            mismatches = PointFinder.discard_unknown_muts(
+                alignment_res['templateID'], mismatches, pheno_db)
 
         for mismatch in mismatches:
             seq_var_result = SeqVariationResult(

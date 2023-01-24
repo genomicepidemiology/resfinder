@@ -15,8 +15,9 @@ def eprint(*args, **kwargs):
 
 class ResultHandler():
 
-    def __init__(self, conf):
+    def __init__(self, conf, pheno_db):
         self.conf = conf
+        self.pheno_db = pheno_db
 
     def handle_results(self, finder, res, std_result, db_name, method):
 
@@ -45,12 +46,13 @@ class ResultHandler():
                                             filenames=filenames,
                                             result_file="XML")
 
-            best_blast_hits = self.find_best_Blast_hit(blast_alignment)
+            best_blast_hits = self.find_best_Blast_hit(blast_alignment, db_name)
 
             self.filter_and_standardize_result(best_blast_hits, std_result,
                                                db_name, finder,
                                                self.conf.pf_gene_cov,
-                                               self.conf.pf_gene_id)
+                                               self.conf.pf_gene_id,
+                                               method)
 
         else:
             kma_alignment = KMAAlignment(
@@ -73,7 +75,9 @@ class ResultHandler():
                     PointFinderResultHandler.standardize_results_new(std_result,
                                                                      kmahit,
                                                                      db_name,
-                                                                     finder)
+                                                                     finder,
+                                                                     self.pheno_db,
+                                                                     self.conf)
             else: #method == Resfinder.TYPE_KMA and (db_name 'ResFinder or db_name 'DisinFinder):
                 for kmahit in kma_alignment.parse_hits():
                     if (float(kmahit['template_coverage'])
@@ -85,11 +89,10 @@ class ResultHandler():
 
                     ResFinderResultHandler.standardize_results_new(std_result,
                                                                    kmahit,
-                                                                   db_name,
-                                                                   method)
+                                                                   db_name)
 
     #todo: ask alfred if this should be moved to cgelib as a blast filtering step.
-    def find_best_Blast_hit(self, aligner):
+    def find_best_Blast_hit(self, aligner, db_name):
         """
         input:
             aligner: blast result in BlastNAlignment object
@@ -160,15 +163,19 @@ class ResultHandler():
                         "gene_length": hit["gene_length_XMLFile_undescribed"],
                         "hit_id": hit_id}
 
+            #if gene is already added check for overlap and keep the
+            # new combined hit
             if gene in gene_dict.keys():
                 combined_gene = self.gene_overlap_comparison(
                     gene_hit, gene_dict[gene][0])
 
                 gene_dict[gene].append(combined_gene)
                 gene_dict[gene].pop(0)
-
+            # if gene is not yet added check if the contig is mathcing
+            # another gene
             else:
-                keys = [k for k, v in gene_dict.items() if v[0]['contig_name'] == gene_hit['contig_name']]
+                keys = [k for k, v in gene_dict.items() if v[0]['contig_name']
+                        == gene_hit['contig_name']]
                 if keys:
                     keys_to_keep, old_keys_to_drop = self.keep_hit(gene_dict,
                                                                    gene_hit,
@@ -343,7 +350,7 @@ class ResultHandler():
 
     def filter_and_standardize_result(self, combined_hits, std_result,
                                       db_name, finder, min_coverage,
-                                      min_identity):
+                                      min_identity, method):
         # todo figure out what to do with alternative overlaps - will we end up
         #  keeping both if ID is the same in two hits? currently assuming only
         #  one item per gene.
@@ -370,7 +377,9 @@ class ResultHandler():
                 PointFinderResultHandler.standardize_results_new(std_result,
                                                                  hit[0],
                                                                  db_name,
-                                                                 finder)
+                                                                 finder,
+                                                                 self.pheno_db,
+                                                                 self.conf)
             else:
                 ResFinderResultHandler.standardize_results_new(std_result,
                                                                hit[0],
@@ -422,7 +431,7 @@ class ResultHandler():
 
             if overlap_len < self.conf.rf_overlap:
                 # print("\tignore overlap ({}): {}".format(overlap_len, next_key))
-                keys_to_keep.append[current_key, next_key]
+                keys_to_keep.extend([current_key, next_key])
                 continue
             # print("\toverlap found ({}): {}".format(overlap_len, next_key))
             # TODO why do different checks for precise overlap and partial.
@@ -442,7 +451,7 @@ class ResultHandler():
                     keys_to_keep.append(next_key)
                 elif (current_hit['identity']
                         == hit_dict[next_key][0]['identity']):
-                    keys_to_keep.append(current_key, next_key)
+                    keys_to_keep.extend([current_key, next_key])
 
             # if the part of the contig do not fully overlap
             elif (hit_union_length <= hit_lengths_sum):
@@ -461,7 +470,7 @@ class ResultHandler():
                     else:
                         #if both coverage and identity (cal_score) is the same,
                         # and the length is the same both hits are kept.
-                        keys_to_keep.append(current_key, next_key)
+                        keys_to_keep.extend([current_key, next_key])
         print("hit {} was kept".format(keys_to_keep))
         # TODO  If new_score == old_score but identity and coverages are not the same.
         #  which gene should be chosen?? Now they are both kept.

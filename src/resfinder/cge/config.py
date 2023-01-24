@@ -98,6 +98,7 @@ class Config():
             amr_abbreviations_file, "## Abbreviations")
         self.output_aln = bool(args.output_aln)
         self.pickle = args.pickle
+        self.rf_overlap = int(args.acq_overlap)
 
     @staticmethod
     def get_species(in_species, species_def_filepath):
@@ -198,7 +199,7 @@ class Config():
                      "value: {}.".format(args.threshold))
         self.rf_gene_id = args.threshold
 
-        self.rf_overlap = int(args.acq_overlap)
+
 
     def set_disinfinder_opts(self, args):
         self.set_path_disinfinderdb(args)

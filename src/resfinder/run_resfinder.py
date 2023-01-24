@@ -222,7 +222,7 @@ def main():
         disclassdef_file=conf.disclassdef_file
     )
 
-    result_handler = ResultHandler(conf=conf)
+    result_handler = ResultHandler(conf=conf, pheno_db=res_pheno_db)
     ##########################################################################
     # ResFinder
     ##########################################################################

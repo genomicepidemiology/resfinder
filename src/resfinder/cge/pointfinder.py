@@ -392,26 +392,37 @@ class PointFinder():
             fh.write(result_str[1])
 
     @staticmethod
-    def discard_unknown_muts(results_pnt, phenodb):
-        for gene_hits in results_pnt.values():
-            try:
+    def discard_unknown_muts(results_pnt, phenodb, method):
 
-                hits = gene_hits.get("hits", {})
+        if method == PointFinder.TYPE_BLAST:
+            for gene_hits in results_pnt.values():
+                try:
+                    hits = gene_hits.get("hits", {})
 
-                # Should only be one hit (the best)
-                for hit_key, entry in hits.items():
-                    known_muts = PointFinder._get_known_mis_matches(
-                        hit_key, entry["mis_matches"], phenodb)
-                    entry["mis_matches"] = known_muts
-                    gene_hits["mis_matches"] = known_muts
+                    # Should only be one hit (the best)
+                    for hit_key, entry in hits.items():
+                        known_muts = PointFinder._get_known_mis_matches(
+                            hit_key, entry["mis_matches"], phenodb)
+                        entry["mis_matches"] = known_muts
+                        gene_hits["mis_matches"] = known_muts
+                except AttributeError:
+                    pass
+        else: #method == KMA
+            for key, gene_hits in results_pnt.items():
+                if key == 'excluded' or isinstance(gene_hits, str):
+                    continue
+                known_muts = PointFinder._get_known_mis_matches(
+                    gene_hits['sbjct_header'], gene_hits["mis_matches"], phenodb)
+                gene_hits["mis_matches"] = known_muts
 
-            except AttributeError:
-                pass
         return results_pnt
 
     @staticmethod
     def _get_known_mis_matches(entry_key, mis_matches, phenodb):
-        gene_ref_id = entry_key.split(":")[2]
+        try:
+            gene_ref_id = entry_key.split(":")[2]
+        except:
+            gene_ref_id = entry_key
         gene_db_id = gene_ref_id.replace("_", ";;")
         known = []
         for mis_match in mis_matches:

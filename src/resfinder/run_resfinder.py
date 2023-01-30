@@ -337,7 +337,7 @@ def main():
                                         software="DisinFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
-                                                       blast_results.results,
+                                                       blast_results,
                                                        "DisinFinder",
                                                        conf)
 

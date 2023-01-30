@@ -6,7 +6,7 @@ from ..phenotype2genotype.res_profile import PhenoDB
 
 
 class GeneResult(dict):
-    def __init__(self, res_collection, res, db_name, conf=None):
+    def __init__(self, res_collection, res, db_name, conf=None, alignments=None):
         """
             Input:
                 res_collection: Result object created by the cgelib package.
@@ -41,9 +41,18 @@ class GeneResult(dict):
         self["notes"] = []
 
         if conf and conf.output_aln:
-            self["query_string"] = res["query_string"]
-            self["alignment_string"] = res["homo_string"]
-            self["ref_string"] = res["sbjct_string"]
+            for ab_class, hits in alignments.gene_align_query.items():
+                ab_class_keys = list(hits.keys())
+                hit_key = next(key for key in ab_class_keys
+                               if key.startswith(self["ref_id"]))
+                hit_class = ab_class
+                break
+
+            self["query_string"] = alignments.gene_align_query[hit_class][
+                hit_key]
+            self["alignment_string"] = alignments.gene_align_homo[hit_class][
+                hit_key]
+            self["ref_string"] = alignments.gene_align_sbjct[hit_class][hit_key]
 
         # BLAST coverage formatted results
         coverage = res.get("coverage", None)

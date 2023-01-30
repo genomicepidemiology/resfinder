@@ -256,7 +256,7 @@ def main():
                                           software="ResFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
-                                                       blast_results.results,
+                                                       blast_results,
                                                        "ResFinder",
                                                        conf)
 

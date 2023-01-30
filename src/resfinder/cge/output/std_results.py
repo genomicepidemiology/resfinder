@@ -44,7 +44,7 @@ class ResFinderResultHandler():
 
             Method loads the given res_collection with results from res.
         """
-        for db_name, db in res.items():
+        for db_name, db in res.results.items():
             if(db_name == "excluded"):
                 continue
 
@@ -52,10 +52,10 @@ class ResFinderResultHandler():
                 continue
 
             for unique_id, hit_db in db.items():
-                if(unique_id in res["excluded"]):
+                if(unique_id in res.results["excluded"]):
                     continue
                 gene_result = GeneResult(res_collection, hit_db, ref_db_name,
-                                         conf)
+                                         conf, res)
 
                 add_gene_result_if_key_not_None(gene_result, res_collection)
 

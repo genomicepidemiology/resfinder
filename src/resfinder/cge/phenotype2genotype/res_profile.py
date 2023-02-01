@@ -43,6 +43,10 @@ class PhenoDB(dict):
             eprint("ERROR: No phenotype database files where specified.")
             quit(1)
 
+        # mut_type_is_defined indicates the new pointfinder db with AA/NUC
+        # instead of DNA/RNA
+        self.mut_type_is_defined = False
+
         if(acquired_file):
             self.load_acquired_db(acquired_file)
 
@@ -51,14 +55,11 @@ class PhenoDB(dict):
             self.load_disinfectant_db(disinf_file)
 
         if(point_file):
+
             if os.path.basename(point_file) == "resistens-overview.txt":
                 self.load_point_old_db(point_file)
             else:
                 self.load_point_db(point_file)
-
-        # mut_type_is_defined indicates the new pointfinder db with AA/NUC
-        # instead of DNA/RNA
-        self.mut_type_is_defined = False
 
         self.unknown_pheno = Phenotype(unique_id="unknown",
                                        antibiotics=[],

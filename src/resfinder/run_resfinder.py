@@ -527,8 +527,9 @@ def main():
         # If specified species does not have an associated panel, just ignore it
         # and exit.
         except PanelNameError:
-            eprint("Warning: No panel was detected for the species: {}"
-                   .format(conf.species))
+            if conf.species != 'other':
+                eprint("Warning: No panel was detected for the species: {}"
+                       .format(conf.species))
             sys.exit()
 
         amr_panel_filename = conf.species.replace(" ", "_")

@@ -103,7 +103,7 @@ class Config():
     def get_species(in_species, species_def_filepath):
         out_species = in_species
         if(in_species is not None and in_species.lower() == "other"):
-            out_species = None
+            out_species = "other"
         elif(in_species is not None):
             out_species = in_species.lower()
 
@@ -235,7 +235,8 @@ class Config():
             sys.exit("ERROR: Chromosomal point mutations cannot be located if "
                      "no species has been provided. Please provide species "
                      "using the --species option.")
-        elif(not self.species and args.ignore_missing_species):
+        elif((not self.species and args.ignore_missing_species)
+                or self.species.lower() == 'other'):
             self.point = False
             return
 

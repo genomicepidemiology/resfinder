@@ -301,7 +301,7 @@ def main():
                                           software="ResFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
-                                                       kma_run.results,
+                                                       kma_run,
                                                        "ResFinder",
                                                        conf)
     ##########################################################################
@@ -382,7 +382,7 @@ def main():
                                         software="DisinFinder")
 
             ResFinderResultHandler.standardize_results(std_result,
-                                                       kma_run.results,
+                                                       kma_run,
                                                        "DisinFinder",
                                                        conf)
     ##########################################################################

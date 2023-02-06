@@ -56,6 +56,8 @@ hit.
 
 >>> from cgelib.output.result import Result
 >>> from src.resfinder.cge.output.gene_result import GeneResult
+>>> from cgecore.blaster.blaster import Blaster
+>>> import os
 
 >>> res = Result.init_software_result(name="ResFinder", gitdir=".")
 >>> res.init_database("ResFinder", ".")
@@ -73,24 +75,12 @@ Here a dummy hit (obtained using KMA) is created, named rf\_dat\_kma. It is stor
 rf\_custom\_kma.
 
 ```python
+import tempfile
 
->>> rf_dat_kma = {}
->>> rf_dat_kma["sbjct_header"] = "blaOXA-384_1_KF986263"
->>> rf_dat_kma["perc_ident"] = 97
->>> rf_dat_kma["HSP_length"] = 100
->>> rf_dat_kma["sbjct_length"] = 90
->>> rf_dat_kma["sbjct_start"] = 1
->>> rf_dat_kma["sbjct_end"] = 90
->>> rf_dat_kma["contig_name"] = "NA"
->>> rf_dat_kma["query_start"] = "NA"
->>> rf_dat_kma["query_end"] = "NA"
->>> rf_dat_kma["perc_coverage"] = 100
->>> rf_dat_kma["depth"] = 21
-
->>> rf_custom_kma = {}
->>> rf_custom_kma["excluded"] = {}
->>> rf_custom_kma["aminoglycoside"] = "No hit found"
->>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
+>>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
+>>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out")
+... #doctest: +ELLIPSIS
+Found...
 
 ```
 
@@ -207,7 +197,7 @@ PointFinder-...
 
 >>> for k in res["seq_regions"]:
 ...   print(k)
-blaOXA-384;;1;;KF986263
+blaB-2;;1;;AF189300
 
 ```
 
@@ -247,9 +237,9 @@ Create Isolate object
 >>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> ResFinderResultHandler.load_res_profile(res, isolate, amr_abbreviations)
 >>> res["phenotypes"]["ampicillin"]["seq_regions"]
-[]
+['blaB-2;;1;;AF189300']
 >>> res["result_summary"]
-'UBE'
+'AMO_AMP_TIC'
 
 ```
 
@@ -271,7 +261,7 @@ PointFinder-...
 
 >>> for k in res["seq_regions"]:
 ...   print(k)
-blaOXA-384;;1;;KF986263
+blaB-2;;1;;AF189300
 gyrA;;1;;CP073768.1
 
 >>> for k in res["seq_variations"]:
@@ -345,6 +335,6 @@ gyrA;;1;;CP073768.1;;82;;g
 
 >>> sum_str = ResFinderResultHandler.create_amr_summary_str(res, amr_abbreviations)
 >>> sum_str
-'AML_IMI_UBE'
+'AMO_AMP_AML_IMI_TIC'
 
 ```

@@ -72,23 +72,31 @@ std_results test documentation.
 
 ```python
 
->>> rf_dat_kma = {}
->>> rf_dat_kma["sbjct_header"] = "blaOXA-384_1_KF986263"
->>> rf_dat_kma["perc_ident"] = 97
->>> rf_dat_kma["HSP_length"] = 100
->>> rf_dat_kma["sbjct_length"] = 90
->>> rf_dat_kma["sbjct_start"] = 1
->>> rf_dat_kma["sbjct_end"] = 90
->>> rf_dat_kma["contig_name"] = "NA"
->>> rf_dat_kma["query_start"] = "NA"
->>> rf_dat_kma["query_end"] = "NA"
->>> rf_dat_kma["perc_coverage"] = 100
->>> rf_dat_kma["depth"] = 21
+# >>> rf_dat_kma = {}
+# >>> rf_dat_kma["sbjct_header"] = "blaOXA-384_1_KF986263"
+# >>> rf_dat_kma["perc_ident"] = 97
+# >>> rf_dat_kma["HSP_length"] = 100
+# >>> rf_dat_kma["sbjct_length"] = 90
+# >>> rf_dat_kma["sbjct_start"] = 1
+# >>> rf_dat_kma["sbjct_end"] = 90
+# >>> rf_dat_kma["contig_name"] = "NA"
+# >>> rf_dat_kma["query_start"] = "NA"
+# >>> rf_dat_kma["query_end"] = "NA"
+# >>> rf_dat_kma["perc_coverage"] = 100
+# >>> rf_dat_kma["depth"] = 21
+# 
+# >>> rf_custom_kma = {}
+# >>> rf_custom_kma["excluded"] = {}
+# >>> rf_custom_kma["aminoglycoside"] = "No hit found"
+# >>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
+>>> from cgecore.blaster.blaster import Blaster
+>>> import os
+>>> import tempfile
 
->>> rf_custom_kma = {}
->>> rf_custom_kma["excluded"] = {}
->>> rf_custom_kma["aminoglycoside"] = "No hit found"
->>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
+>>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
+>>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out")
+... #doctest: +ELLIPSIS
+Found...
 
 >>> gyrA_kma_hit = {}
 >>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
@@ -182,7 +190,7 @@ False
 >>> isolate.load_finder_results(std_table=res, phenodb=res_pheno_db,
 ...                             type="seq_variations")
 
->>> isolate["blaOXA-384_KF986263"][0].ab_class.pop()
+>>> isolate["blaB-2_AF189300"][0].ab_class.pop()
 'beta-lactam'
 >>> isolate["gyrA;;1;;CP073768.1_81_d"][0].ref_codon
 'ggt'
@@ -211,9 +219,9 @@ False
 
 ```python
 
->>> feat_res_dict = res["seq_regions"]["blaOXA-384;;1;;KF986263"]
+>>> feat_res_dict = res["seq_regions"]["blaB-2;;1;;AF189300"]
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_regions")
-('blaOXA-384_KF986263', '')
+('blaB-2_AF189300', '')
 
 >>> feat_res_dict = res["seq_variations"]["gyrA;;1;;CP073768.1;;81;;d"]
 >>> Isolate.get_phenodb_id(feat_res_dict, "seq_variations")

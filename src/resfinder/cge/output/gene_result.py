@@ -63,9 +63,20 @@ class GeneResult(dict):
             coverage = float(coverage) * 100
         self["coverage"] = coverage
 
+        self["grade"] = GeneResult.calc_gene_grade(coverage=self["coverage"], identity=self["identity"])
+
         self.remove_NAs()
         uniqueness = self._get_unique_gene_key(res_collection)
         self["key"] = uniqueness
+
+    @staticmethod
+    def calc_gene_grade(coverage: float, identity: float) -> int:
+        if coverage == 100.0 and identity == 100.0:
+            return 3
+        elif coverage == 100.0:
+            return 2
+        else:
+            return 1
 
     def remove_NAs(self):
         """

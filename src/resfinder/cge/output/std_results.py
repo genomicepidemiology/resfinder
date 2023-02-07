@@ -59,7 +59,6 @@ class ResFinderResultHandler():
 
                 add_gene_result_if_key_not_None(gene_result, res_collection)
 
-
     @staticmethod
     def load_res_profile(res_collection, isolate, amr_abbreviations):
         """

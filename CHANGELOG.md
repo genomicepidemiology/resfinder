@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- JSON output now contains 'grades' for 'seq_regions' and 'phenotypes' corresponding to the colors known from the web tool: dark green, green, grey is 3, 2, 1, respectively. Phenotypes can also be 0 if no resistance features was found. Phenotype grades will as for the webtool be the highest grade of the resistance features found.
+
+### Changed
+
+- It is no longer necessary to set the flag --ignore_missing_species if '--species other' is set
+
+### Fixed
+
+- Case where species "other" is chosen and pointfinder is run causing error phenodb.mut_type_is_defined not found
+- Alignments in json output to include missing gene parts in query string
+
 ## [4.2.5] - 2023-01-23
 
 ### Fixed

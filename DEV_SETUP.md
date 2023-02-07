@@ -50,7 +50,7 @@ cd /path/to/resfinder/
 pdm run resfinder -h
 
 # Run ResFinder tests
-pdm run tests
+pdm run test
 
 ```
 

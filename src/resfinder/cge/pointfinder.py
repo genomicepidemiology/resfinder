@@ -395,7 +395,7 @@ class PointFinder(CGEFinder):
                     # Should only be one hit (the best)
                     for hit_key, entry in hits.items():
                         known_muts = PointFinder._get_known_mis_matches(
-                            hit_key, entry["mis_matches"], phenodb)
+                            entry['sbjct_header'], entry["mis_matches"], phenodb)
                         entry["mis_matches"] = known_muts
                         gene_hits["mis_matches"] = known_muts
                 except AttributeError:
@@ -412,11 +412,8 @@ class PointFinder(CGEFinder):
 
     @staticmethod
     def _get_known_mis_matches(entry_key, mis_matches, phenodb):
-        try:
-            gene_ref_id = entry_key.split(":")[2]
-        except:
-            gene_ref_id = entry_key
-        gene_db_id = gene_ref_id.replace("_", ";;")
+
+        gene_db_id = entry_key.replace("_", ";;")
         known = []
         for mis_match in mis_matches:
             if mis_match[0] != 'sub':

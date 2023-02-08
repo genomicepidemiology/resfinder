@@ -71,7 +71,8 @@
 ...  "ref_acc": "KF986263",
 ...  "ref_start_pos": 1,
 ...  "ref_end_pos": 100,
-...  "ref_database": ["ResFinder-unknown"]
+...  "ref_database": ["ResFinder-unknown"],
+...  "grade": 1
 ... }
 
 >>> gyra = {
@@ -91,7 +92,8 @@
 ...   'query_start_pos': 1,
 ...   'query_end_pos': 2628,
 ...   'ref_database': ['PointFinder-a2b2ce4'],
-...   'coverage': 100.0
+...   'coverage': 100.0,
+...   'grade': 2
 ... }
 
 >>> pg81d = {
@@ -211,8 +213,12 @@ True
 ['blaOXA-384;;1;;KF986263']
 >>> res["phenotypes"]["carbapenem"]["amr_classes"]
 ['beta-lactam']
+>>> res["phenotypes"]["carbapenem"]["grade"]
+1
 >>> res["seq_regions"]["blaOXA-384;;1;;KF986263"]["phenotypes"]
 ['carbapenem']
+>>> res["seq_regions"]["blaOXA-384;;1;;KF986263"]["grade"]
+1
 
 >>> pheno2 = PhenotypeResult(ab_m1, isolate)
 >>> pheno2.set_resistant(True)

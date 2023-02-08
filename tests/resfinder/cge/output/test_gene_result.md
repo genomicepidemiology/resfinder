@@ -70,15 +70,28 @@ results from a ResFinder hit.
 
 ## Methods
 
+### calc_gene_grade(coverage: float, identity: float) -> int
+
+```python
+
+>>> GeneResult.calc_gene_grade(coverage=100, identity=100)
+3
+>>> GeneResult.calc_gene_grade(coverage=100, identity=22.5)
+2
+>>> GeneResult.calc_gene_grade(coverage=10.1, identity=0)
+1
+
+```
+
 ### remove_NAs()
 
 ```python
 
-res["test_NA"] = "NA"
-res["test_None"] = None
-res.remove_NAs()
-assert("test_NA" not in res)
-assert("test_None" not in res)
+>>> gene_result_blast["test_NA"] = "NA"
+>>> gene_result_blast["test_None"] = None
+>>> gene_result_blast.remove_NAs()
+>>> assert("test_NA" not in gene_result_blast)
+>>> assert("test_None" not in gene_result_blast)
 
 ```
 

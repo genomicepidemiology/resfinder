@@ -27,9 +27,9 @@ class GeneResult_new(dict):
             GeneResult_new._split_sbjct_header(self["ref_id"]))
         self["ref_database"] = [res_collection.get_db_key(db_name)[0]]
 
-        query_aln = res['query_aln']
-        start = re.search("^-*(\w+)", query_aln).start(1)
-        end = re.search("\w+(-*)$", query_aln).start(1)
+        query_aln = res['aln_string']
+        start = re.search("^\s*(\|+)", query_aln).start(1)
+        end = re.search("\|+(\s*)$", query_aln).start(1)
         self["alignment_length"] = end - start
         self["identity"] = float(res["template_identity"])
         self["ref_seq_lenght"] = int(res['template_length'])
@@ -38,28 +38,20 @@ class GeneResult_new(dict):
             self["depth"] = float(depth)
         self["ref_start_pos"] = start + 1
         self["ref_end_pos"] = end + 1
-        # todo do we use these three? - do not change json.
-        self["query_id"] = "NA"    # Positional essential
-        self["query_start_pos"] = "NA"    # Positional essential
-        self["query_end_pos"] = "NA"    # Positional essential
+        self["query_id"] = res.get("contig_name", None)  # Positional essential
+        self["query_start_pos"] = res.get("query_start", None)  # Positional essential
+        self["query_end_pos"] = res.get("query_end", None)  # Positional essential
         self["pmids"] = []
         self["notes"] = []
 
         # adding alignment patterns for Resfinder and Disinfinder results
         if conf and conf.output_aln:
             self["query_string"] = res["query_string"]
-            self["alignment_string"] = res["homo_string"]
+            self["alignment_string"] = res["aln_string"]
             self["ref_string"] = res["sbjct_string"]
 
-        # BLAST coverage formatted results
-        # todo check if not res['template_coverage'] works in all cases
-        coverage = res.get("template_coverage", None)
-        if(coverage is None):
-            # KMA coverage formatted results
-            coverage = res["perc_coverage"]
-        else:
-            coverage = float(coverage)
-        self["coverage"] = coverage
+        coverage = res["template_coverage"]
+        self["coverage"] = float(coverage)
 
         self.remove_NAs()
         uniqueness = self._get_unique_gene_key(res_collection)
@@ -95,7 +87,7 @@ class GeneResult_new(dict):
             appending a random string ton minimum_gene_key.
         """
         while(gene_key in res_collection["seq_regions"]):
-            rnd_str = GeneResultOld.random_string(str_len=4)
+            rnd_str = GeneResult_new.random_string(str_len=4)
             gene_key = ("{key}{deli}{rnd}"
                         .format(key=minimum_gene_key, deli=delimiter,
                                 rnd=rnd_str))
@@ -178,7 +170,7 @@ class GeneResult_new(dict):
                     != res_collection["seq_regions"][gene_key]["query_start_pos"]
                   or self["query_end_pos"]
                     != res_collection["seq_regions"][gene_key]["query_end_pos"]):
-                gene_key = GeneResultOld.get_rnd_unique_gene_key(
+                gene_key = GeneResult_new.get_rnd_unique_gene_key(
                     gene_key, res_collection, minimum_gene_key, delimiter)
             else:
                 res_collection["seq_regions"][gene_key]["ref_database"].extend(

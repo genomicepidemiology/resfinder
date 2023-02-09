@@ -20,7 +20,7 @@ RUN cd /usr/src/; \
     rm -rf kma/;
 
 # Install ResFinder
-RUN pip install --no-cache-dir resfinder==4.2.1
+RUN pip install --no-cache-dir resfinder==4.3.0
 
 # Setup environment
 RUN cd /; \

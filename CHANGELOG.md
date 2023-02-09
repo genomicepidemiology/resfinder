@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- JSON output now contains the 'software_exec' class. It contains the command used to invoke ResFinder and the value of all parameters. Note that the 'key' value in 'software_exec' is just a hash of the 'command' value, hence it will be idenitcal between executions if the same command was used to invoke ResFinder.
+- JSON output now contains the 'software_exec' class. It contains the command used to invoke ResFinder and the value of all parameters.
 - JSON output now contains 'grades' for 'seq_regions' and 'phenotypes' corresponding to the colors known from the web tool: dark green, green, grey is 3, 2, 1, respectively. Phenotypes can also be 0 if no resistance features was found. Phenotype grades will as for the webtool be the highest grade of the resistance features found.
 
 ### Changed

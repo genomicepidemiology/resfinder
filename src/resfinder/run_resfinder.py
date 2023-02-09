@@ -231,7 +231,8 @@ def main():
     if conf.disinf:
         std_result.init_database("DisinFinder", conf.db_path_disinf)
 
-    std_result.add_class("software_exec", **get_software_exec_res(conf))
+    std_result.add_class(cl="software_executions", **
+                         get_software_exec_res(conf))
 
     # Load genotype to phenotype database
     res_pheno_db = PhenoDB(

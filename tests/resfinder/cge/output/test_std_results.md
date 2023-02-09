@@ -78,7 +78,8 @@ rf\_custom\_kma.
 import tempfile
 
 >>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
->>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out")
+>>> blast_path = os.environ["CGE_BLASTN"]
+>>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out", blast=blast_path)
 ... #doctest: +ELLIPSIS
 Found...
 

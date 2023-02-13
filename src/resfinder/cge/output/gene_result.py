@@ -181,7 +181,7 @@ class GeneResult_new(dict):
 
 
 class GeneResultOld(dict):
-    def __init__(self, res_collection, res, db_name, conf=None):
+    def __init__(self, res_collection, res, db_name, conf=None, alignments=None):
 
         """
             Input:
@@ -217,9 +217,18 @@ class GeneResultOld(dict):
         self["notes"] = []
 
         if conf and conf.output_aln:
-            self["query_string"] = res["query_string"]
-            self["alignment_string"] = res["homo_string"]
-            self["ref_string"] = res["sbjct_string"]
+            for ab_class, hits in alignments.gene_align_query.items():
+                ab_class_keys = list(hits.keys())
+                hit_key = next(key for key in ab_class_keys
+                               if key.startswith(self["ref_id"]))
+                hit_class = ab_class
+                break
+
+            self["query_string"] = alignments.gene_align_query[hit_class][
+                hit_key]
+            self["alignment_string"] = alignments.gene_align_homo[hit_class][
+                hit_key]
+            self["ref_string"] = alignments.gene_align_sbjct[hit_class][hit_key]
 
         # BLAST coverage formatted results
         coverage = res.get("coverage", None)
@@ -230,9 +239,20 @@ class GeneResultOld(dict):
             coverage = float(coverage) * 100
         self["coverage"] = coverage
 
+        self["grade"] = GeneResultOld.calc_gene_grade(coverage=self["coverage"], identity=self["identity"])
+
         self.remove_NAs()
         uniqueness = self._get_unique_gene_key(res_collection)
         self["key"] = uniqueness
+
+    @staticmethod
+    def calc_gene_grade(coverage: float, identity: float) -> int:
+        if coverage == 100.0 and identity == 100.0:
+            return 3
+        elif coverage == 100.0:
+            return 2
+        else:
+            return 1
 
     def remove_NAs(self):
         """

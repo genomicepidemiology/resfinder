@@ -18,3 +18,4 @@ scripts/wdl/cromwell-*
 test01fa
 .pdm.toml
 *trash*
+tests/tmp_out/*

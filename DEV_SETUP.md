@@ -49,8 +49,14 @@ cd /path/to/resfinder/
 # Run ResFinder
 pdm run resfinder -h
 
+# Some tests requires the following environmental variables to be set
+export CGE_BLASTN="/path/to/blastn"
+export CGE_RESFINDER_RESGENE_DB="/path/to/resfinder_db"
+export CGE_RESFINDER_RESPOINT_DB="/path/to/pointfinder_db"
+export CGE_DISINFINDER_DB="/path/to/disinfinder_db"
+
 # Run ResFinder tests
-pdm run tests
+pdm run test
 
 ```
 

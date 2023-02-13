@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser
 import pickle
 import json
+import hashlib
 
 from cgelib.output.result import Result
 
@@ -25,6 +26,22 @@ from resfinder import __version__
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
+def get_software_exec_res(conf: Config) -> dict:
+    software_exec_res = {
+        "type": "software_exec",
+        "command": " ".join(sys.argv),
+        "parameters": get_call_parameters(conf)
+    }
+    software_exec_res["key"] = hashlib.sha1(
+        bytes(software_exec_res["command"], 'UTF-8')).hexdigest()
+    return software_exec_res
+
+
+def get_call_parameters(conf: Config) -> dict:
+    parameters = vars(conf).copy()
+    del (parameters['amr_abbreviations'])
+    return parameters
 
 def main():
 
@@ -201,17 +218,21 @@ def main():
     }
     std_result.add(**init_result_data)
 
-    if(conf.acquired):
+    if conf.acquired:
         std_result.init_database("ResFinder", conf.db_path_res)
-    if(conf.point):
+    if conf.point:
         std_result.init_database("PointFinder", conf.db_path_point_root)
-    if(conf.disinf):
+    if conf.disinf:
         std_result.init_database("DisinFinder", conf.db_path_disinf)
+
 
     kma_resultfiles = ["Result", "Fragments"]
     #format of blast output  5: "XML", 6: "TSV", 7: "TSV_extra", 10: "CSV"
     #blast_resultfiles = ["6", "std", "qseq", "sseq", "sstrand"]
     blast_resultfiles = 5
+
+    std_result.add_class("software_exec", **get_software_exec_res(conf))
+
 
     # Load genotype to phenotype database
     res_pheno_db = PhenoDB(
@@ -227,7 +248,7 @@ def main():
     # ResFinder
     ##########################################################################
 
-    if(conf.acquired is True):
+    if conf.acquired is True:
 
         acquired_finder = ResFinder(db_conf_file=conf.db_config_file,
                                     db_path=conf.db_path_res,
@@ -314,7 +335,7 @@ def main():
     ##########################################################################
     # DisinFinder
     ##########################################################################
-    if(conf.disinf is True):
+    if (conf.disinf is True):
 
         # Actually running DisinFinder (for disinfectant resistance)
         disinf_finder = ResFinder(db_conf_file=conf.db_config_disinf_file,
@@ -376,14 +397,15 @@ def main():
     # PointFinder
     ##########################################################################
 
-    if(conf.point):
+    if (conf.point):
 
         finder = PointFinder(db_path=conf.db_path_point,
                              species=conf.species_dir,
                              ignore_indels=conf.ignore_indels,
                              ignore_stop_codons=conf.ignore_stop_codons)
 
-        if(conf.inputfasta):
+        if (conf.inputfasta):
+
             method = PointFinder.TYPE_BLAST
 
             blast_params = dict(query=conf.inputfasta,
@@ -415,6 +437,7 @@ def main():
                                   kma_1t1=True,
                                   ont=True,
                                   md=5)
+
             else:
                 kma_params = dict(input_int=input_int,
                                   input_ipe=input_ipe,
@@ -432,10 +455,10 @@ def main():
             results = kma_manager.run_KMAAligner(conf, kma_resultfiles,
                                                  kma_params)
 
-
     result_handler.handle_results(finder=finder, res=results,
                                  std_result=std_result, db_name="PointFinder",
                                  method=method)
+
 
     ##########################################################################
     # Phenotype to genotype
@@ -445,11 +468,11 @@ def main():
     isolate = Isolate(name=conf.sample_name, species=conf.species,
                       amr_panel_file=conf.db_panels_file)
 
-    if(conf.acquired or conf.disinf):
+    if (conf.acquired or conf.disinf):
         isolate.load_finder_results(std_table=std_result,
                                     phenodb=res_pheno_db,
                                     type="seq_regions")
-    if(conf.point):
+    if (conf.point):
         isolate.load_finder_results(std_table=std_result,
                                     phenodb=res_pheno_db,
                                     type="seq_variations")
@@ -458,7 +481,7 @@ def main():
     ResFinderResultHandler.load_res_profile(std_result, isolate,
                                             conf.amr_abbreviations)
 
-    if(conf.out_json):
+    if (conf.out_json):
         std_result_file = conf.out_json
     else:
         std_result_file = "{}/{}.json".format(
@@ -470,7 +493,7 @@ def main():
     pheno_profile_str = isolate.profile_to_str_table(header=True)
 
     # TODO: REMOVE THE NEED FOR THE PICKLED FILE
-    if(conf.pickle):
+    if (conf.pickle):
         isolate_pickle = open("{}/isolate.p".format(conf.outputPath), "wb")
         pickle.dump(isolate, isolate_pickle, protocol=2)
 
@@ -478,7 +501,7 @@ def main():
     with open(pheno_table_file, 'w') as fh:
         fh.write(pheno_profile_str)
 
-    if(conf.species is not None):
+    if (conf.species is not None):
         # Apply AMR panel
         input_amr_panels = "{}/phenotype_panels.txt".format(conf.db_path_res)
         res_sum_table = ResSumTable(pheno_profile_str)
@@ -490,8 +513,9 @@ def main():
         # If specified species does not have an associated panel, just ignore it
         # and exit.
         except PanelNameError:
-            eprint("Warning: No panel was detected for the species: {}"
-                   .format(conf.species))
+            if conf.species != 'other':
+                eprint("Warning: No panel was detected for the species: {}"
+                       .format(conf.species))
             sys.exit()
 
         amr_panel_filename = conf.species.replace(" ", "_")
@@ -504,6 +528,7 @@ def main():
             fh.write(panel_profile_str)
 
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())

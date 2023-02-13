@@ -70,7 +70,7 @@
 >>> args.point = False
 >>> conf = Config(args)
 >>> print(conf.species)
-None
+other
 >>> conf.amr_abbreviations["Amoxicillin"][0]
 'AMO'
 
@@ -156,7 +156,7 @@ SystemExit: ERROR: Path not found: /file/not/found
 'escherichia coli'
 
 >>> str(Config.get_species("Other", species_def_filepath))
-'None'
+'other'
 
 
 ```

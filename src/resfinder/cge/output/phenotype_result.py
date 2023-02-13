@@ -14,6 +14,7 @@ class PhenotypeResult(dict):
         self["amr_resistant"] = False
         self["amr_species_relevant"] = PhenotypeResult.get_amr_relevance(
             antibiotic.name, isolate)
+        self["grade"] = 0
 
     @staticmethod
     def get_amr_relevance(ab, isolate):
@@ -59,6 +60,14 @@ class PhenotypeResult(dict):
             if self["key"] not in pheno_keys:
                 pheno_keys.append(self["key"])
             feat_result["phenotypes"] = pheno_keys
+
+            # Compare the grade of the feature with what is already recorded,
+            # keep the greater value.
+            # seq_variations has not grade value as it will always be 3
+            feat_grade = feat_result.get("grade", 3)
+            if feat_grade > self["grade"]:
+                self["grade"] = feat_grade
+
 
         # Add unique PMIDs to feature results
         if(feature.pmids is not None):

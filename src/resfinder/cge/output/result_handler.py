@@ -179,12 +179,16 @@ class ResultHandler():
                 keys_to_keep, old_keys_to_drop = self.keep_hit(gene_dict,
                                                                gene_hit,
                                                                gene, keys)
+                # if gene is added to old_keys_to_drop it can be removed as it
+                # is not in the gene_dict where the keys will be removed from.
+                if gene in old_keys_to_drop:
+                    old_keys_to_drop.remove(gene)
+
                 for drop_key in old_keys_to_drop:
                     gene_dict.pop(drop_key)
 
                 if gene in keys_to_keep:
                     gene_dict[gene].append(gene_hit)
-                    continue
                 else:
                     continue
             else:
@@ -258,8 +262,7 @@ class ResultHandler():
             if len(template[overlap_start:pre_end]) > next_length:
                 #  <--------->
                 #     <--->
-                overlap_len = next_length
-                overlap_end_pos = next_end
+                pass
             else:
                 #  <--------->
                 #        <--------->
@@ -277,15 +280,17 @@ class ResultHandler():
 
                 # If alternative query overlap exists use the best
                 if pre_qry_overlap != next_qry_overlap:
+                    best_overlap = self.get_best_overlap(pre_qry_overlap,
+                                          next_qry_overlap,
+                                          tmpl_overlap)
+                    # Todo: - do we want to print this warning - should we
+                    #  identify which hit the used overlap comes from?
                     eprint("OVERLAP WARNING: The following two hits had an "
                            "overlap containing differences - the overlap sequence"
                            "with the highest identity was used.")
                     eprint("{}\n{}"
                            .format(pre_qry_overlap, next_qry_overlap))
 
-                    best_overlap = self.get_best_overlap(pre_qry_overlap,
-                                          next_qry_overlap,
-                                          tmpl_overlap)
                     # add the best overlap to the first sequence followed by
                     # the  next sequence.
                     final_tmpl = template
@@ -299,12 +304,6 @@ class ResultHandler():
                     final_tmpl += next_tmpl[overlap_len:]
                     final_qry += next_qry[overlap_len:]
                     final_aln += next_aln[overlap_len:]
-
-                # # Save alternative overlaps - but why?
-                # alternative_overlaps += [(next_start,
-                #                           overlap_end_pos,
-                #                           tmpl_overlap,
-                #                           next_qry_overlap)]
 
         elif next_start > current_end:
             #  <------->
@@ -422,18 +421,22 @@ class ResultHandler():
     def keep_hit(self, hit_dict, current_hit, current_key, key_list):
         '''
         input
-            hit_dict : dict containing all the different hits and their
+            hit_dict: dict containing all the previous selcted hits and their
                         information
-            current_key : key in hit_dict that corresponds to the first hit
-                            to be compared
-            next_key : key in hit_dict that corresponds to the first hit to
-                        be compared
+            current_hit: a dict containing the hit to be compared.
+            current_key: key of the hit to be compared
+            key_list: a list of all the keys in the hit_dict representing all
+            found hits to be compared against.
         output
-            True or False : defining whether to keep or discard the current hit
-                            - if second hit is better.
-        this function will check two hits against each other. If thte second hit
-        is better the function will return False indicating that the hit should
-        not be kept. Previously a part of Blaster.compare_results()
+            keys_to_keep: list of keys to keep. pairwise comparison keeping the
+            best hit.
+            keys_to_drop: list of keys to drop. another hit was found to be better
+
+        this function will check the current hit against all the other hits in
+        the hit_dict looking for overlaps of the contig. it will keep the
+        overlapping hit with the best identity or combined coverage/identity
+        score.
+        Previously a part of Blaster.compare_results()
         '''
 
         current_contig = current_hit['contig_name']
@@ -442,6 +445,7 @@ class ResultHandler():
         current_cal = (current_hit['identity'] *
                        current_hit['coverage'])
         current_length = len(current_hit['query_string'])
+        current_aln_len = current_hit['aln_length']
 
         keys_to_keep = []
         keys_to_drop = []
@@ -453,6 +457,7 @@ class ResultHandler():
             next_cal = (hit_dict[next_key][0]['identity'] *
                         hit_dict[next_key][0]['coverage'])
             next_length = len(hit_dict[next_key][0]['query_string'])
+            next_aln_len = hit_dict[next_key][0]['aln_length']
 
             hit_union_length = (max(current_query_end, next_query_end)
                                 - min(current_query_start, next_query_start))
@@ -466,9 +471,8 @@ class ResultHandler():
                 continue
 
             print("contig {} was found to hit both ".format(current_contig))
-            print("\t{} and {}".format(current_key, next_key))
+            print("\n{} and {}".format(current_key, next_key))
 
-            # print("\toverlap found ({}): {}".format(overlap_len, next_key))
             # TODO why do different checks for precise overlap and partial.
             #  wouldn't you assume same coverage for precise overlap.
             #  making cal score diffs be the same as identity diffs.
@@ -484,6 +488,7 @@ class ResultHandler():
                 elif (current_hit['identity']
                       < hit_dict[next_key][0]['identity']):
                     keys_to_keep.append(next_key)
+                    keys_to_drop.append(current_key)
                 elif (current_hit['identity']
                       == hit_dict[next_key][0]['identity']):
                     keys_to_keep.extend([current_key, next_key])
@@ -495,22 +500,31 @@ class ResultHandler():
                     keys_to_drop.append(next_key)
                 elif current_cal < next_cal:
                     keys_to_keep.append(next_key)
-                elif current_cal == next_cal:
+                    keys_to_drop.append(current_key)
 
-                    if next_length > current_length:
+                elif current_cal == next_cal:
+                    if next_aln_len > current_aln_len:
                         keys_to_keep.append(next_key)
-                    elif next_length < current_length:
+                        keys_to_drop.append(current_key)
+                    elif next_aln_len < current_aln_len:
                         keys_to_keep.append(current_key)
                         keys_to_drop.append(next_key)
                     else:
                         # if both coverage and identity (cal_score) is the same,
                         # and the length is the same both hits are kept.
                         keys_to_keep.extend([current_key, next_key])
-            print("hit {} was kept".format(keys_to_keep))
-        # TODO  If new_score == old_score but identity and coverages are not the same.
-        #  which gene should be chosen?? Keep both for now - relevant when using
-        #  protein levels.
-        return keys_to_keep, keys_to_drop
+
+            keys_to_print = [x for x in [current_key, next_key] if x in keys_to_keep]
+            keys_to_print = set(keys_to_print) - set(keys_to_drop)
+            print("hit {} was kept".format(sorted(keys_to_print)))
+        # TODO  If new_score == old_score but identity and coverages are not the
+        #  same. which gene should be chosen?? Keep both for now - possible fix
+        #  when introducing a protein level comparison
+
+        # keys_to_keep should not include a key that has been dropped.
+        keys_to_keep = set(keys_to_keep) - set(keys_to_drop)
+
+        return set(keys_to_keep), set(keys_to_drop)
 
     def complete_template(self, hit, db):
         '''
@@ -643,6 +657,16 @@ class ResultHandler():
         return query_seq
 
     def calculate_alignment(self, query, temp):
+        '''
+        input:
+            query sequence - string
+            template sequence - string
+        output:
+            alignemnt sequence - string
+        This function will calculate the alignment. | for match and space for
+        mismatch. This might also be done somewhere else in the code - could
+        not find it
+        '''
         aln_seq = ''
         for i in range(len(query)):
             if query[i].upper() == temp[i].upper():

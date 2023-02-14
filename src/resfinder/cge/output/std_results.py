@@ -39,9 +39,9 @@ def add_gene_result_if_key_not_None(gene_result, res_collection):
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results_new(res_collection, alignment_res, ref_db_name):
+    def standardize_results_new(res_collection, alignment_res, ref_db_name, conf):
 
-        gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name)
+        gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name, conf)
 
         add_gene_result_if_key_not_None(gene_result, res_collection)
 

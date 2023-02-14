@@ -90,7 +90,8 @@ class ResultHandler():
 
                     ResFinderResultHandler.standardize_results_new(std_result,
                                                                    kmahit,
-                                                                   db_name)
+                                                                   db_name,
+                                                                   self.conf)
 
     # todo: ask alfred if this should be moved to cgelib as a blast filtering step.
     def find_best_Blast_hit(self, aligner, db_name):
@@ -191,7 +192,7 @@ class ResultHandler():
                     gene_dict[gene].append(gene_hit)
                 else:
                     continue
-            else:
+            elif gene not in gene_dict.keys():
                 gene_dict[gene].append(gene_hit)
 
             if (len(gene_dict[gene][0]["query_string"])
@@ -213,9 +214,8 @@ class ResultHandler():
         current_end = int(pre_hit['tmpl_end'])
         query_start = pre_hit['query_start']
         query_end = pre_hit['query_end']
-        final_aln = pre_hit['aln_string']
-        final_qry = pre_hit['query_string']
-        final_tmpl = pre_hit['tmpl_string']
+        final_aln = pre_hit['aln_string'].strip()
+        final_qry = pre_hit['query_string'].replace('-','')
         first_hit_id = pre_hit['hit_id']
         gene_length = pre_hit['gene_length']
 
@@ -228,7 +228,7 @@ class ResultHandler():
         pre_query_start = int(pre_hit['query_start'])
         pre_query_end = int(pre_hit['query_end'])
         pre_qry = pre_hit['query_string'].replace('-','')
-        pre_aln = pre_hit['aln_string']
+        pre_aln = pre_hit['aln_string'].strip()
         pre_tmpl = pre_hit['tmpl_string']
         pre_id = pre_hit['hit_id']
 
@@ -236,7 +236,7 @@ class ResultHandler():
         next_end = int(next_hit['tmpl_end'])
         next_query_start = int(next_hit['query_start'])
         next_query_end = int(next_hit['query_end'])
-        next_aln = next_hit['aln_string']
+        next_aln = next_hit['aln_string'].strip()
         next_qry = next_hit['query_string'].replace('-','')
         next_tmpl = next_hit['tmpl_string']
         next_id = next_hit['hit_id']
@@ -246,6 +246,7 @@ class ResultHandler():
 
         #getting the full template.
         template = max(pre_tmpl, next_tmpl, key=len)
+        final_tmpl = template
 
         contigs += next_id
         contig_name += (', ' + next_name)
@@ -273,10 +274,10 @@ class ResultHandler():
                 current_end = int(next_end)
 
                 # Find query overlap sequences
-                pre_qry_overlap = pre_qry[(overlap_start - pre_query_start + 1):
+                pre_qry_overlap = pre_qry[(overlap_start - pre_query_start):
                                           (overlap_start + overlap_len)]
-                next_qry_overlap = next_qry[:overlap_len]
-                tmpl_overlap = next_tmpl[overlap_start:overlap_len]
+                next_qry_overlap = next_qry[:overlap_len + 1]
+                tmpl_overlap = template[overlap_start - 1:(overlap_start + overlap_len)]
 
                 # If alternative query overlap exists use the best
                 if pre_qry_overlap != next_qry_overlap:
@@ -287,13 +288,12 @@ class ResultHandler():
                     #  identify which hit the used overlap comes from?
                     eprint("OVERLAP WARNING: The following two hits had an "
                            "overlap containing differences - the overlap sequence"
-                           "with the highest identity was used.")
+                           " with the highest identity was used.")
                     eprint("{}\n{}"
                            .format(pre_qry_overlap, next_qry_overlap))
 
                     # add the best overlap to the first sequence followed by
                     # the  next sequence.
-                    final_tmpl = template
                     final_qry = final_qry[:overlap_start] + best_overlap + \
                                 next_qry[overlap_end_pos:]
                     final_aln = final_aln[:overlap_start] + best_overlap + \
@@ -301,21 +301,18 @@ class ResultHandler():
                 else:
                     # Use the entire previous sequence and add the last
                     # part of the next sequence
-                    final_tmpl += next_tmpl[overlap_len:]
-                    final_qry += next_qry[overlap_len:]
-                    final_aln += next_aln[overlap_len:]
+                    final_qry += next_qry[overlap_len + 1:]
+                    final_aln += next_aln[overlap_len + 1:]
 
         elif next_start > current_end:
             #  <------->
             #              <------->
             gap_size = next_start - current_end - 1
             final_qry += "N" * gap_size
-            final_tmpl = template
             final_aln += " " * gap_size
             current_end = int(next_end)
-            final_tmpl += next_tmpl[next_start:next_end]
-            final_qry += next_qry[next_start:next_end]
-            final_aln += next_aln[next_start:next_end]
+            final_qry += next_qry
+            final_aln += next_aln
 
             eprint("Info: {} and {} are aligning to the same gene and have "
                    "been combined to one hit".format(pre_id, next_id))
@@ -416,7 +413,8 @@ class ResultHandler():
             else:
                 ResFinderResultHandler.standardize_results_new(std_result,
                                                                hit[0],
-                                                               db_name)
+                                                               db_name,
+                                                               self.conf)
 
     def keep_hit(self, hit_dict, current_hit, current_key, key_list):
         '''
@@ -551,9 +549,9 @@ class ResultHandler():
         for file in db_file:
             for seq_record in SeqIO.parse(file, "fasta"):
                 if seq_record.description.replace(" ", "") == gene_id.replace(" ",""):
-                    start_seq = str(seq_record.seq)[:int(hit["tmpl_start"]) - 1]
-                    end_seq = str(seq_record.seq)[int(hit["tmpl_end"]):]
-                    full_tmpl = start_seq + hit["tmpl_string"] + end_seq
+                    # start_seq = str(seq_record.seq)[:int(hit["tmpl_start"]) - 1]
+                    # end_seq = str(seq_record.seq)[int(hit["tmpl_end"]):]
+                    full_tmpl = str(seq_record.seq)
                     break
         # getting the full input contig to extend it to the length of subject
         contig = ''
@@ -570,6 +568,8 @@ class ResultHandler():
         hit["tmpl_string"] = full_tmpl
         hit["query_string"] = query_seq
 
+        test1 = len(full_tmpl)
+        test2 = len(query_seq)
         aln_seq = self.calculate_alignment(query_seq, hit['tmpl_string'])
 
         hit["aln_string"] = aln_seq
@@ -623,6 +623,11 @@ class ResultHandler():
         query_end = int(hit['query_end'])
         length = int(hit['gene_length'])
 
+        #if query contains insertions ('-') compared to contig
+        # todo there might be more edge-cases where '-' is inserted. what about
+        #  deletions?
+        nr_insertions = query_seq.count('-')
+
         # if the subject string do not start form the beginning of the template gene
         if sbjct_start != 1:
             missing = sbjct_start - 1
@@ -642,7 +647,7 @@ class ResultHandler():
 
         # if the subject end do not reach the end of the template
         if sbjct_end < length:
-            missing = length - sbjct_end
+            missing = length - sbjct_end - nr_insertions
             # if the query has additional sequence on the contig compared to gene length
             if missing <= (len(contig) - query_end):
                 start_pos = query_end

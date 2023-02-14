@@ -48,7 +48,7 @@ class GeneResult_new(dict):
         if conf and conf.output_aln:
             self["query_string"] = res["query_string"]
             self["alignment_string"] = res["aln_string"]
-            self["ref_string"] = res["sbjct_string"]
+            self["ref_string"] = res["tmpl_string"]
 
         coverage = res["template_coverage"]
         self["coverage"] = float(coverage)

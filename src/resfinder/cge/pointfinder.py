@@ -849,10 +849,6 @@ class PointFinder(CGEFinder):
 
                     # If alternative query overlap excist save it
                     if pre_qry_overlap != next_qry_overlap:
-                        eprint("OVERLAP WARNING:")
-                        eprint("{}\n{}"
-                               .format(pre_qry_overlap, next_qry_overlap))
-
                         # Save alternative overlaps
                         alternative_overlaps += [(next_block_start,
                                                   overlap_end_pos,

@@ -481,7 +481,7 @@ class Isolate(dict):
                             elif(feature.hit.match_category > best_match):
                                 best_match = feature.hit.match_category
 
-                                output_str += "\t" + str(best_match)
+                    output_str += "\t" + str(best_match)
 
                     gene_list = ab.get_gene_namewacc(tostring=True)
                     mut_list = ab.get_mut_namewannot(tostring=True)

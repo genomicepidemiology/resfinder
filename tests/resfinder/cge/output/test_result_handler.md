@@ -8,7 +8,7 @@
 
 >>> class DummyArgs():
 ...     def __init__(self):
-...         self.inputfasta = None
+...         self.inputfasta = "./tests/data/test_isolate_12.fa"
 ...         self.inputfastq = None
 ...         self.outputPath = "./tests/tmp_out/"
 ...         self.blastPath = None
@@ -35,7 +35,7 @@
 ...         self.pickle = False
 ...         self.nanopore = False
 ...         self.out_json = None
-...         self.disinfectant = False
+...         self.disinfectant = True
 ...         self.db_path_disinf = None
 ...         self.db_path_disinf_kma = None
 ...         self.output_aln = False
@@ -61,6 +61,8 @@ Create the phenoDB object.
 >>> assert(len(resfinder_db_path) > 0)
 >>> pointfinder_db_path = os.environ["CGE_RESFINDER_RESPOINT_DB"]
 >>> assert(len(pointfinder_db_path) > 0)
+>>> disinfinder_db_path = os.environ["CGE_DISINFINDER_DB"]
+>>> assert(len(disinfinder_db_path) > 0)
 
 >>> abclassdef_file= "{}/antibiotic_classes.txt".format(resfinder_db_path)
 >>> acquired_file= "{}/phenotypes.txt".format(resfinder_db_path)
@@ -74,7 +76,7 @@ Create the phenoDB object.
 
 ResFinder stores results in a BlastNAligner object from cgecore, an iterator which will return each hit as a blastN hit object
 
-Here a dummy hit (obtained using Blast) is created, named rf\_dat\_blast.
+Here a dummy hit (obtained using Blast) is created, named rf_dat_blast.
 
 ```python
 
@@ -113,9 +115,237 @@ Here a dummy hit (obtained using Blast) is created, named rf\_dat\_blast.
 >>> rf_dat_blast["template_start_aln"] = 1842
 >>> rf_dat_blast["template_end_aln"] = 2628
 
-```
+# different hits as found in gene_dict
+>>> hitA = {'tmpl_start': 1,
+...			'tmpl_end': 153,
+...			'query_start': 1,
+...			'query_end': 153,
+...			'query_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAA',
+...			'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||',
+...			'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAA',
+...			'aln_length': 153,
+...			'contig_name': 'erm(38)_first1-321',
+...			'identity': 1.0,
+...			'coverage': 0.13178294573643412,
+...			'gene_length': 1161,
+...			'hit_id': 'erm(38)_first1-321:8..15:erm(38)_1_AY154657.1'}
 
-## Test ResultHandler
+>>> hitA2 = {'tmpl_start': 1,
+...			'tmpl_end': 239,
+...			'query_start': 1,
+...			'query_end': 239,
+...			'query_string': 'AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGAAGCTTGCTTCTTTGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAACTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGAT',
+...			'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||',
+...			'tmpl_string': 'AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGAAGCTTGCTTCTTTGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAACTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGAT',
+...			'aln_length': 239,
+...			'contig_name': '16S-rrsB_1_CP067250.1',
+...			'identity': 1.0,
+...			'coverage': 0.1549935149,
+...			'gene_length': 1542,
+...			'hit_id': 'test_other_contig:8..15:16S-rrsB_1_CP067250.1'}
+
+>>> hitA3 = {'tmpl_start': 61,
+...			'tmpl_end': 321,
+...			'query_start': 61,
+...			'query_end': 321,
+...			'query_string': 'GTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC',
+...			'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||',
+...			'tmpl_string': 'GTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC',
+...			'aln_length': 261,
+...			'contig_name': 'erm(38)_first1-321',
+...			'identity': 1.0,
+...			'coverage': 0.2248062015503876,
+...			'gene_length': 1161,
+...			'hit_id': 'erm(38)_first1-321:8..15:erm(38)_1_AY154657.1'}
+
+>>> hitA4 = {'tmpl_start': 202,
+...			'tmpl_end': 501,
+...			'query_start': 1,
+...			'query_end': 300,
+...			'query_string': '--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGT----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',
+...			'aln_string': '                                                                                                                                                                                                        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ',
+...			'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGTTACCAGGCGCTGGTGCACCGCGTGTTCACCGGACGCGGACACGGCATGGCGCAGATCCTGCAACGGTTGCCCACGCCGGTGCCCCGCACTTGGTTGCGGGCCAACGGGATAGCACCGAACTCCCTGCCCCGCCAGTTGTCCGCGGCGCAGTGGGCGGCGCTGTTCGAGCAGACGCGTCTAACTGGTGCCCAACGGGTCGATCGTCCACGCGATGTACAGCACGGCCGCGCTCACCGTCGCCGTGGTGGCGAAGTCGATCGCCCGGCTACGCACCACAAGCAGACCGGCCCGGTCGTCGGTCAGCGCCAACCGCAGCGCGGCCGCGACGCCGACGCCGATCCCGATGACCAGCGCACCGCGCCGCCAGTAACCCGCCACCACCAGGGCGAACGCCGCGATGAAGATCAGGCCGACCACCAGGATCGGCCATTGACCGGCGAACACCTTGCGGGCGAATTCCTTTGGCGTCACGCCAGTTTCGACTCTTCGGCTTCGACGACGTTGGTCAGCAGGAAGGCGCGGGTCAACGGGCCCACGCCACCGGGGTTGGGCGACACGTGA',
+...			'aln_length': 300,
+...			'contig_name': 'erm(38)_middel201-600',
+...			'identity': 1.0,
+...			'coverage': 0.2248062015503876,
+...			'gene_length': 1161,
+...			'hit_id': 'erm(38)_middel201-600:8..15:erm(38)_1_AY154657.1'}
+
+
+
+>>> hitB = {'tmpl_start': 1,
+...			'tmpl_end': 10,
+...			'query_start': 1,
+...			'query_end': 10,
+...			'query_string': 'GATTTCAACCGTCTGCGTACCGCCGGTAAA',
+...			'aln_string': '|| |||||||                    ',
+...			'tmpl_string': 'GAGTTCAACCTGACGACGAGCCAGAAGAAA',
+...			'aln_length': 10,
+...			'contig_name': 'test_overlap',
+...			'identity': 0.9091,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..10:gyrA_1_CP073768.1'}
+
+>>> hitC = {'tmpl_start': 15,
+...			'tmpl_end': 25,
+...			'query_start': 15,
+...			'query_end': 25,
+...			'query_string': 'GAGTTCAACCGTCTGCGTACCTCCGGTAAA',
+...			'aln_string': '              ||||||| |||     ',
+...			'tmpl_string': 'TCCTCACCGCAACGGCGTACCGCCGACTCC',
+...			'aln_length': 11,
+...			'contig_name': 'test_overlap',
+...			'identity': 0.9091,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:15..25:gyrA_1_CP073768.1'}
+
+>>> hitD = {'tmpl_start': 1,
+...			'tmpl_end': 7,
+...			'query_start': 1,
+...			'query_end': 7,
+...			'query_string': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
+...			'aln_string': '|||||||                       ',
+...			'tmpl_string': 'AGATCTGGATGGCGCAATCCTCACCGCAAC',
+...			'aln_length': 8,
+...			'contig_name': 'test_overlap',
+...			'identity': 1.0,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitE = {'tmpl_start': 1,
+...			'tmpl_end': 30,
+...			'query_start': 1,
+...			'query_end': 30,
+...			'query_string': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
+...			'aln_string': '      |||||||||||             ',
+...			'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...			'aln_length': 11,
+...			'contig_name': 'test_overlap',
+...			'identity': 1.0,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitF = {'tmpl_start': 1,
+...			'tmpl_end': 30,
+...			'query_start': 1,
+...			'query_end': 30,
+...			'query_string': 'GAGTTCAACCGTCAGCGTACCGCCGGTAAA',
+...			'aln_string': '      ||||||| |||             ',
+...			'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...			'aln_length': 11,
+...			'contig_name': 'test_overlap',
+...			'identity': 0.9091,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitG = {'tmpl_start': 7,
+...			'tmpl_end': 17,
+...			'query_start': 7,
+...			'query_end': 17,
+...			'query_string': 'GAGCTCAATCGTCAGCGGACCGCCGGTAAA',
+...			'aln_string': '      || |||| |||             ',
+...			'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...			'aln_length': 11,
+...			'contig_name': 'test_overlap',
+...			'identity': 0.8181818182,
+...			'coverage': 0.2994672754946728,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitH = {'tmpl_start': 16,
+...			'tmpl_end': 25,
+...			'query_start': 16,
+...			'query_end': 25,
+...			'query_string': 'CGTCCTCACC',
+...			'aln_string': '||||||||||',
+...			'tmpl_string': "CGTCCTCACC",
+...			'aln_length': 10,
+...			'contig_name': 'test_overlapH',
+...			'identity': 1.0,
+...			'coverage': 0.3333333333,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitI = {'tmpl_start': 9,
+...			'tmpl_end': 30,
+...			'query_start': 9,
+...			'query_end': 30,
+...			'query_string': 'GAGCTCGTCCGTCTGCGTCCTCACCTTTTT',
+...			'aln_string': '        ||||||||||||||||||||||',
+...			'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCTTTTT',
+...			'aln_length': 22,
+...			'contig_name': 'test_overlap',
+...			'identity': 1.0,
+...			'coverage': 0.7333333333333333,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitJ = {'tmpl_start': 20,
+...			'tmpl_end': 30,
+...			'query_start': 10,
+...			'query_end': 20,
+...			'query_string': 'CTCACCGCAAC',
+...			'aln_string': '|||||||||||',
+...			'tmpl_string': 'CTCACCGCAAC',
+...			'aln_length': 11,
+...			'contig_name': 'test_overlapJ',
+...			'identity': 1,
+...			'coverage': 0.36666666666666664,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitI_N = {'tmpl_start': 9,
+...			'tmpl_end': 30,
+...			'query_start': 9,
+...			'query_end': 30,
+...			'query_string': 'GAGCTCGTCCGTCTGCGTCCNNNCCTTTTT',
+...			'aln_string': '        ||||||||||||   |||||||',
+...			'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCTTTTT',
+...			'aln_length': 22,
+...			'contig_name': 'test_overlapI',
+...			'identity': 0.8636363636363636,
+...			'coverage': 0.6333333333333333,
+...			'gene_length': 30,
+...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+>>> hitK = {'tmpl_start': 141,
+...         'tmpl_end': 321,
+...         'query_start': 141,
+...         'query_end': 321,
+...         'query_string': 'ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC',
+...         'aln_string': '||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||',
+...         'tmpl_string': 'ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC',
+...         'aln_length': 180,
+...         'contig_name': 'erm(38)_first1-321',
+...         'identity': 1.0,
+...         'coverage': 0.15503875968992248,
+...         'gene_length': 1161,
+...         'hit_id': 'erm(38)_first1-321:1..7:erm(38)_1_AY154657'}
+
+>>> hitL = {'tmpl_start': 201,
+...         'tmpl_end': 341,
+...         'query_start': 1,
+...         'query_end': 140,
+...         'query_string': '---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGT---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',
+...         'aln_string': '                                                                                                                                                                                                         ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ',
+...         'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGTTACCAGGCGCTGGTGCACCGCGTGTTCACCGGACGCGGACACGGCATGGCGCAGATCCTGCAACGGTTGCCCACGCCGGTGCCCCGCACTTGGTTGCGGGCCAACGGGATAGCACCGAACTCCCTGCCCCGCCAGTTGTCCGCGGCGCAGTGGGCGGCGCTGTTCGAGCAGACGCGTCTAACTGGTGCCCAACGGGTCGATCGTCCACGCGATGTACAGCACGGCCGCGCTCACCGTCGCCGTGGTGGCGAAGTCGATCGCCCGGCTACGCACCACAAGCAGACCGGCCCGGTCGTCGGTCAGCGCCAACCGCAGCGCGGCCGCGACGCCGACGCCGATCCCGATGACCAGCGCACCGCGCCGCCAGTAACCCGCCACCACCAGGGCGAACGCCGCGATGAAGATCAGGCCGACCACCAGGATCGGCCATTGACCGGCGAACACCTTGCGGGCGAATTCCTTTGGCGTCACGCCAGTTTCGACTCTTCGGCTTCGACGACGTTGGTCAGCAGGAAGGCGCGGGTCAACGGGCCCACGCCACCGGGGTTGGGCGACACGTGA',
+...         'aln_length': 140,
+...         'contig_name': 'erm(38)_middel201-578',
+...         'identity': 1,
+...         'coverage': 0.12058570198105081,
+...         'gene_length': 1161,
+...         'hit_id': 'erm(38)_middel201-578:1..7:erm(38)_1_AY154657'}
+
+
+
+
+```
 
 Make a ResultHandler object
 ```python
@@ -124,7 +354,172 @@ Make a ResultHandler object
 
 ```
 
-### keep_hit(hit_dict, current_hit, current_key, key_list)
+## Static methods
+
+### calculate_alignment(query, template)
+input: <br>
+    query sequence - string <br>
+template sequence - string <br>
+output: <br>
+    alignment sequence - string <br>
+This function will calculate the alignment. | for match and space for
+mismatch. This might also be done somewhere else in the code - could not find it
+
+```python
+>>> query = '-------CGTCAACC---------------'
+>>> template = 'GTCCGATCGTCAACCTGCTGCCGCTGGAGC'
+>>> res_handler.calculate_alignment(query, template)
+'       ||||||||               '
+
+
+```
+### calculate_identity(query, subject) 
+Input: <br>
+    query - query sequence string <br>
+    subject - subject sequence string <br>
+output: <br>
+the identity as int.<br> 
+The function will compare the two sequences on each position and return
+the identity as the relationship between shared base pairs over all bases 
+The two strings must be of same length.
+
+```python
+>>> str_1 = "AAATTTTGGGGTT"
+>>> str_2 = "AAATTTTGGGGTT"
+>>> str_3 = "AAA--TTGGGGTT"
+>>> res_handler.calculate_identity(str_1, str_2)
+1.0
+>>> res_handler.calculate_identity(str_2, str_3)
+0.8461538461538461
+
+```
+
+## Private methods
+
+### _find_overlap_start(pre_start, pre_tmpl, next_start)
+Input: <br>
+pre_start - int of the start position of the first hit in regards 
+            to the template <br>
+pre_tmpl - template sequence string <br>
+next_start - int of start position of the next hit in regards to the
+             template <br>
+Output: <br> 
+start position of the overlap - int <br>
+This function will iterate through the template until the overlap_start 
+        position is reached. 
+
+```python
+>>> templ = 'AAAAAAAAATTTTTTTTTTTTTTT'
+>>> templ2 = 'AA---AA--TTTTTTTTTTT'
+>>> templ3 = 'AGATCTAACCGTCTGCGTCCTCACCGCAAC'
+
+>>> res_handler._find_overlap_start(1, templ, 6)
+6
+
+>>> res_handler._find_overlap_start(1, templ2, 6)
+11
+
+>>> res_handler._find_overlap_start(7, templ3, 16)
+16
+
+```
+
+### _get_overlap_seq(overlap_start, qry_overlap_start, pre_query_start, overlap_len, pre_qry, next_qry, template)
+ Input:<br> 
+ overlap start - int <br>
+ pre_query_start - int <br>
+ overlap_len - int <br>
+ pre_qry - string of query sequence <br>
+ next_qry - string of next query sequence <br>
+ template - string of database template <br> 
+ output: <br> 
+ pre_qry_overlap - string of overlap found in the query sequence<br> 
+ next_qry_overlap - string of overlap foind in next sequence <br>
+ tmpl_overlap   - string of overlap matching the template. <br> 
+ The function will find the overlap sequences in the previous query, 
+ next query and the template. 
+
+```python
+>>> pre_qry = "AAAATTCTTGGGGGT"
+>>> pre_qry1 = "AATTCTTGGGGG"
+>>> next_qry1 = "TTTTTGGTGGCCCCC"
+>>> next_qry2 = "GGTGG"
+>>> template = "AAAATTTTTGGGGGCCCCC"
+
+>>> test_qry = "GAGCTCAATCGTCAGCGTACCGCCGGTAAA"
+>>> test_next = "CGTCCTCACC"
+>>> test_tmpl = "AGATCTAACCGTCTGCGTCCTCACCGCAAC"
+
+>>> res_handler._get_overlap_seq(5, 5, 1, 10, pre_qry, next_qry1, template)
+('TTCTTGGGGG', 'TTTTTGGTGG', 'TTTTTGGGGG')
+
+>>> res_handler._get_overlap_seq(10, 10, 1, 5, pre_qry, next_qry2, template)
+('GGGGG', 'GGTGG', 'GGGGG')
+
+>>> res_handler._get_overlap_seq(10, 10, 1, 1, pre_qry, next_qry2, template)
+('G', 'G', 'G')
+
+>>> res_handler._get_overlap_seq(5, 3, 1, 10, pre_qry1, next_qry1, template)
+('TTCTTGGGGG', 'TTTTTGGTGG', 'TTTTTGGGGG')
+
+>>> res_handler._get_overlap_seq(16, 16, 7, 2, test_qry, test_next, test_tmpl)
+('CG', 'CG', 'CG')
+
+```
+
+
+### _get_best_overlap(pre_seq, next_seq, tmpl)
+ Input:<br>
+ pre_seq - sequence string <br>
+ next_seq - second sequence string <br>
+ tmpl    - template sequence string <br>
+ Output: <br>
+ sequence string <br>
+aln_seq - corresponding alignemnt of the best overlap sequence <br>
+ The function returns the string with the highest identity compared to
+ the template sequence. All input sequences must be of same length
+
+```python
+>>> seq_1 = 'AAATTT'
+>>> seq_2 = 'AATTTT'
+>>> seq_3 = 'AAAAAT'
+>>> tmpl = 'AATTTT'
+>>> res_handler._get_best_overlap(seq_1, seq_1, tmpl)
+('AAATTT', '|| |||')
+
+# >>> res_handler._get_best_overlap(seq_1, seq_2, tmpl)
+# ('AATTTT', '||||||')
+
+# >>> res_handler._get_best_overlap(seq_1, seq_3, tmpl)
+# ('AAATTT', '|| |||') 
+
+```
+
+### _get_tmpl_path(db, gene_id)
+Input:
+    db - database name
+    gene_id - header of the gene corresponding to the hit
+output:     
+    db_file - path to the fasta file containing the database
+    template of the hit
+This function will output the path to the fasta file in the database that corresponds to the hit found by Blast
+
+```python
+>>> res_handler._get_tmpl_path("PointFinder", "geneA_1_CP0449499")
+... #doctest: +ELLIPSIS
+'.../geneA.fsa'
+
+>>> res_handler._get_tmpl_path("DisinFinder", "geneA_1_CP0449499")
+... #doctest: +ELLIPSIS
+'.../disinfectants.fsa'
+
+>>> res_handler._get_tmpl_path("ResFinder", "geneA_1_CP0449499")
+... #doctest: +ELLIPSIS
+'.../all.fsa'
+
+```
+
+### _keep_hit(hit_dict, current_hit, current_key, key_list)
 input
     hit_dict: dict containing all the previous selcted hits and their
         information
@@ -145,104 +540,6 @@ Previously a part of Blaster.compare_results()
 
 ```python
 >>> import collections
-
->>> hitA = {'tmpl_start': 16,
-...			'tmpl_end': 23,
-...			'query_start': 16,
-...			'query_end': 23,
-...			'query_string': 'GACGGCGATGAGCTGATCGGCGTTGACCTGAC',
-...			'aln_string': '               ||||||||         ',
-...			'tmpl_string': "ACTGCGATCCTGCCACGACGGCAGGTTATC",
-...			'aln_length': 8,
-...			'contig_name': 'test_other_contig',
-...			'identity': 1.0,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_other_contig:8..15:gyrA_1_CP073768.1'}
-
->>> hitB = {'tmpl_start': 1,
-...			'tmpl_end': 10,
-...			'query_start': 1,
-...			'query_end': 10,
-...			'query_string': 'GATTTCAACCGTCTGCGTACCGCCGGTAAA',
-...			'aln_string': '|| |||||||                    ',
-...			'tmpl_string': "GAGTTCAACCTGACGACGAGCCAGAAGAAA",
-...			'aln_length': 10,
-...			'contig_name': 'test_overlap',
-...			'identity': 0.9091,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:1..10:gyrA_1_CP073768.1'}
-
->>> hitC = {'tmpl_start': 15,
-...			'tmpl_end': 25,
-...			'query_start': 15,
-...			'query_end': 25,
-...			'query_string': 'GAGTTCAACCGTCTGCGTACCTCCGGTAAA',
-...			'aln_string': '              ||||||| |||     ',
-...			'tmpl_string': "TCCTCACCGCAACGGCGTACCGCCGACTCC",
-...			'aln_length': 11,
-...			'contig_name': 'test_overlap',
-...			'identity': 0.9091,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:15..25:gyrA_1_CP073768.1'}
-
->>> hitD = {'tmpl_start': 1,
-...			'tmpl_end': 7,
-...			'query_start': 1,
-...			'query_end': 7,
-...			'query_string': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
-...			'aln_string': '|||||||                       ',
-...			'tmpl_string': "AGATCTGGATGGCGCAATCCTCACCGCAAC",
-...			'aln_length': 8,
-...			'contig_name': 'test_overlap',
-...			'identity': 1.0,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
-
->>> hitE = {'tmpl_start': 7,
-...			'tmpl_end': 17,
-...			'query_start': 7,
-...			'query_end': 17,
-...			'query_string': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
-...			'aln_string': '      |||||||||||             ',
-...			'tmpl_string': "AGATCTAACCGTCTGCGTCCTCACCGCAAC",
-...			'aln_length': 11,
-...			'contig_name': 'test_overlap',
-...			'identity': 1.0,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
-
->>> hitF = {'tmpl_start': 7,
-...			'tmpl_end': 17,
-...			'query_start': 7,
-...			'query_end': 17,
-...			'query_string': 'GAGTTCAACCGTCAGCGTACCGCCGGTAAA',
-...			'aln_string': '      ||||||| |||             ',
-...			'tmpl_string': "AGATCTAACCGTCTGCGTCCTCACCGCAAC",
-...			'aln_length': 11,
-...			'contig_name': 'test_overlap',
-...			'identity': 0.9091,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
-
->>> hitG = {'tmpl_start': 7,
-...			'tmpl_end': 17,
-...			'query_start': 7,
-...			'query_end': 17,
-...			'query_string': 'GAGTTCAATCGTCAGCGTACCGCCGGTAAA',
-...			'aln_string': '      || |||| |||             ',
-...			'tmpl_string': "AGATCTAACCGTCTGCGTCCTCACCGCAAC",
-...			'aln_length': 11,
-...			'contig_name': 'test_overlap',
-...			'identity': 0.8181818182,
-...			'coverage': 0.2994672754946728,
-...			'gene_length': 30,
-...			'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
 
 >>> gene_dict_no_overlap = collections.defaultdict(list)
 >>> gene_dict_overlap = collections.defaultdict(list)
@@ -283,7 +580,7 @@ Previously a part of Blaster.compare_results()
 #### Test
 ```python
 #no overlap keeping both keys
->>> no_overlap = res_handler.keep_hit(gene_dict_no_overlap, current_hit, "rpoB_1_CP073768.1",
+>>> no_overlap = res_handler._keep_hit(gene_dict_no_overlap, current_hit, "rpoB_1_CP073768.1",
 ...                      keys_nooverlap)
 >>> sorted(no_overlap[0])
 ['gyrA_1_CP073768.1', 'rpoB_1_CP073768.1']
@@ -292,7 +589,7 @@ Previously a part of Blaster.compare_results()
 []
 
 # overlap with same cal score keeping the longest alignment or both if no difference in aln_length
->>> equal_cal = res_handler.keep_hit(gene_dict_overlap, current_hit, "rpoB_1_CP073768.1",
+>>> equal_cal = res_handler._keep_hit(gene_dict_overlap, current_hit, "rpoB_1_CP073768.1",
 ...                      keys_overlap)
 contig test_overlap was found to hit both 
 <BLANKLINE>
@@ -310,7 +607,7 @@ hit ['gyrB_1_CP047010.1', 'rpoB_1_CP073768.1'] was kept
 ['gyrA_1_CP073768.1']
 
 #exact overlap in contig - keeping the one with best identity or both if same id. 
->>> exact_overlap = res_handler.keep_hit(gene_exact_overlap, current_hit, "rpoB_1_CP073768.1",
+>>> exact_overlap = res_handler._keep_hit(gene_exact_overlap, current_hit, "rpoB_1_CP073768.1",
 ...                      keys_exact)
 contig test_overlap was found to hit both 
 <BLANKLINE>
@@ -333,20 +630,18 @@ hit ['gyrB_1_CP047010.1'] was kept
 
 ```
 
-### get\_query\_align(hit, contig)
-Input:
-    hit - an instance of a gene_dict[gene][0] dict.
-            contig - the input contig corresponding to the hit
-output:
-    updated query string
-    updated alignment string
-The function will complete the query and alingment in the case that the
+### _get\_query\_align(hit, contig)
+Input: <br>
+    hit - an instance of a gene_dict[gene][0] dict. <br>
+    contig - the input contig corresponding to the hit <br>
+output: <br>
+    updated query string <br>
+The function will complete the query in the case that the
 template gene is longer than the hit sequence. If there is corresponding
 sequences in the contig these will be added otherwise '-' will be
-appended accordingly. The alignment string will include spaces to the
-corresponding added sequence.
+appended accordingly.
 
-### setup
+#### setup
 
 ```python
 >>> contig1 = "TTTTTTTTTTTTTTTCGTCAACCGGGGGGGGGGGGGGGGGGGGGG"
@@ -399,33 +694,113 @@ corresponding added sequence.
 
 ```
 
-### Test
+#### Test
 ```python
->>> res_handler.get_query_align(hit=hit1, contig=contig1)
-'TTTTTTTCGTCAACCGGGGGGGGGGGGGGG'
+>>> res_handler._get_query_align(hit=hit1, contig=contig1)
+('TTTTTTTCGTCAACCGGGGGGGGGGGGGGG', '       ||||||||               ')
 
->>> res_handler.get_query_align(hit=hit2, contig=contig2)
-'---TTTTCGTCAACCGGGGGGG--------'
+>>> res_handler._get_query_align(hit=hit2, contig=contig2)
+('---TTTTCGTCAACCGGGGGGG--------', '       ||||||||               ')
 
->>> res_handler.get_query_align(hit=hit3, contig=contig3)
-'-------CGTCAACC---------------'
+>>> res_handler._get_query_align(hit=hit3, contig=contig3)
+('-------CGTCAACC---------------', '       ||||||||               ')
 
 ```
 
-### calculate_alignment(query, template)
-input:
-    query sequence - string
-    template sequence - string
-output:
-    alignment sequence - string
-This function will calculate the alignment. | for match and space for
-mismatch. This might also be done somewhere else in the code - could not find it
+### _complete_template(hit, db)
+Input: <br>
+    hit - gene_dict[gene][0] object corresponding to a dict with hit 
+    info <br>
+    db - database name <br>
+output: <br>
+    hit - a dict containing updated values of sequence, template,
+    and alignment <br>
+This function will add the remaining sequence to the template if
+the alignment do not cover the entire gene. It will update the hit
+instance with the template covering the full gene, the query string,
+and the alignment string with spaces in the remaining length of the
+template length.
 
 ```python
->>> query = '-------CGTCAACC---------------'
->>> template = 'GTCCGATCGTCAACCTGCTGCCGCTGGAGC'
->>> res_handler.calculate_alignment(query, template)
-'       ||||||||               '
+# no contig is matching as the input fasta correspondst to hitA and not hitA2. only adds '-' to query 
+>>> res_handler._complete_template(hitA2, 'PointFinder')
+{'tmpl_start': 1, 'tmpl_end': 239, 'query_start': 1, 'query_end': 239, 'query_string': 'AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGAAGCTTGCTTCTTTGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAACTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGAT-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ', 'tmpl_string': 'AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGAAGCTTGCTTCTTTGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAACTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTAGTAGGTGGGGTAACGGCTCACCTAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACGGCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTGGTCTTGACATCCACGGAAGTTTTCAGAGATGAGAATGTGCCTTCGGGAACCGTGAGACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTATCCTTTGTTGCCAGCGGTCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGTTGCAAAAGAAGTAGGTAGCTTAACCTTCGGGAGGGCGCTTACCACTTTGTGATTCATGACTGGGGTGAAGTCGTAACAAGGTAACCGTAGGGGAACCTGCGGTTGGATCACCTCCTTA', 'aln_length': 239, 'contig_name': '16S-rrsB_1_CP067250.1', 'identity': 1.0, 'coverage': 0.1549935149, 'gene_length': 1542, 'hit_id': 'test_other_contig:8..15:16S-rrsB_1_CP067250.1'}
+
+>>> res_handler._complete_template(hitA, 'ResFinder')
+{'tmpl_start': 1, 'tmpl_end': 153, 'query_start': 1, 'query_end': 153, 'query_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ', 'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGTTACCAGGCGCTGGTGCACCGCGTGTTCACCGGACGCGGACACGGCATGGCGCAGATCCTGCAACGGTTGCCCACGCCGGTGCCCCGCACTTGGTTGCGGGCCAACGGGATAGCACCGAACTCCCTGCCCCGCCAGTTGTCCGCGGCGCAGTGGGCGGCGCTGTTCGAGCAGACGCGTCTAACTGGTGCCCAACGGGTCGATCGTCCACGCGATGTACAGCACGGCCGCGCTCACCGTCGCCGTGGTGGCGAAGTCGATCGCCCGGCTACGCACCACAAGCAGACCGGCCCGGTCGTCGGTCAGCGCCAACCGCAGCGCGGCCGCGACGCCGACGCCGATCCCGATGACCAGCGCACCGCGCCGCCAGTAACCCGCCACCACCAGGGCGAACGCCGCGATGAAGATCAGGCCGACCACCAGGATCGGCCATTGACCGGCGAACACCTTGCGGGCGAATTCCTTTGGCGTCACGCCAGTTTCGACTCTTCGGCTTCGACGACGTTGGTCAGCAGGAAGGCGCGGGTCAACGGGCCCACGCCACCGGGGTTGGGCGACACGTGA', 'aln_length': 153, 'contig_name': 'erm(38)_first1-321', 'identity': 1.0, 'coverage': 0.13178294573643412, 'gene_length': 1161, 'hit_id': 'erm(38)_first1-321:8..15:erm(38)_1_AY154657.1'}
 
 
 ```
+
+### _complete_query_combined_hit()
+
+
+```python
+>>> import re
+
+>>> pre_aln_start = re.search(r"^\s*(\|+)", hitK['aln_string']).start(1) 
+>>> next_aln_start = re.search(r"^\s*(\|+)", hitL['aln_string']).start(1) 
+>>> combined_qry = 'ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCAC'
+>>> combined_aln = '||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||'
+>>> pre_hit = hitK
+>>> next_hit = hitL 
+>>> pre_offset = pre_hit['query_start'] - pre_hit['tmpl_start']
+>>> next_offset = next_hit['query_start'] - next_hit['tmpl_start']
+
+>>> res_handler._complete_query_combined_hit(pre_offset, next_offset, pre_aln_start, next_aln_start, combined_qry, combined_aln, next_hit, pre_hit)
+('????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCAC???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', '                                                                                                                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ')
+
+```
+
+
+### _gene_overlap_comparison(pre_hit, next_hit)
+ Input: <br>
+    pre_hit - new gene_hit to compare <br>
+    next_hit - gene_hit from gene_dict to compare with the new gene_hit <br>
+ Output: <br>
+ combined_gene - hit information in gene_hit format. <br>
+ This function will compare two hits matching the same gene and combine
+ them accordingly. 
+
+```python
+>>> res_handler._gene_overlap_comparison(hitA3, hitA4)
+{'tmpl_start': 61, 'tmpl_end': 501, 'query_start': 61, 'query_end': 501, 'query_string': '????????????????????????????????????????????????????????????GTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTT???????????????????????????????????????????????????????????????????????????????????????????????????---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 'aln_string': '                                                            |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ', 'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGTTACCAGGCGCTGGTGCACCGCGTGTTCACCGGACGCGGACACGGCATGGCGCAGATCCTGCAACGGTTGCCCACGCCGGTGCCCCGCACTTGGTTGCGGGCCAACGGGATAGCACCGAACTCCCTGCCCCGCCAGTTGTCCGCGGCGCAGTGGGCGGCGCTGTTCGAGCAGACGCGTCTAACTGGTGCCCAACGGGTCGATCGTCCACGCGATGTACAGCACGGCCGCGCTCACCGTCGCCGTGGTGGCGAAGTCGATCGCCCGGCTACGCACCACAAGCAGACCGGCCCGGTCGTCGGTCAGCGCCAACCGCAGCGCGGCCGCGACGCCGACGCCGATCCCGATGACCAGCGCACCGCGCCGCCAGTAACCCGCCACCACCAGGGCGAACGCCGCGATGAAGATCAGGCCGACCACCAGGATCGGCCATTGACCGGCGAACACCTTGCGGGCGAATTCCTTTGGCGTCACGCCAGTTTCGACTCTTCGGCTTCGACGACGTTGGTCAGCAGGAAGGCGCGGGTCAACGGGCCCACGCCACCGGGGTTGGGCGACACGTGA', 'aln_length': 441, 'contig_name': 'erm(38)_first1-321, erm(38)_middel201-600', 'coverage': 0.7333333333333333, 'gene_length': 1161, 'identity': 1.0, 'hit_id': 'erm(38)_first1-321:8..15:erm(38)_1_AY154657.1erm(38)_middel201-600:8..15:erm(38)_1_AY154657.1'}
+
+# since the hit is not in the database there end will not be '?' but only '-'
+# overlap hit 2 extends hit 1 : 111111111122222222
+>>> res_handler._gene_overlap_comparison(hitG, hitH)
+{'tmpl_start': 7, 'tmpl_end': 25, 'query_start': 7, 'query_end': 25, 'query_string': '??????AATCGTCAGCGTCCTCACC-----', 'aln_string': '      || |||| |||||||||||     ', 'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC', 'aln_length': 19, 'contig_name': 'test_overlap, test_overlapH', 'coverage': 0.6333333333333333, 'gene_length': 30, 'identity': 0.8947368421052632, 'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1test_overlap:1..7:gyrA_1_CP073768.1'}
+
+# hit 1 overlap within hit 2: 222222111111222222 - not combined - using hit 2. 
+>>> res_handler._gene_overlap_comparison(hitH, hitI)
+{'tmpl_start': 9, 'tmpl_end': 30, 'query_start': 9, 'query_end': 30, 'query_string': 'CCGTCTGCGTCCTCACCTTTTT', 'aln_string': '||||||||||||||||||||||', 'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCTTTTT', 'aln_length': 22, 'contig_name': 'test_overlap', 'coverage': 0.7333333333333333, 'gene_length': 30, 'identity': 1.0, 'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1'}
+
+# hit 1 overlap within hit 2 and hit 2 contains Ns as part of the overlap. 
+>>> res_handler._gene_overlap_comparison(hitH, hitI_N)
+{'tmpl_start': 9, 'tmpl_end': 30, 'query_start': 9, 'query_end': 30, 'query_string': '????????CCGTCTGCGTCCTCACCTTTTT', 'aln_string': '        ||||||||||||||||||||||', 'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCTTTTT', 'aln_length': 22, 'contig_name': 'test_overlapI, test_overlapH', 'coverage': 0.7333333333333333, 'gene_length': 30, 'identity': 1.0, 'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1test_overlap:1..7:gyrA_1_CP073768.1'}
+
+# no overlap
+>>> res_handler._gene_overlap_comparison(hitJ, hitG)
+{'tmpl_start': 7, 'tmpl_end': 30, 'query_start': 7, 'query_end': 30, 'query_string': '??????AATCGTCAGCGNNCTCACCGCAAC', 'aln_string': '      || |||| |||  |||||||||||', 'tmpl_string': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC', 'aln_length': 24, 'contig_name': 'test_overlap, test_overlapJ', 'coverage': 0.7333333333333333, 'gene_length': 30, 'identity': 0.8333333333333334, 'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1test_overlap:1..7:gyrA_1_CP073768.1'}
+
+```
+
+### _find_best_blast_hit(self, aligner, db_name):
+ input: <br>
+ aligner: blast result in BlastNAlignment object <br>
+ db_name: string of the database name ('ResFinder', 'DisinFinder', 'PointFinder')<br>
+ output: <br>
+ gene_dict: a dict containing all hits<br>  
+ The function finds the best sequence hits combined if multiple contigs
+ hit the same genes, or the best hit if the contig hits multiple genes.
+ Substitute to the find_best_seq in pointfinder.py and Blaster.init from
+ cgecore from previous versions. 
+
+#### setup 
+
+```python
+
+
+```
+
+### _filter_and_standardize_result(self, combined_hits, std_result, db_name, finder, min_coverage, min_identity):

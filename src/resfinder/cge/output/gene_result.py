@@ -28,8 +28,8 @@ class GeneResult_new(dict):
         self["ref_database"] = [res_collection.get_db_key(db_name)[0]]
 
         query_aln = res['aln_string']
-        start = re.search("^\s*(\|+)", query_aln).start(1)
-        end = re.search("\|+(\s*)$", query_aln).start(1)
+        start = re.search(r"^\s*(\|+)", query_aln).start(1)
+        end = re.search(r"\|+(\s*)$", query_aln).start(1)
         self["alignment_length"] = end - start
         self["identity"] = float(res["template_identity"])
         self["ref_seq_lenght"] = int(res['template_length'])

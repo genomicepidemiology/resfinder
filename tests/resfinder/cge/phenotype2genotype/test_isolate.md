@@ -33,7 +33,7 @@
 ...         self.outputPath = "./tests/tmp_out/"
 ...         self.blastPath = None
 ...         self.kmaPath = None
-...         self.species = None
+...         self.species = "Escherichia coli"
 ...         self.ignore_missing_species = None
 ...         self.db_path_res = None
 ...         self.db_path_res_kma = None
@@ -42,6 +42,7 @@
 ...         self.acq_overlap = None
 ...         self.min_cov = None
 ...         self.threshold = None
+...         self.min_depth = None
 ...         self.point = True
 ...         self.db_path_point = None
 ...         self.db_path_point_kma = None
@@ -58,7 +59,7 @@
 ...         self.db_path_disinf = None
 ...         self.db_path_disinf_kma = None
 ...         self.output_aln = False
-...         self.species = "ecoli"
+...         self.species_dir = "escherichia_coli"
 
 >>> args = DummyArgs()
 >>> conf = Config(args)
@@ -72,31 +73,21 @@ std_results test documentation.
 
 ```python
 
-# >>> rf_dat_kma = {}
-# >>> rf_dat_kma["sbjct_header"] = "blaOXA-384_1_KF986263"
-# >>> rf_dat_kma["perc_ident"] = 97
-# >>> rf_dat_kma["HSP_length"] = 100
-# >>> rf_dat_kma["sbjct_length"] = 90
-# >>> rf_dat_kma["sbjct_start"] = 1
-# >>> rf_dat_kma["sbjct_end"] = 90
-# >>> rf_dat_kma["contig_name"] = "NA"
-# >>> rf_dat_kma["query_start"] = "NA"
-# >>> rf_dat_kma["query_end"] = "NA"
-# >>> rf_dat_kma["perc_coverage"] = 100
-# >>> rf_dat_kma["depth"] = 21
-# 
-# >>> rf_custom_kma = {}
-# >>> rf_custom_kma["excluded"] = {}
-# >>> rf_custom_kma["aminoglycoside"] = "No hit found"
-# >>> rf_custom_kma["beta-lactam"] = {"unique_hit_key": rf_dat_kma}
 >>> from cgecore.blaster.blaster import Blaster
+>>> from src.resfinder.cge.pointfinder import PointFinder
 >>> import os
 >>> import tempfile
 
 >>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
->>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out")
-... #doctest: +ELLIPSIS
-Found...
+>>> point_db_path = os.path.join(pointfinder_db_path, conf.species_dir)
+>>> finder= PointFinder(db_path=point_db_path,
+...                     species=conf.species_dir,
+...                     ignore_indels=conf.ignore_indels,
+...                     ignore_stop_codons=conf.ignore_stop_codons)
+
+# >>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out")
+# ... #doctest: +ELLIPSIS
+# Found...
 
 >>> gyrA_kma_hit = {}
 >>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
@@ -114,10 +105,41 @@ Found...
 ...   [ 'sub', 81, 81, 'D', 'p.G81D', 'GGT', 'GAT', 'G', 'D' ],
 ...   [ 'sub', 82, 82, 'G', 'p.D82G', 'GAC', 'GGC', 'D', 'G' ] ]
 
->>> pf_custom_kma = {}
->>> pf_custom_kma["excluded"] = {}
->>> pf_custom_kma["gyrA"] = gyrA_kma_hit
->>> pf_custom_kma["gyrB"] = "No hit found"
+>>> hitE_point = {'ref_start_pos': 1,
+...     'tmpl_end': 251,
+...     'query_start': 1,
+...     'query_end': 251,
+...     'query_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGATGGCTCGGC',
+...     'aln_scheme': '                                                                                                                                                                                                       |||||||||||||||||||||||||||||||||||||||||| || ||||||',
+...     'template_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGGTGACTCGGCGGTCTATGACACGATCGTCCGCATGGCGCAGCCATTCTCGCTGCGTTATATGCTGGTAGACGGTCAGGGTAACTTCGGTTCTATCGACGGCGACTCTGCGGCGGCAATGCGTTATACGGAAATCCGTCTGGCGAAAATTGCCCATGAACTGATGGCCGATCTCGAAAAAGAGACGGTCGATTTCGTTGATAACTATGACGGCACGGAAAAAATTCCGGACGTCATGCCAACCAAAATTCCTAACCTGCTGGTGAACGGTTCTTCCGGTATCGCCGTAGGTATGGCAACCAACATCCCGCCGCACAACCTGACGGAAGTCATCAACGGTTGTCTGGCGTATATTGATGATGAAGACATCAGCATTGAAGGGCTGATGGAACACATCCCGGGGCCGGACTTCCCGACGGCGGCAATCATTAACGGTCGTCGCGGTATTGAAGAAGCTTACCGTACCGGTCGCGGCAAGGTGTATATCCGCGCTCGCGCAGAAGTGGAAGTTGACGCCAAAACCGGTCGTGAAACCATTATCGTCCACGAAATTCCGTATCAGGTAAACAAAGCGCGCCTGATCGAGAAGATTGCGGAACTGGTAAAAGAAAAACGCGTGGAAGGCATCAGCGCGCTGCGTGACGAGTCTGACAAAGACGGTATGCGCATCGTGATTGAAGTGAAACGCGATGCGGTCGGTGAAGTTGTGCTCAACAACCTCTACTCCCAGACCCAGTTGCAGGTTTCTTTCGGTATCAACATGGTGGCATTGCACCATGGTCAGCCGAAGATCATGAACCTGAAAGACATCATCGCGGCGTTTGTTCGTCACCGCCGTGAAGTGGTGACCCGTCGTACTATTTTCGAACTGCGTAAAGCTCGCGATCGTGCTCATATCCTTGAAGCATTAGCCGTGGCGCTGGCGAACATCGACCCGATCATCGAACTGATCCGTCATGCGCCGACGCCTGCAGAAGCGAAAACTGCGCTGGTTGCTAATCCGTGGCAGCTGGGCAACGTTGCCGCGATGCTCGAACGTGCTGGCGACGATGCTGCGCGTCCGGAATGGCTGGAGCCAGAGTTCGGCGTGCGTGATGGTCTGTACTACCTGACCGAACAGCAAGCTCAGGCGATTCTGGATCTGCGTTTGCAGAAACTGACCGGTCTTGAGCACGAAAAACTGCTCGACGAATACAAAGAGCTGCTGGATCAGATCGCGGAACTGTTGCGTATTCTTGGTAGCGCCGATCGTCTGATGGAAGTGATCCGTGAAGAGCTGGAGCTGGTTCGTGAACAGTTCGGTGACAAACGTCGTACTGAAATCACCGCCAACAGCGCAGACATCAACCTGGAAGATCTGATCACCCAGGAAGATGTGGTCGTGACGCTCTCTCACCAGGGCTACGTTAAGTATCAGCCGCTTTCTGAATACGAAGCGCAGCGTCGTGGCGGGAAAGGTAAATCTGCCGCACGTATTAAAGAAGAAGACTTTATCGACCGACTGCTGGTGGCGAACACTCACGACCATATTCTGTGCTTCTCCAGCCGTGGTCGCGTCTATTCGATGAAAGTTTATCAGTTGCCGGAAGCCACTCGTGGCGCGCGCGGTCGTCCGATCGTCAACCTGCTGCCGCTGGAGCAGGACGAACGTATCACTGCGATCCTGCCAGTGACCGAGTTTGAAGAAGGCGTGAAAGTCTTCATGGCGACCGCTAACGGTACCGTGAAGAAAACTGTCCTCACCGAGTTCAACCGTCTGCGTACCGCCGGTAAAGTGGCGATCAAACTGGTTGACGGCGATGAGCTGATCGGCGTTGACCTGACCAGCGGCGAAGACGAAGTAATGCTGTTCTCCGCTGAAGGTAAAGTGGTGCGCTTTAAAGAGTCTTCTGTCCGTGCGATGGGCTGCAACACCACCGGTGTTCGCGGTATTCGCTTAGGTGAAGGCGATAAAGTCGTCTCTCTGATCGTGCCTCGTGGCGATGGCGCAATCCTCACCGCAACGCAAAACGGTTACGGTAAACGTACCGCAGTGGCGGAATACCCAACCAAGTCGCGTGCGACGAAAGGGGTTATCTCCATCAAGGTTACCGAACGTAACGGTTTAGTTGTTGGCGCGGTACAGGTAGATGACTGCGACCAGATCATGATGATCACCGATGCCGGTACGCTGGTACGTACTCGCGTTTCGGAAATCAGCATCGTGGGCCGTAACACCCAGGGCGTGATCCTCATCCGTACTGCGGAAGATGAAAACGTAGTGGGTCTGCAACGTGTTGCTGAACCGGTTGACGAGGAAGATCTGGATACCATCGACGGCAGTGCCGCGGAAGGGGACGATGAAATCGCTCCGGAAGTGGACGTTGACGACGAGCCAGAAGAAGAATAA',
+...     'aln_length': 251,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 96.15384615384616,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 2628,
+...     'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1',
+...     'templateID': 'gyrA_1_CP073768.1'}
+
+>>> hitB_rf = {'ref_start_pos': 1,
+...     'tmpl_end': 30,
+...     'query_start': 1,
+...     'query_end': 30,
+...     'query_aln': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
+...     'aln_scheme': '      |||||||||||             ',
+...     'template_aln': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...     'aln_length': 11,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 100,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 30,
+...     'depth': 10.92,
+...     'hit_id': 'test_overlap:1..7:blaB-2_1_AF189300',
+...     'templateID': 'blaB-2_1_AF189300'}
+
+# >>> pf_custom_kma = {}
+# >>> pf_custom_kma["excluded"] = {}
+# >>> pf_custom_kma["gyrA"] = gyrA_kma_hit
+# >>> pf_custom_kma["gyrB"] = "No hit found"
 
 >>> from cgelib.output.result import Result
 >>> from src.resfinder.cge.output.gene_result import GeneResult
@@ -128,14 +150,17 @@ Found...
 
 >>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 >>> ResFinderResultHandler.standardize_results(res,
-...                                            rf_custom_kma,
+...                                            hitB_rf,
 ...                                            "ResFinder",
 ...                                            conf)
 
 >>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> PointFinderResultHandler.standardize_results(res,
-...                                              pf_custom_kma,
-...                                              "PointFinder")
+...                                              hitE_point,
+...                                              "PointFinder",
+...                                              finder,
+...                                              res_pheno_db,
+...                                              conf)
 
 ```
 
@@ -189,6 +214,7 @@ False
 ...                             type="seq_regions")
 >>> isolate.load_finder_results(std_table=res, phenodb=res_pheno_db,
 ...                             type="seq_variations")
+
 
 >>> isolate["blaB-2_AF189300"][0].ab_class.pop()
 'beta-lactam'

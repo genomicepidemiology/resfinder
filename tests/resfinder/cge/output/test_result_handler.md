@@ -591,14 +591,6 @@ Previously a part of Blaster.compare_results()
 # overlap with same cal score keeping the longest alignment or both if no difference in aln_length
 >>> equal_cal = res_handler._keep_hit(gene_dict_overlap, current_hit, "rpoB_1_CP073768.1",
 ...                      keys_overlap)
-contig test_overlap was found to hit both 
-<BLANKLINE>
-rpoB_1_CP073768.1 and gyrA_1_CP073768.1
-hit ['rpoB_1_CP073768.1'] was kept
-contig test_overlap was found to hit both 
-<BLANKLINE>
-rpoB_1_CP073768.1 and gyrB_1_CP047010.1
-hit ['gyrB_1_CP047010.1', 'rpoB_1_CP073768.1'] was kept
 
 >>> sorted(equal_cal[0])
 ['gyrB_1_CP047010.1', 'rpoB_1_CP073768.1']
@@ -609,18 +601,6 @@ hit ['gyrB_1_CP047010.1', 'rpoB_1_CP073768.1'] was kept
 #exact overlap in contig - keeping the one with best identity or both if same id. 
 >>> exact_overlap = res_handler._keep_hit(gene_exact_overlap, current_hit, "rpoB_1_CP073768.1",
 ...                      keys_exact)
-contig test_overlap was found to hit both 
-<BLANKLINE>
-rpoB_1_CP073768.1 and parC_1_CP084529.1
-hit ['rpoB_1_CP073768.1'] was kept
-contig test_overlap was found to hit both 
-<BLANKLINE>
-rpoB_1_CP073768.1 and gyrA_1_CP073768.1
-hit ['gyrA_1_CP073768.1', 'rpoB_1_CP073768.1'] was kept
-contig test_overlap was found to hit both 
-<BLANKLINE>
-rpoB_1_CP073768.1 and gyrB_1_CP047010.1
-hit ['gyrB_1_CP047010.1'] was kept
 
 >>> sorted(exact_overlap[0])
 ['gyrA_1_CP073768.1', 'gyrB_1_CP047010.1']
@@ -729,26 +709,6 @@ template length.
 >>> res_handler._complete_template(hitA, 'ResFinder')
 {'tmpl_start': 1, 'tmpl_end': 153, 'query_start': 1, 'query_end': 153, 'query_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGC------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 'aln_string': '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ', 'tmpl_string': 'GTGTCCACACCACATCACGGCCGGCACGAGCTCGGCCAGAACTTCCTGTCCGATCGGCGCGTCATCGCCGATATCGTCGAAATCGTCTCGCGCACAAACGGTCCGATCATCGAGATCGGGGCGGGCGACGGCGCGCTGACCATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCACCACCGCGATCCTGCGGCGACTGCTGCACGGTCCGGGCTGGACCACGGCCGTGCTGCTCATGCAGTGGGAGGTGGCCCGCCGACGCGCCGCGGTGGGCGGCGCCACCATGATGACCGCCCAGTGGTGGCCGTGGTTCGAATTCGGCCTTGCCCGAAAGGTTTCCGCGGCGAGCTTCACGCCGCGGCCCGCGGTCGACGCCGGACTGCTCACCATCACGCGCCGCAGCCGGCCGCTGGTCGACGTCGCGGACCGGGCGCGTTACCAGGCGCTGGTGCACCGCGTGTTCACCGGACGCGGACACGGCATGGCGCAGATCCTGCAACGGTTGCCCACGCCGGTGCCCCGCACTTGGTTGCGGGCCAACGGGATAGCACCGAACTCCCTGCCCCGCCAGTTGTCCGCGGCGCAGTGGGCGGCGCTGTTCGAGCAGACGCGTCTAACTGGTGCCCAACGGGTCGATCGTCCACGCGATGTACAGCACGGCCGCGCTCACCGTCGCCGTGGTGGCGAAGTCGATCGCCCGGCTACGCACCACAAGCAGACCGGCCCGGTCGTCGGTCAGCGCCAACCGCAGCGCGGCCGCGACGCCGACGCCGATCCCGATGACCAGCGCACCGCGCCGCCAGTAACCCGCCACCACCAGGGCGAACGCCGCGATGAAGATCAGGCCGACCACCAGGATCGGCCATTGACCGGCGAACACCTTGCGGGCGAATTCCTTTGGCGTCACGCCAGTTTCGACTCTTCGGCTTCGACGACGTTGGTCAGCAGGAAGGCGCGGGTCAACGGGCCCACGCCACCGGGGTTGGGCGACACGTGA', 'aln_length': 153, 'contig_name': 'erm(38)_first1-321', 'identity': 1.0, 'coverage': 0.13178294573643412, 'gene_length': 1161, 'hit_id': 'erm(38)_first1-321:8..15:erm(38)_1_AY154657.1'}
 
-
-```
-
-### _complete_query_combined_hit()
-
-
-```python
->>> import re
-
->>> pre_aln_start = re.search(r"^\s*(\|+)", hitK['aln_string']).start(1) 
->>> next_aln_start = re.search(r"^\s*(\|+)", hitL['aln_string']).start(1) 
->>> combined_qry = 'ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCAC'
->>> combined_aln = '||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||'
->>> pre_hit = hitK
->>> next_hit = hitL 
->>> pre_offset = pre_hit['query_start'] - pre_hit['tmpl_start']
->>> next_offset = next_hit['query_start'] - next_hit['tmpl_start']
-
->>> res_handler._complete_query_combined_hit(pre_offset, next_offset, pre_aln_start, next_aln_start, combined_qry, combined_aln, next_hit, pre_hit)
-('????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????ATACCCTTGCAACGACTCGCCCGCCCGCTCACCGCCGTCGAGGTCGACGCGCGGCGCGCGCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCCGGCGGTTGGCGCAGCGCACCGCGAGATCCGCCCCGGGGCCTGCCTCGCGGCCCACCGAGGTCGTCGCCGCCGACTTCCTGCGCTACCCACTGCCCCGCTCACCCCACGTGGTCGTGGGCAACCTGCCGTTCCACCTCAC???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', '                                                                                                                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ')
 
 ```
 

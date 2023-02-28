@@ -16,20 +16,22 @@ hit.
 >>> res.init_database("ResFinder", ".")
 >>> res.init_database("PointFinder", ".")
 
->>> pf_dat_gyra_kma = {}
->>> pf_dat_gyra_kma["sbjct_header"] = "gyrA_1_CP073768.1"
->>> pf_dat_gyra_kma["perc_ident"] = 99.92
->>> pf_dat_gyra_kma["HSP_length"] = 2628
->>> pf_dat_gyra_kma["sbjct_length"] = 2628
->>> pf_dat_gyra_kma["sbjct_start"] = 1
->>> pf_dat_gyra_kma["sbjct_end"] = 2628
->>> pf_dat_gyra_kma["contig_name"] = "gyrA_G81D_GAT_D82G_GGC"
->>> pf_dat_gyra_kma["query_start"] = 1
->>> pf_dat_gyra_kma["query_end"] = 2628
->>> pf_dat_gyra_kma["perc_coverage"] = 100.0
->>> pf_dat_gyra_kma["depth"] = 21
+>>> hitE = {'ref_start_pos': 1,
+...     'tmpl_end': 30,
+...     'query_start': 1,
+...     'query_end': 30,
+...     'query_aln': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
+...     'aln_scheme': '      |||||||||||             ',
+...     'tmpl_aln': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...     'aln_length': 11,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 1.0,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 30,
+...     'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1',
+...     'templateID': 'gyrA_1_CP073768.1'}
 
->>> gene_result_kma = GeneResult(res, pf_dat_gyra_kma, "PointFinder")
+>>> gene_result_kma = GeneResult(res, hitE, "PointFinder")
 >>> genes = [ gene_result_kma ]
 
 >>> pf_dat = []
@@ -72,7 +74,7 @@ hit.
   'insertion': False,
   'ref_id': 'gyrA;;1;;CP073768.1_81_d',
   'key': 'gyrA;;1;;CP073768.1;;81;;d',
-  'ref_database': 'PointFinder-...',...,
+  'ref_database': 'PointFinder-...'...,
   'seq_regions': ['gyrA;;1;;CP073768.1']...}
 
 ```

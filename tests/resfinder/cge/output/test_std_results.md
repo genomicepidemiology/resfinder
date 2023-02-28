@@ -22,6 +22,7 @@
 ...         self.acq_overlap = None
 ...         self.min_cov = None
 ...         self.threshold = None
+...         self.min_depth = None
 ...         self.point = True
 ...         self.db_path_point = None
 ...         self.db_path_point_kma = None
@@ -78,10 +79,27 @@ rf\_custom\_kma.
 import tempfile
 
 >>> resfinder_db_path = os.environ["CGE_RESFINDER_RESGENE_DB"]
->>> blast_path = os.environ["CGE_BLASTN"]
->>> rf_custom_kma = Blaster(inputfile="tests/data/test_isolate_01.fa", databases=["beta-lactam"], db_path=resfinder_db_path, out_path="tests/tmp_out", blast=blast_path)
-... #doctest: +ELLIPSIS
-Found...
+>>> assert(len(resfinder_db_path) > 0)
+>>> pointfinder_db_path = os.environ["CGE_RESFINDER_RESPOINT_DB"]
+>>> assert(len(pointfinder_db_path) > 0)
+
+
+
+>>> hitB_rf = {'ref_start_pos': 1,
+...     'tmpl_end': 30,
+...     'query_start': 1,
+...     'query_end': 30,
+...     'query_aln': 'GAGTTCAACCGTCTGCGTACCGCCGGTAAA',
+...     'aln_scheme': '      |||||||||||             ',
+...     'template_aln': 'AGATCTAACCGTCTGCGTCCTCACCGCAAC',
+...     'aln_length': 11,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 100,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 30,
+...     'depth': 10.92,
+...     'hit_id': 'test_overlap:1..7:blaB-2_1_AF189300',
+...     'templateID': 'blaB-2_1_AF189300'}
 
 ```
 
@@ -92,36 +110,59 @@ of lists, where each list in the list describes a mutation.
 
 ```python
 
->>> gyrA_hit = {}
->>> gyrA_hit["evalue"] = 0.0
->>> gyrA_hit["sbjct_header"] = "gyrA_1_CP073768.1"
->>> gyrA_hit["bit"] = 4843.04
->>> gyrA_hit["perc_ident"] = 99.92
->>> gyrA_hit["sbjct_length"] = 2628
->>> gyrA_hit["sbjct_start"] = 1
->>> gyrA_hit["sbjct_end"] = 2628
->>> gyrA_hit["gaps"] = 0
->>> gyrA_hit["contig_name"] = "gyrA_G81D_GAT_D82G_GGC"
->>> gyrA_hit["query_start"] = 1
->>> gyrA_hit["query_end"] = 2628
->>> gyrA_hit["HSP_length"] = 2628
->>> gyrA_hit["coverage"] = 1.0
->>> gyrA_hit["cal_score"] = 99.92
->>> gyrA_hit["hit_id"] = "gyrA_G81D_GAT_D82G_GGC:1..2628:gyrA:99.923896"
->>> gyrA_hit["strand"] = 0
->>> gyrA_hit["perc_coverage"] = 100.0
+# >>> gyrA_hit = {}
+# >>> gyrA_hit["evalue"] = 0.0
+# >>> gyrA_hit["sbjct_header"] = "gyrA_1_CP073768.1"
+# >>> gyrA_hit["bit"] = 4843.04
+# >>> gyrA_hit["perc_ident"] = 99.92
+# >>> gyrA_hit["sbjct_length"] = 2628
+# >>> gyrA_hit["sbjct_start"] = 1
+# >>> gyrA_hit["sbjct_end"] = 2628
+# >>> gyrA_hit["gaps"] = 0
+# >>> gyrA_hit["contig_name"] = "gyrA_G81D_GAT_D82G_GGC"
+# >>> gyrA_hit["query_start"] = 1
+# >>> gyrA_hit["query_end"] = 2628
+# >>> gyrA_hit["HSP_length"] = 2628
+# >>> gyrA_hit["coverage"] = 1.0
+# >>> gyrA_hit["cal_score"] = 99.92
+# >>> gyrA_hit["hit_id"] = "gyrA_G81D_GAT_D82G_GGC:1..2628:gyrA:99.923896"
+# >>> gyrA_hit["strand"] = 0
+# >>> gyrA_hit["perc_coverage"] = 100.0
 
->>> gyrA = {}
->>> gyrA["mis_matches"] = [
-...   [ 'sub', 81, 81, 'D', 'p.G81D', 'GGT', 'GAT', 'G', 'D' ],
-...   [ 'sub', 82, 82, 'G', 'p.D82G', 'GAC', 'GGC', 'D', 'G' ] ]
->>> gyrA["hits"] = {}
->>> gyrA["hits"]["gyrA_G81D_GAT_D82G_GGC:1..2628:gyrA:99.923896"] = gyrA_hit
+# >>> gyrA = {}
+# >>> gyrA["mis_matches"] = [
+# ...   [ 'sub', 81, 81, 'D', 'p.G81D', 'GGT', 'GAT', 'G', 'D' ],
+# ...   [ 'sub', 82, 82, 'G', 'p.D82G', 'GAC', 'GGC', 'D', 'G' ] ]
+# >>> gyrA["hits"] = {}
+# >>> gyrA["hits"]["gyrA_G81D_GAT_D82G_GGC:1..2628:gyrA:99.923896"] = gyrA_hit
 
->>> pf_custom_blast = {}
->>> pf_custom_blast["excluded"] = {}
->>> pf_custom_blast["gyrA_1_CP073768.1"] = gyrA
->>> pf_custom_blast["gyrB"] = "No hit found"
+# >>> pf_custom_blast = {}
+# >>> pf_custom_blast["excluded"] = {}
+# >>> pf_custom_blast["gyrA_1_CP073768.1"] = gyrA
+# >>> pf_custom_blast["gyrB"] = "No hit found"
+>>> from src.resfinder.cge.pointfinder import PointFinder
+
+>>> point_db_path = os.path.join(pointfinder_db_path, conf.species_dir)
+>>> finder= PointFinder(db_path=point_db_path,
+...                     species=conf.species_dir,
+...                     ignore_indels=conf.ignore_indels,
+...                     ignore_stop_codons=conf.ignore_stop_codons)
+
+
+>>> hitE_point = {'ref_start_pos': 1,
+...     'tmpl_end': 251,
+...     'query_start': 1,
+...     'query_end': 251,
+...     'query_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGATGGCTCGGC',
+...     'aln_scheme': '                                                                                                                                                                                                       |||||||||||||||||||||||||||||||||||||||||| || ||||||',
+...     'template_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGGTGACTCGGCGGTCTATGACACGATCGTCCGCATGGCGCAGCCATTCTCGCTGCGTTATATGCTGGTAGACGGTCAGGGTAACTTCGGTTCTATCGACGGCGACTCTGCGGCGGCAATGCGTTATACGGAAATCCGTCTGGCGAAAATTGCCCATGAACTGATGGCCGATCTCGAAAAAGAGACGGTCGATTTCGTTGATAACTATGACGGCACGGAAAAAATTCCGGACGTCATGCCAACCAAAATTCCTAACCTGCTGGTGAACGGTTCTTCCGGTATCGCCGTAGGTATGGCAACCAACATCCCGCCGCACAACCTGACGGAAGTCATCAACGGTTGTCTGGCGTATATTGATGATGAAGACATCAGCATTGAAGGGCTGATGGAACACATCCCGGGGCCGGACTTCCCGACGGCGGCAATCATTAACGGTCGTCGCGGTATTGAAGAAGCTTACCGTACCGGTCGCGGCAAGGTGTATATCCGCGCTCGCGCAGAAGTGGAAGTTGACGCCAAAACCGGTCGTGAAACCATTATCGTCCACGAAATTCCGTATCAGGTAAACAAAGCGCGCCTGATCGAGAAGATTGCGGAACTGGTAAAAGAAAAACGCGTGGAAGGCATCAGCGCGCTGCGTGACGAGTCTGACAAAGACGGTATGCGCATCGTGATTGAAGTGAAACGCGATGCGGTCGGTGAAGTTGTGCTCAACAACCTCTACTCCCAGACCCAGTTGCAGGTTTCTTTCGGTATCAACATGGTGGCATTGCACCATGGTCAGCCGAAGATCATGAACCTGAAAGACATCATCGCGGCGTTTGTTCGTCACCGCCGTGAAGTGGTGACCCGTCGTACTATTTTCGAACTGCGTAAAGCTCGCGATCGTGCTCATATCCTTGAAGCATTAGCCGTGGCGCTGGCGAACATCGACCCGATCATCGAACTGATCCGTCATGCGCCGACGCCTGCAGAAGCGAAAACTGCGCTGGTTGCTAATCCGTGGCAGCTGGGCAACGTTGCCGCGATGCTCGAACGTGCTGGCGACGATGCTGCGCGTCCGGAATGGCTGGAGCCAGAGTTCGGCGTGCGTGATGGTCTGTACTACCTGACCGAACAGCAAGCTCAGGCGATTCTGGATCTGCGTTTGCAGAAACTGACCGGTCTTGAGCACGAAAAACTGCTCGACGAATACAAAGAGCTGCTGGATCAGATCGCGGAACTGTTGCGTATTCTTGGTAGCGCCGATCGTCTGATGGAAGTGATCCGTGAAGAGCTGGAGCTGGTTCGTGAACAGTTCGGTGACAAACGTCGTACTGAAATCACCGCCAACAGCGCAGACATCAACCTGGAAGATCTGATCACCCAGGAAGATGTGGTCGTGACGCTCTCTCACCAGGGCTACGTTAAGTATCAGCCGCTTTCTGAATACGAAGCGCAGCGTCGTGGCGGGAAAGGTAAATCTGCCGCACGTATTAAAGAAGAAGACTTTATCGACCGACTGCTGGTGGCGAACACTCACGACCATATTCTGTGCTTCTCCAGCCGTGGTCGCGTCTATTCGATGAAAGTTTATCAGTTGCCGGAAGCCACTCGTGGCGCGCGCGGTCGTCCGATCGTCAACCTGCTGCCGCTGGAGCAGGACGAACGTATCACTGCGATCCTGCCAGTGACCGAGTTTGAAGAAGGCGTGAAAGTCTTCATGGCGACCGCTAACGGTACCGTGAAGAAAACTGTCCTCACCGAGTTCAACCGTCTGCGTACCGCCGGTAAAGTGGCGATCAAACTGGTTGACGGCGATGAGCTGATCGGCGTTGACCTGACCAGCGGCGAAGACGAAGTAATGCTGTTCTCCGCTGAAGGTAAAGTGGTGCGCTTTAAAGAGTCTTCTGTCCGTGCGATGGGCTGCAACACCACCGGTGTTCGCGGTATTCGCTTAGGTGAAGGCGATAAAGTCGTCTCTCTGATCGTGCCTCGTGGCGATGGCGCAATCCTCACCGCAACGCAAAACGGTTACGGTAAACGTACCGCAGTGGCGGAATACCCAACCAAGTCGCGTGCGACGAAAGGGGTTATCTCCATCAAGGTTACCGAACGTAACGGTTTAGTTGTTGGCGCGGTACAGGTAGATGACTGCGACCAGATCATGATGATCACCGATGCCGGTACGCTGGTACGTACTCGCGTTTCGGAAATCAGCATCGTGGGCCGTAACACCCAGGGCGTGATCCTCATCCGTACTGCGGAAGATGAAAACGTAGTGGGTCTGCAACGTGTTGCTGAACCGGTTGACGAGGAAGATCTGGATACCATCGACGGCAGTGCCGCGGAAGGGGACGATGAAATCGCTCCGGAAGTGGACGTTGACGACGAGCCAGAAGAAGAATAA',
+...     'aln_length': 251,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 96.15384615384616,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 2628,
+...     'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1',
+...     'templateID': 'gyrA_1_CP073768.1'}
 
 ```
 
@@ -130,26 +171,42 @@ PointFinder.
 
 ```python
 
->>> gyrA_kma_hit = {}
->>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
->>> gyrA_kma_hit["perc_ident"] = 99.92
->>> gyrA_kma_hit["HSP_length"] = 2628
->>> gyrA_kma_hit["sbjct_length"] = 2628
->>> gyrA_kma_hit["sbjct_start"] = 1
->>> gyrA_kma_hit["sbjct_end"] = 2628
->>> gyrA_kma_hit["contig_name"] = "NA"
->>> gyrA_kma_hit["query_start"] = "NA"
->>> gyrA_kma_hit["query_end"] = "NA"
->>> gyrA_kma_hit["perc_coverage"] = 100.0
->>> gyrA_kma_hit["depth"] = 21
->>> gyrA_kma_hit["mis_matches"] = [
-...   [ 'sub', 81, 81, 'D', 'p.G81D', 'GGT', 'GAT', 'G', 'D' ],
-...   [ 'sub', 82, 82, 'G', 'p.D82G', 'GAC', 'GGC', 'D', 'G' ] ]
+# >>> gyrA_kma_hit = {}
+# >>> gyrA_kma_hit["sbjct_header"] = "gyrA_1_CP073768.1"
+# >>> gyrA_kma_hit["perc_ident"] = 99.92
+# >>> gyrA_kma_hit["HSP_length"] = 2628
+# >>> gyrA_kma_hit["sbjct_length"] = 2628
+# >>> gyrA_kma_hit["sbjct_start"] = 1
+# >>> gyrA_kma_hit["sbjct_end"] = 2628
+# >>> gyrA_kma_hit["contig_name"] = "NA"
+# >>> gyrA_kma_hit["query_start"] = "NA"
+# >>> gyrA_kma_hit["query_end"] = "NA"
+# >>> gyrA_kma_hit["perc_coverage"] = 100.0
+# >>> gyrA_kma_hit["depth"] = 21
+# >>> gyrA_kma_hit["mis_matches"] = [
+# ...   [ 'sub', 81, 81, 'D', 'p.G81D', 'GGT', 'GAT', 'G', 'D' ],
+# ...   [ 'sub', 82, 82, 'G', 'p.D82G', 'GAC', 'GGC', 'D', 'G' ] ]
 
->>> pf_custom_kma = {}
->>> pf_custom_kma["excluded"] = {}
->>> pf_custom_kma["gyrA_1_CP073768.1"] = gyrA_kma_hit
->>> pf_custom_kma["gyrB"] = "No hit found"
+# >>> pf_custom_kma = {}
+# >>> pf_custom_kma["excluded"] = {}
+# >>> pf_custom_kma["gyrA_1_CP073768.1"] = gyrA_kma_hit
+# >>> pf_custom_kma["gyrB"] = "No hit found"
+
+>>> hitE_kma = {'ref_start_pos': 1,
+...     'tmpl_end': 251,
+...     'query_start': 1,
+...     'query_end': 251,
+...     'query_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGATGGCTCGGC',
+...     'aln_scheme': '                                                                                                                                                                                                       |||||||||||||||||||||||||||||||||||||||||| || ||||||',
+...     'template_aln': 'ATGAGCGACCTTGCGAGAGAAATTACACCGGTCAACATTGAGGAAGAGCTGAAGAGCTCCTATCTGGATTATGCGATGTCGGTCATTGTTGGCCGTGCGCTGCCAGATGTCCGAGATGGCCTGAAGCCGGTACACCGTCGCGTACTTTACGCCATGAACGTACTAGGCAATGACTGGAACAAAGCCTATAAAAAATCTGCCCGTGTCGTTGGTGACGTAATCGGTAAATACCATCCCCATGGTGACTCGGCGGTCTATGACACGATCGTCCGCATGGCGCAGCCATTCTCGCTGCGTTATATGCTGGTAGACGGTCAGGGTAACTTCGGTTCTATCGACGGCGACTCTGCGGCGGCAATGCGTTATACGGAAATCCGTCTGGCGAAAATTGCCCATGAACTGATGGCCGATCTCGAAAAAGAGACGGTCGATTTCGTTGATAACTATGACGGCACGGAAAAAATTCCGGACGTCATGCCAACCAAAATTCCTAACCTGCTGGTGAACGGTTCTTCCGGTATCGCCGTAGGTATGGCAACCAACATCCCGCCGCACAACCTGACGGAAGTCATCAACGGTTGTCTGGCGTATATTGATGATGAAGACATCAGCATTGAAGGGCTGATGGAACACATCCCGGGGCCGGACTTCCCGACGGCGGCAATCATTAACGGTCGTCGCGGTATTGAAGAAGCTTACCGTACCGGTCGCGGCAAGGTGTATATCCGCGCTCGCGCAGAAGTGGAAGTTGACGCCAAAACCGGTCGTGAAACCATTATCGTCCACGAAATTCCGTATCAGGTAAACAAAGCGCGCCTGATCGAGAAGATTGCGGAACTGGTAAAAGAAAAACGCGTGGAAGGCATCAGCGCGCTGCGTGACGAGTCTGACAAAGACGGTATGCGCATCGTGATTGAAGTGAAACGCGATGCGGTCGGTGAAGTTGTGCTCAACAACCTCTACTCCCAGACCCAGTTGCAGGTTTCTTTCGGTATCAACATGGTGGCATTGCACCATGGTCAGCCGAAGATCATGAACCTGAAAGACATCATCGCGGCGTTTGTTCGTCACCGCCGTGAAGTGGTGACCCGTCGTACTATTTTCGAACTGCGTAAAGCTCGCGATCGTGCTCATATCCTTGAAGCATTAGCCGTGGCGCTGGCGAACATCGACCCGATCATCGAACTGATCCGTCATGCGCCGACGCCTGCAGAAGCGAAAACTGCGCTGGTTGCTAATCCGTGGCAGCTGGGCAACGTTGCCGCGATGCTCGAACGTGCTGGCGACGATGCTGCGCGTCCGGAATGGCTGGAGCCAGAGTTCGGCGTGCGTGATGGTCTGTACTACCTGACCGAACAGCAAGCTCAGGCGATTCTGGATCTGCGTTTGCAGAAACTGACCGGTCTTGAGCACGAAAAACTGCTCGACGAATACAAAGAGCTGCTGGATCAGATCGCGGAACTGTTGCGTATTCTTGGTAGCGCCGATCGTCTGATGGAAGTGATCCGTGAAGAGCTGGAGCTGGTTCGTGAACAGTTCGGTGACAAACGTCGTACTGAAATCACCGCCAACAGCGCAGACATCAACCTGGAAGATCTGATCACCCAGGAAGATGTGGTCGTGACGCTCTCTCACCAGGGCTACGTTAAGTATCAGCCGCTTTCTGAATACGAAGCGCAGCGTCGTGGCGGGAAAGGTAAATCTGCCGCACGTATTAAAGAAGAAGACTTTATCGACCGACTGCTGGTGGCGAACACTCACGACCATATTCTGTGCTTCTCCAGCCGTGGTCGCGTCTATTCGATGAAAGTTTATCAGTTGCCGGAAGCCACTCGTGGCGCGCGCGGTCGTCCGATCGTCAACCTGCTGCCGCTGGAGCAGGACGAACGTATCACTGCGATCCTGCCAGTGACCGAGTTTGAAGAAGGCGTGAAAGTCTTCATGGCGACCGCTAACGGTACCGTGAAGAAAACTGTCCTCACCGAGTTCAACCGTCTGCGTACCGCCGGTAAAGTGGCGATCAAACTGGTTGACGGCGATGAGCTGATCGGCGTTGACCTGACCAGCGGCGAAGACGAAGTAATGCTGTTCTCCGCTGAAGGTAAAGTGGTGCGCTTTAAAGAGTCTTCTGTCCGTGCGATGGGCTGCAACACCACCGGTGTTCGCGGTATTCGCTTAGGTGAAGGCGATAAAGTCGTCTCTCTGATCGTGCCTCGTGGCGATGGCGCAATCCTCACCGCAACGCAAAACGGTTACGGTAAACGTACCGCAGTGGCGGAATACCCAACCAAGTCGCGTGCGACGAAAGGGGTTATCTCCATCAAGGTTACCGAACGTAACGGTTTAGTTGTTGGCGCGGTACAGGTAGATGACTGCGACCAGATCATGATGATCACCGATGCCGGTACGCTGGTACGTACTCGCGTTTCGGAAATCAGCATCGTGGGCCGTAACACCCAGGGCGTGATCCTCATCCGTACTGCGGAAGATGAAAACGTAGTGGGTCTGCAACGTGTTGCTGAACCGGTTGACGAGGAAGATCTGGATACCATCGACGGCAGTGCCGCGGAAGGGGACGATGAAATCGCTCCGGAAGTGGACGTTGACGACGAGCCAGAAGAAGAATAA',
+...     'aln_length': 251,
+...     'contig_name': 'test_overlap',
+...     'template_identity': 96.15384615384616,
+...     'template_coverage': 0.994672754946728 * 100,
+...     'template_length': 2628,
+...      'depth': 21,
+...     'hit_id': 'test_overlap:1..7:gyrA_1_CP073768.1',
+...     'templateID': 'gyrA_1_CP073768.1'}
 
 >>> import copy
 >>> res_kma_test = copy.deepcopy(res)
@@ -186,7 +243,7 @@ Create the phenoDB object.
 
 >>> from src.resfinder.cge.output.std_results import ResFinderResultHandler
 >>> ResFinderResultHandler.standardize_results(res,
-...                                            rf_custom_kma,
+...                                            hitB_rf,
 ...                                            "ResFinder",
 ...                                            conf)
 
@@ -251,8 +308,11 @@ Create Isolate object
 ```python
 
 >>> PointFinderResultHandler.standardize_results(res,
-...                                              pf_custom_blast,
-...                                              "PointFinder")
+...                                              hitE_point,
+...                                              "PointFinder",
+...                                              finder,
+...                                              res_pheno_db,
+...                                              conf)
 
 >>> for k in res["databases"]:
 ...   print(k)
@@ -276,8 +336,11 @@ gyrA;;1;;CP073768.1;;82;;g
 
 >>> from src.resfinder.cge.output.std_results import PointFinderResultHandler
 >>> PointFinderResultHandler.standardize_results(res_kma_test,
-...                                              pf_custom_kma,
-...                                              "PointFinder")
+...                                              hitE_kma,
+...                                              "PointFinder",
+...                                              finder,
+...                                              res_pheno_db,
+...                                              conf)
 
 >>> for k in res_kma_test["databases"]:
 ...   print(k)

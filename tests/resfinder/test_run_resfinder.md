@@ -25,6 +25,7 @@ This is only testing a very small fraction of the run_resfinder.
 ...         self.acq_overlap = None
 ...         self.min_cov = None
 ...         self.threshold = None
+...         self.min_depth = None
 ...         self.point = True
 ...         self.db_path_point = None
 ...         self.db_path_point_kma = None

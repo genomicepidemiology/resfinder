@@ -29,6 +29,7 @@
 ...         self.acq_overlap = None
 ...         self.min_cov = None
 ...         self.threshold = None
+...         self.min_depth = None
 ...         self.point = True
 ...         self.db_path_point = None
 ...         self.db_path_point_kma = None

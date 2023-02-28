@@ -12,28 +12,24 @@ results from a ResFinder hit.
 >>> res.init_database("ResFinder", ".")
 
 >>> rf_dat_blast = {}
->>> rf_dat_blast["sbjct_header"] = "blaOXA-384_1_KF986263"
->>> rf_dat_blast["perc_ident"] = 97
->>> rf_dat_blast["HSP_length"] = 100
->>> rf_dat_blast["sbjct_length"] = 90
->>> rf_dat_blast["sbjct_start"] = 1
->>> rf_dat_blast["sbjct_end"] = 90
+>>> rf_dat_blast["templateID"] = "blaOXA-384_1_KF986263"
+>>> rf_dat_blast["template_identity"] = 0.97
+>>> rf_dat_blast["template_length"] = 90
+>>> rf_dat_blast["tmpl_start"] = 1
+>>> rf_dat_blast["tmpl_end"] = 90
+>>> rf_dat_blast["aln_scheme"] = '||||||||||||||||||||||||||||||||||||||'
 >>> rf_dat_blast["contig_name"] = "Contig01"
 >>> rf_dat_blast["query_start"] = 701
 >>> rf_dat_blast["query_end"] = 801
->>> rf_dat_blast["coverage"] = 1
+>>> rf_dat_blast["template_coverage"] = 100
 
 >>> rf_dat_kma = {}
->>> rf_dat_kma["sbjct_header"] = "blaOXA-384_1_KF986263"
->>> rf_dat_kma["perc_ident"] = 97
->>> rf_dat_kma["HSP_length"] = 100
->>> rf_dat_kma["sbjct_length"] = 90
->>> rf_dat_kma["sbjct_start"] = 1
->>> rf_dat_kma["sbjct_end"] = 90
->>> rf_dat_kma["contig_name"] = "NA"
->>> rf_dat_kma["query_start"] = "NA"
->>> rf_dat_kma["query_end"] = "NA"
->>> rf_dat_kma["perc_coverage"] = 100
+>>> rf_dat_kma["templateID"] = "blaOXA-384_1_KF986263"
+>>> rf_dat_kma["template_identity"] = 97
+>>> rf_dat_kma["template_length"] = 90
+>>> rf_dat_kma["aln_scheme"] = '||||||||||||||||||||||||||||||||||||||'
+>>> rf_dat_kma["template_file"] = "kma_alignment_template_db_eschericia_coli"
+>>> rf_dat_kma["template_coverage"] = 100
 >>> rf_dat_kma["depth"] = 21
 
 ```
@@ -43,18 +39,22 @@ results from a ResFinder hit.
 ```python
 
 >>> from src.resfinder.cge.output.gene_result import GeneResult
+>>> import re
 
 >>> gene_result_blast = GeneResult(res, rf_dat_blast, "ResFinder")
 >>> assert(gene_result_blast["type"] == "seq_region")
 >>> assert(gene_result_blast["gene"] is True)
->>> assert(gene_result_blast["ref_id"] == rf_dat_blast["sbjct_header"])
+>>> assert(gene_result_blast["ref_id"] == rf_dat_blast["templateID"])
 >>> assert(gene_result_blast["name"] == "blaOXA-384")
 >>> assert(gene_result_blast["ref_acc"] == "KF986263")
->>> assert(gene_result_blast["identity"] == rf_dat_blast["perc_ident"])
->>> assert(gene_result_blast["alignment_length"] == rf_dat_blast["HSP_length"])
->>> assert(gene_result_blast["ref_seq_lenght"] == rf_dat_blast["sbjct_length"])
->>> assert(gene_result_blast["ref_start_pos"] == rf_dat_blast["sbjct_start"])
->>> assert(gene_result_blast["ref_end_pos"] == rf_dat_blast["sbjct_end"])
+>>> assert(gene_result_blast["identity"] == rf_dat_blast["template_identity"])
+>>> alignment = rf_dat_blast['aln_scheme']
+>>> start = re.search(r"^\s*(\|+)", alignment).start(1)
+>>> end = re.search(r"\|+(\s*)$", alignment).start(1)
+>>> assert(gene_result_blast["alignment_length"] == end - start)
+>>> assert(gene_result_blast["ref_seq_lenght"] == rf_dat_blast["template_length"])
+>>> assert(gene_result_blast["ref_start_pos"] == start + 1)
+>>> assert(gene_result_blast["ref_end_pos"] == end +1)
 >>> assert(gene_result_blast["query_id"] == rf_dat_blast["contig_name"])
 >>> assert(gene_result_blast["query_start_pos"] == rf_dat_blast["query_start"])
 >>> assert(gene_result_blast["query_end_pos"] == rf_dat_blast["query_end"])

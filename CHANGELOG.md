@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [Unreleased]
+
+### Added
+- Implement cgelib (cgecore2.0) functionallity - iterators of blast and KMA results. 
+- Filtering on depth when using kma (default 5). 
+
+### Changed
+- Adjust default thresholds to follow web defaults (Id 90, cov 60) for both resfinder and pointfinder.
+- For Blast runs the coverage is not also based on the full template and not on the length of the found hit. 
+- Identity calculations now include N as a mismatch if reference is not also N when running Blast.
+- If there are differences in alignment of overlaps the overlap with best identity will be used. (Before always the first). If identity is equal the first is used. 
+- If a hit is combined of more hits (matching the same gene) the query will be extended to the full reference gene length with '?' as long as one of the contigs covers it and '-' as usual for the entirety of the reference gene length beyond the contig lenght. 
+
+### Deprecated
+- Specific_gene option is no longer available.
+- Pointfinder.py and resfinder.py do no longer have their own call to __main__
+- The following unused files have been removed: orderedset.py, table.py, phenodbpoint.py, phenotype.py
+
 ## [4.3.0] - 2023-02-08
 
 ### Added

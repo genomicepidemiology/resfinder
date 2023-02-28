@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from ..phenotype2genotype.feature import ResGene, ResMutation
 
 
@@ -133,9 +132,3 @@ class PhenotypeResult(dict):
                 out_keys.append(key)
 
         return out_keys
-
-    def get_pmid_key(self, isolate):
-        phenodb = isolate.resprofile.phenodb
-        isolate_ab = isolate.resprofile.resistance[self["key"]]
-        pubmed_ids = isolate_ab.get_pubmed_ids(phenodb)
-        return pubmed_ids

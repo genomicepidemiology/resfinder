@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 
-import argparse
-import os.path
 import re
-import shutil
-from signal import *
-import tempfile
-import sys
-import subprocess
+
 from itertools import chain
 
-from .feature import Feature, ResGene, Mutation, ResMutation
-from .phenodbpoint import PhenoDBPoint
-from .res_profile import PhenoDB, ResProfile, FeatureGroup
+from .feature import ResGene, Mutation, ResMutation
+from .res_profile import ResProfile, FeatureGroup
 from .dbhit import DBHit
 
 
@@ -130,70 +123,6 @@ class Isolate(dict):
             return genus_name
 
         return False
-
-    def load_resfinder_tab(self, tabbed_output, phenodb):
-        with open(tabbed_output, "r") as fh:
-            while(True):
-                line = fh.readline()
-                if(not line):
-                    break
-
-                line = line.rstrip()
-                if(not line):
-                    continue
-
-                db_name = line
-                second_line = fh.readline().rstrip()
-
-                if(second_line == "No hit found"):
-                    continue
-
-                # At this point second line must be headers, and are skipped.
-
-                res_hit = fh.readline().rstrip()
-
-                while(res_hit):
-                    hit_list = res_hit.split("\t")
-                    match_length, ref_length = hit_list[2].split("/")
-                    start_ref, end_ref = hit_list[4].split("..")
-                    accno = hit_list[8]
-                    gene_name = hit_list[0]
-                    unique_id = "{0}_{1}".format(gene_name, accno)
-                    hit = DBHit(name=gene_name, identity=hit_list[1],
-                                match_length=match_length,
-                                ref_length=ref_length, start_ref=start_ref,
-                                end_ref=end_ref, acc=accno,
-                                db="resfinder")
-
-                    start_feat, end_feat = hit_list[6].split("..")
-
-                    if(start_feat == "NA"):
-                        start_feat = None
-                        end_feat = None
-
-                    phenotypes, unique_id = self.get_phenotypes(phenodb,
-                                                                unique_id)
-                    ab_class = set()
-                    if(phenotypes):
-                        for p in phenotypes:
-                            for ab in p.antibiotics:
-                                ab_class.update(ab.classes)
-                    else:
-                        ab_class.add(db_name)
-
-                    gene_feat = ResGene(unique_id=unique_id,
-                                        seq_region=hit_list[5],
-                                        start=start_feat, end=end_feat,
-                                        hit=hit, ab_class=ab_class)
-
-                    if(unique_id in self):
-                        temp_list = self[unique_id]
-                        temp_list.append(gene_feat)
-                        self[unique_id] = temp_list
-                    else:
-                        self[unique_id] = [gene_feat]
-
-                    res_hit = fh.readline().rstrip()
 
     @staticmethod
     def get_phenodb_id(feat_res_dict, type):

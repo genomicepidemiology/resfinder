@@ -624,35 +624,6 @@ class PhenoDB(dict):
         out_list = [var.strip() for var in string_list if var]
         return tuple(out_list)
 
-    def print_db_stats(self):
-        """ Prints some stats about the database to stdout.
-        """
-        counter_ab_class = 0
-        counter_ab = 0
-
-        ab_output = ""
-
-        print("-------------- LIST OF CLASSES --------------")
-        for ab_class in self.antibiotics:
-            counter_ab_class += 1
-            print(ab_class)
-        print("--------------- END OF CLASSES --------------")
-        print("|")
-        print("|")
-        print("------------ LIST OF ANTIBIOTICS ------------")
-        for ab_class in self.antibiotics:
-            print(ab_class)
-            for ab in self.antibiotics[ab_class]:
-                counter_ab += 1
-                print("\t" + ab)
-        print("------------ END OF ANTIBIOTICS -------------")
-        print("|")
-        print("|")
-        print("------------------ SUMMARY ------------------")
-        print("No. of classes: " + str(counter_ab_class))
-        print("No. of antibiotics: " + str(counter_ab))
-        print("-------------------- END --------------------")
-
 
 class MutationGenotype(object):
     """
@@ -665,20 +636,6 @@ class MutationGenotype(object):
         alt_str = mut_match.group(4).lower()
         self.alternatives = tuple(alt_str.split("."))
         self.mut_id_prefix = "".join((self.gene, "_", self.ref, self.pos))
-
-    def create_mut(self, mut_aa):
-        """ Given an aa alternative, creates a Mutation object.
-        """
-        unique_id = self.mut_id_prefix + "_" + mut_aa
-        mut = Mutation(unique_id, seq_region=gene, pos=self.pos,
-                       ref_aa=self.ref, mut_aa=mut_aa)
-        # Check if the created mutation is part of the MutationGenotype
-        if(self.is_in([mut])):
-            return mut
-        else:
-            sys.exit("An attempt was made to create a mutation from a"
-                     "MutationGenotype that was not defined in that "
-                     "genotype.")
 
     def is_in(self, feat_dict):
         """ Checks if any of the mutation genotypes exists in the given

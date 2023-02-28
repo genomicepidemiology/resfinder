@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import re
 from string import Template
 
@@ -195,85 +194,5 @@ class ResSumTable(dict):
 
         if(self.missing_features):
             output_str += "\n" + "\n".join(self.missing_features)
-
-        return output_str
-
-    def get_html_panel_table(self, panel_name_raw, panel_id, indent='      '):
-        panel_name = self.check_panel_name(name=panel_name_raw)
-        if(not panel_name):
-            raise(PanelNameError("ERROR: Panel name given was not found among "
-                                 "the loaded panels. Panel name given: "
-                                 + str(panel_name_raw)))
-
-        beg = Template(
-            '$indent<div id="$panel_name" class="tabcontent">\n'
-            '$indent  <table id="$panel_id" rules="cols">\n'
-            '$indent    <thead>\n'
-            '$indent      <tr>\n'
-            '$indent        <th class="head-ab-col" onclick="sortTable(0, '
-            '\'$panel_id\')">Antimicrobial</th>\n'
-            '$indent        <th class="head-col" onclick="sortTable(1, '
-            '\'$panel_id\')">Class</th>\n'
-            '$indent        <th class="head-col" onclick="sortTable(2, '
-            '\'$panel_id\')">WGS-predicted phenotype</th>\n'
-            '$indent        <th class="head-gene-col" onclick="sortTable(3, '
-            '\'$panel_id\')">Genetic background</th>\n'
-            '$indent      </tr>\n'
-            '$indent    </thead>\n\n')
-
-        output_str = beg.substitute(panel_name=panel_name,
-                                    panel_id=panel_id,
-                                    indent=indent)
-
-        ab_row = Template(
-            '$indent      <tr>\n'
-            '$indent        <td class="ab-col">$ab</td>\n'
-            '$indent        <td class="class-col">$abclass</td>\n'
-            '$indent        <td class="$res">$pheno</td>\n'
-            '$indent        <td class="genes-col">$genes</td>\n'
-            '$indent      </tr>\n')
-
-        output_str += indent + '    <tbody>\n'
-
-        if(panel_name == "complete"):
-            for ab in self:
-                na_list = [ab, "NA", "NA", "NA", "Not in database"]
-                ab_list = self.get(ab, na_list)
-                if(ab_list[3] == "1"):
-                    res = 'bggrey'
-                elif(ab_list[3] == "2"):
-                    res = 'bglightgreen'
-                elif(ab_list[3] == "3"):
-                    res = 'bggreen'
-                else:
-                    res = 'sus-col'
-                output_str += ab_row.substitute(indent=indent,
-                                                ab=ab,
-                                                abclass=ab_list[1],
-                                                res=res,
-                                                pheno=ab_list[2],
-                                                genes=ab_list[4])
-        else:
-            for ab in self.panels[panel_name]:
-                na_list = [ab, "NA", "NA", "NA", "Not in database"]
-                ab_list = self.get(ab, na_list)
-                if(ab_list[3] == "1"):
-                    res = 'bggrey'
-                elif(ab_list[3] == "2"):
-                    res = 'bglightgreen'
-                elif(ab_list[3] == "3"):
-                    res = 'bggreen'
-                else:
-                    res = 'sus-col'
-                output_str += ab_row.substitute(indent=indent,
-                                                ab=ab,
-                                                abclass=ab_list[1],
-                                                res=res,
-                                                pheno=ab_list[2],
-                                                genes=ab_list[4])
-
-        output_str += (indent + '    </tbody>\n\n'
-                       + indent + '  </table>\n'
-                       + indent + '</div>\n')
 
         return output_str

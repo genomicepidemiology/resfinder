@@ -7,13 +7,17 @@ class BlastManager():
         self.databases = databases
         self.db_path = db_path_blast
 
-    # 1 generate input for BlastNALigner
-    #   1.2 generate filenames - corresponding to each antimicrobial in format
-#           blasttest2betalactam5.xml for xml - think we went for tsv output
-    #create BlastNAligner object
-    #
-
     def run_BlastNAligner(self, result_files, params):
+        """
+        Input:
+            result_files: blast output format (outfmt flag) option
+            params: parameters for running blast.
+        output:
+            blast_aligner: a aligner object created by cgelib when calling
+            blast_aligner from a BlastNAligner object
+        this function will call blast with the disired parameters and output
+        format.
+        """
         blast_aligner = BlastNAligner(
             result_file=result_files)
 

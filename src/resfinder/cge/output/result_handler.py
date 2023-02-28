@@ -74,12 +74,12 @@ class ResultHandler():
                             or float(kmahit['depth']) < self.conf.min_depth):
                         continue
 
-                    PointFinderResultHandler.standardize_results_new(std_result,
-                                                                     kmahit,
-                                                                     db_name,
-                                                                     finder,
-                                                                     self.pheno_db,
-                                                                     self.conf)
+                    PointFinderResultHandler.standardize_results(std_result,
+                                                                 kmahit,
+                                                                 db_name,
+                                                                 finder,
+                                                                 self.pheno_db,
+                                                                 self.conf)
             else:  # method == Resfinder.TYPE_KMA and (db_name 'ResFinder or db_name 'DisinFinder):
                 for kmahit in kma_alignment.parse_hits():
                     if (float(kmahit['template_coverage'])
@@ -89,12 +89,11 @@ class ResultHandler():
                             or float(kmahit['depth']) < self.conf.min_depth):
                         continue
 
-                    ResFinderResultHandler.standardize_results_new(std_result,
-                                                                   kmahit,
-                                                                   db_name,
-                                                                   self.conf)
+                    ResFinderResultHandler.standardize_results(std_result,
+                                                               kmahit,
+                                                               db_name,
+                                                               self.conf)
 
-    # todo: ask alfred if this should be moved to cgelib as a blast filtering step.
     def _find_best_blast_hit(self, aligner, db_name):
         """
         input:
@@ -235,8 +234,8 @@ class ResultHandler():
         pre_end = int(pre_hit['tmpl_end'])
         pre_query_start = int(pre_hit['query_start'])
         pre_query_end = int(pre_hit['query_end'])
-        pre_aln_start = re.search(r"^\s*(\|+)", pre_hit['aln_string']).start(1)
-        pre_aln_end = re.search(r"\|+(\s*)$", pre_hit['aln_string']).start(1)
+        pre_aln_start = re.search(r"^[\s_-]*(\|+)", pre_hit['aln_string']).start(1)
+        pre_aln_end = re.search(r"\|+([\s_-]*)$", pre_hit['aln_string']).start(1)
         pre_aln = pre_hit['aln_string'].strip()
         pre_qry = pre_hit['query_string'][pre_aln_start:pre_aln_end]
         pre_tmpl = pre_hit['tmpl_string']
@@ -246,8 +245,8 @@ class ResultHandler():
         next_start = int(next_hit['tmpl_start'])
         next_end = int(next_hit['tmpl_end'])
         next_query_start = next_hit['query_start']
-        next_aln_start = re.search(r"^\s*(\|+)", next_hit['aln_string']).start(1)
-        next_aln_end = re.search(r"\|+(\s*)$", next_hit['aln_string']).start(1)
+        next_aln_start = re.search(r"^[\s_-]*(\|+)", next_hit['aln_string']).start(1)
+        next_aln_end = re.search(r"\|+([\s_-]*)$", next_hit['aln_string']).start(1)
         next_aln = next_hit['aln_string'].strip()
         next_qry = next_hit['query_string'][next_aln_start:next_aln_end]
         next_tmpl = next_hit['tmpl_string']
@@ -334,8 +333,6 @@ class ResultHandler():
                                           qry_overlap_start,
                                           pre_query_start, overlap_len,
                                           pre_qry, next_qry, template)
-                print(overlap_start, qry_overlap_start,
-                                          pre_query_start, overlap_len)
 
                 # If alternative query overlap exists use the best
                 if pre_qry_overlap != next_qry_overlap:
@@ -353,8 +350,8 @@ class ResultHandler():
                 else:
                     # Use the entire previous sequence and add the last
                     # part of the next sequence
-                    final_qry += next_qry[overlap_len:]
-                    final_aln += next_aln[overlap_len:]
+                    final_qry += next_qry[overlap_len + 1:]
+                    final_aln += next_aln[overlap_len + 1:]
 
 
         elif next_start > current_end:
@@ -376,11 +373,12 @@ class ResultHandler():
         coverage = ((current_end - query_start + 1 - no_call)
                     / float(gene_length))
 
-        query_end = len(final_qry) + query_start - 1
+        query_end = len(final_qry) + query_start + 1
 
         identity = self.calculate_identity(query=final_qry,
                                            subject=final_tmpl[
-                                                   (query_start-1):query_end])
+                                                   (query_start - 1 - pre_offset):
+                                                   query_end - pre_offset])
         final_hit_length = len(final_qry)
 
         if combined_hits:
@@ -478,7 +476,6 @@ class ResultHandler():
         equal = 0
         not_equal = 0
 
-
         for i in range(len(query)):
             if query[i].upper() == subject[i].upper():
                 equal += 1
@@ -537,17 +534,17 @@ class ResultHandler():
             hit[0]['templateID'] = key
 
             if db_name == 'PointFinder':
-                PointFinderResultHandler.standardize_results_new(std_result,
-                                                                 hit[0],
-                                                                 db_name,
-                                                                 finder,
-                                                                 self.pheno_db,
-                                                                 self.conf)
+                PointFinderResultHandler.standardize_results(std_result,
+                                                             hit[0],
+                                                             db_name,
+                                                             finder,
+                                                             self.pheno_db,
+                                                             self.conf)
             else:
-                ResFinderResultHandler.standardize_results_new(std_result,
-                                                               hit[0],
-                                                               db_name,
-                                                               self.conf)
+                ResFinderResultHandler.standardize_results(std_result,
+                                                           hit[0],
+                                                           db_name,
+                                                           self.conf)
 
     def _keep_hit(self, hit_dict, current_hit, current_key, key_list):
         '''
@@ -568,11 +565,7 @@ class ResultHandler():
         overlapping hit with the best identity or combined coverage/identity
         score.
         Previously a part of Blaster.compare_results()
-        Known issue: if multiple genes (A,B,C) fits a contig but overlaps only
-        the best hit (C) will be saved, even if two of the hits (B,C) including
-        the best hit do not overlap.
-                  B<-------------->
-        A<------------>     C<-------------->
+
         '''
 
         current_contig = current_hit['contig_name']
@@ -604,8 +597,6 @@ class ResultHandler():
                 keys_to_keep.extend([current_key, next_key])
                 continue
 
-            print("contig {} was found to hit both ".format(current_contig))
-            print("\n{} and {}".format(current_key, next_key))
             # add the best hit to keeps list and the other to drop list
             if current_cal > next_cal:
                 keys_to_keep.append(current_key)
@@ -626,9 +617,6 @@ class ResultHandler():
                     # and the length is the same both hits are kept.
                     keys_to_keep.extend([current_key, next_key])
 
-            keys_to_print = [x for x in [current_key, next_key] if x in keys_to_keep]
-            keys_to_print = set(keys_to_print) - set(keys_to_drop)
-            print("hit {} was kept".format(sorted(keys_to_print)))
         # TODO  If new_score == old_score but identity and coverages are not the
         #  same. which gene should be chosen?? Keep both for now - possible fix
         #  when introducing a protein level comparison

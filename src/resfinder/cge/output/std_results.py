@@ -1,19 +1,13 @@
 #!/usr/bin/env python3
-import random
-import string
-import json
 
-from ..phenotype2genotype.res_profile import PhenoDB
 from ..phenotype2genotype.feature import ResGene, ResMutation
 
 from .exceptions import DuplicateKeyError
-from .gene_result import GeneResult_new, GeneResultOld
+from .gene_result import GeneResult
 from .seq_variation_result import SeqVariationResult
 from .phenotype_result import PhenotypeResult
-
-from resfinder.cge.resfinder import ResFinder
 from resfinder.cge.pointfinder import PointFinder
-from cgelib.alignment.read_alignment import KMAAlignment
+
 
 
 def add_gene_result_if_key_not_None(gene_result, res_collection):
@@ -39,37 +33,21 @@ def add_gene_result_if_key_not_None(gene_result, res_collection):
 class ResFinderResultHandler():
 
     @staticmethod
-    def standardize_results_new(res_collection, alignment_res, ref_db_name, conf):
+    def standardize_results(res_collection, alignment_res, ref_db_name, conf):
+        """
+        Input:
+            res_collection:  Result object created by the cge core module.
+            alignment_res: a single hit from cgelib iterator
+            ref_db_name: database name in string format
+            conf: config object
+        output:
+            no return but will alter the res_collection object with the
+            addition of a GeneResult object.
+        """
 
-        gene_result = GeneResult_new(res_collection, alignment_res, ref_db_name, conf)
+        gene_result = GeneResult(res_collection, alignment_res, ref_db_name, conf)
 
         add_gene_result_if_key_not_None(gene_result, res_collection)
-
-
-    @staticmethod
-    def standardize_results_old(res_collection, res, ref_db_name, conf):
-        """
-            Input:
-                res_collection: Result object created by the cge core module.
-                res: Custom dictionary of results from ResFinder
-                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
-
-            Method loads the given res_collection with results from res.
-        """
-        for db_name, db in res.results.items():
-            if(db_name == "excluded"):
-                continue
-
-            if(db == "No hit found"):
-                continue
-
-            for unique_id, hit_db in db.items():
-                if (unique_id in res.results["excluded"]):
-                    continue
-
-                gene_result = GeneResultOld(res_collection, hit_db, ref_db_name,
-                                            conf)
-                add_gene_result_if_key_not_None(gene_result, res_collection)
 
     @staticmethod
     def load_res_profile(res_collection, isolate, amr_abbreviations):
@@ -145,22 +123,26 @@ class ResFinderResultHandler():
 class PointFinderResultHandler():
 
     @staticmethod
-    def standardize_results_new(res_collection, alignment_res, ref_db_name,
-                                finder, pheno_db, conf):
+    def standardize_results(res_collection, alignment_res, ref_db_name,
+                            finder, pheno_db, conf):
         """
-        todo rewrite method explanations
-            Input:
-                res_collection: Result object created by the cge core module.
-                res: Custom dictionary of results from PointFinder
-                ref_db_name: 'ResFinder', 'PointFinder' or 'DisinFinder'
-
-            Method loads the given res_collection with results from res.
+        Input:
+            res_collection: Result object created by the cge core module.
+            alignement_res: KMA or blast hit-dict of a single result hit
+            ref_db_name: 'ResFinder', 'PointFinder' or 'DisinFinder'
+            finder: a pointfinder object
+            pheno_db: PhenoDB object
+            conf: configs
+        output:
+            has no return values but alters the res_collection object.
+        Method loads the given res_collection with results from alignment_res,
+        finds mismatches and discards unknown mutations if not else wise
+        specified and adds the seq_variations found to the res_collection
+        object.
         """
-
-        gene_results = [] # used for mismatches - relevance?
-
-        gene_result = GeneResult_new(res_collection, alignment_res,
-                                     ref_db_name)
+        gene_results = []
+        gene_result = GeneResult(res_collection, alignment_res,
+                                 ref_db_name)
 
         add_gene_result_if_key_not_None(gene_result, res_collection)
         if gene_result['key'] is None:
@@ -185,64 +167,3 @@ class PointFinderResultHandler():
                 res_collection, mismatch, gene_results, ref_db_name)
             res_collection.add_class(cl="seq_variations",
                                      **seq_var_result)
-
-    @staticmethod
-    def standardize_results_old(res_collection, res, ref_db_name):
-        """
-            Input:
-                res_collection: Result object created by the cge core module.
-                res: Custom dictionary of results from PointFinder
-                ref_db_name: 'ResFinder' or 'PointFinder' or 'DisinFinder'
-
-            Method loads the given res_collection with results from res.
-        """
-        for gene_name, db in res.items():
-            # Ignore information in excluded dict
-            if(gene_name == "excluded"):
-                continue
-
-            # Ignore genes found in excluded dict
-            if gene_name in res["excluded"]:
-                continue
-            if(isinstance(db, str)):
-                if(db == "No hit found"):
-                    continue
-                if db.startswith("Gene found with coverage"):
-                    continue
-
-            gene_results = []
-
-            # For BLAST results
-            db_hits = db.get("hits", {})
-
-            # For KMA results
-            if(not db_hits):
-                id = db["sbjct_header"]
-                db_hits[id] = db
-
-            for unique_id, hit_db in db_hits.items():
-
-                # Ignore genes found in excluded dict
-                if(unique_id in res["excluded"]):
-                    continue
-
-                gene_result = GeneResultOld(res_collection, hit_db, ref_db_name)
-                res_collection.add_class(cl="seq_regions", **gene_result)
-
-                add_gene_result_if_key_not_None(gene_result, res_collection)
-                if gene_result['key'] is None:
-                    continue
-
-                gene_results.append(gene_result)
-
-                # KMA hits
-                mismatches = hit_db.get("mis_matches", None)
-                # BLAST hits
-                if(mismatches is None):
-                    mismatches = db["mis_matches"]
-
-                for mismatch in mismatches:
-                    seq_var_result = SeqVariationResult(
-                        res_collection, mismatch, gene_results, ref_db_name)
-                    res_collection.add_class(cl="seq_variations",
-                                                **seq_var_result)

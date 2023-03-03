@@ -1,0 +1,58 @@
+FROM --platform=linux/amd64 python:3.10-slim-bullseye
+
+ENV INSIDE_DOCKER true
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update -qq; \
+    apt-get install --no-install-recommends -y -qq git \
+    build-essential \
+    wget \
+    ncbi-blast+ \
+    libz-dev \
+    procps \
+    ; \
+    rm -rf /var/cache/apt/* /var/lib/apt/lists/*;
+
+# Install python dependencies
+RUN pip3 install --upgrade pip
+RUN pip3 install -U tabulate===0.8.9 cgecore==1.5.6 cgelib==0.7.3 pandas==1.4.2 \
+    biopython==1.79 gitpython==3.1.27 python-dateutil==2.8.2;
+
+# Install KMA
+RUN cd /usr/src/; \
+    git clone --depth 1 -b 1.4.11 https://bitbucket.org/genomicepidemiology/kma.git; \
+    cd kma && make; \
+    mv kma /usr/bin/; \
+    cd ..; \
+    rm -rf kma/;
+
+# Install BLAST
+RUN cd /usr/src/; \
+    wget "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.13.0/ncbi-blast-2.13.0+-x64-linux.tar.gz"; \
+    tar -xf ncbi-blast-2.13.0+-x64-linux.tar.gz; \
+    mv ncbi-blast-2.13.0+/bin/* /usr/bin/;
+
+ENV RESFINDER_VERSION EFSA_2022
+
+# Install ResFinder
+RUN cd /usr/src/; \
+    git clone -b $RESFINDER_VERSION --depth 1 https://bitbucket.org/genomicepidemiology/resfinder.git;
+
+# Install databases
+RUN cd /usr/src/resfinder; \
+    git clone -b $RESFINDER_VERSION --depth 1 https://git@bitbucket.org/genomicepidemiology/resfinder_db.git db_resfinder; \
+    git clone -b $RESFINDER_VERSION --depth 1 https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git db_pointfinder; \
+    cd /usr/src/resfinder/db_resfinder; \
+    python INSTALL.py; \
+    rm -rf .git; \
+    cd /usr/src/resfinder/db_pointfinder; \
+    python INSTALL.py; \
+    rm -rf .git;
+
+# Setup environment
+RUN cd /; \
+    mkdir app;
+WORKDIR /app
+
+# Execute program when running the container
+ENTRYPOINT ["python", "/usr/src/resfinder/run_resfinder.py"]

@@ -21,7 +21,7 @@ RUN cd /usr/src/; \
     cd ..; \
     rm -rf kma/;
 
-ENV RESFINDER_VERSION 4.3.0
+ENV RESFINDER_VERSION 4.3.1
 
 # Install ResFinder
 RUN pip install --no-cache-dir resfinder==$RESFINDER_VERSION

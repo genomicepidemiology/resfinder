@@ -19,10 +19,12 @@ RUN pip3 install -U tabulate===0.8.9 cgecore==1.5.6 cgelib==0.7.3 pandas==1.4.2 
     biopython==1.79 gitpython==3.1.27 python-dateutil==2.8.2;
 
 # Install KMA
+# Note: In future versions remove kma_index as it is only needed in old versions of pointfinder
 RUN cd /usr/src/; \
     git clone --depth 1 -b 1.4.11 https://bitbucket.org/genomicepidemiology/kma.git; \
     cd kma && make; \
     mv kma /usr/bin/; \
+    mv kma_index /usr/bin/; \
     cd ..; \
     rm -rf kma/;
 

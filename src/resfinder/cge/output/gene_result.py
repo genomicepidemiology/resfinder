@@ -43,8 +43,10 @@ class GeneResult(dict):
         if conf and conf.output_aln:
             for ab_class, hits in alignments.gene_align_query.items():
                 ab_class_keys = list(hits.keys())
-                hit_key = next(key for key in ab_class_keys
-                               if key.startswith(self["ref_id"]))
+                hit_key = next((key for key in ab_class_keys
+                               if key.startswith(self["query_id"])), None)
+                if hit_key is None:
+                    continue
                 hit_class = ab_class
                 break
 

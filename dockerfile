@@ -9,6 +9,7 @@ RUN apt-get update -qq; \
     wget \
     ncbi-blast+ \
     libz-dev \
+    procps \
     ; \
     rm -rf /var/cache/apt/* /var/lib/apt/lists/*;
 

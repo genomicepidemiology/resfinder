@@ -4,6 +4,10 @@ ResFinder documentation
 ResFinder identifies acquired antimicrobial resistance genes in total or partial
 sequenced isolates of bacteria.
 
+## Issue tracker temporarily closed
+
+The issue tracker is temporarily closed due to spam.
+
 ## Important if you are updating from a previous ResFinder version
 
 It is no longer recommended to clone the ResFinder bitbucket repository unless you plan to do development work on ResFinder.

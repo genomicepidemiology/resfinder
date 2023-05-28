@@ -751,8 +751,6 @@ class PointFinder(CGEFinder):
             # Check coverage for each hit, patch together partial genes hits
             for hit_id, hit in hits.items():
 
-                hit_dict = []
-
                 # Save hits start and end positions in subject, total subject
                 # len, and subject and query sequences of each hit
                 hits_found += [(hit['sbjct_start'], hit['sbjct_end'],
@@ -903,38 +901,6 @@ class PointFinder(CGEFinder):
                                                   sbjct_seq=final_sbjct,
                                                   qry_seq=final_qry)
                 GENES[gene]['mis_matches'] = mismatches
-
-                # the above addition of GENES[gene] may be redundant as we now add
-                # the following dict to GENES[gene]['hits']
-
-                gene_accession = hit_id
-
-                if 'pre_id' in locals() and gene_accession in pre_id + next_id:
-                    hit_dict = {
-                                'evalue': 'NA',
-                                'sbjct_header': gene_accession,
-                                'bit': 'NA',
-                                'perc_ident': identity,
-                                'sbjct_length': sbjct_len,
-                                'sbjct_start': all_start,
-                                'sbjct_end': current_end,
-                                'gaps': no_call,
-                                'query_string': final_qry,
-                                'homo_string': final_homol,
-                                'subjct_string': final_sbjct,
-                                'contig_name': ", ".join(contigs),
-                                'query_start': 'NA',
-                                'query_end': 'NA',
-                                'HSP_length': len(final_qry),
-                                'coverage': coverage,
-                                'cal_score': ", ".join(scores),
-                                'hit_id': pre_id + next_id,
-                                'strand': 'NA',
-                                'perc_coverage': coverage * 100,
-                                'mis_matches': mismatches
-                    }
-
-                    GENES[gene]['hits'][combined_id] = hit_dict
 
             else:
                 # Gene not found above given coverage

@@ -30,6 +30,7 @@ pipelines:
             - pdm install
             - pdm run test
             - pdm build
+    mirror-to-github:
       - step:
          name: mirror-to-github
          script:

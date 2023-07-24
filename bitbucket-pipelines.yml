@@ -34,4 +34,4 @@ pipelines:
       - step:
          name: mirror-to-github
          script:
-            - git push --mirror https://github.com/genomicepidemiology/resfinder.git
+            - git push --mirror git@github.com:genomicepidemiology/resfinder

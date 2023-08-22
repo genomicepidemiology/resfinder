@@ -73,6 +73,7 @@ class ResFinder(CGEFinder):
                             min_cov=min_cov, threshold=threshold, blast=blast,
                             allowed_overlap=allowed_overlap)
         self.blast_results = blast_run.results
+
         return blast_run
 
     def load_phenos(self, pheno_file):

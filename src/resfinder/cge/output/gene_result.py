@@ -41,14 +41,7 @@ class GeneResult(dict):
         self["notes"] = []
 
         if conf and conf.output_aln:
-            for ab_class, hits in alignments.gene_align_query.items():
-                ab_class_keys = list(hits.keys())
-                hit_key = next((key for key in ab_class_keys
-                               if key.startswith(self["query_id"])), None)
-                if hit_key is None:
-                    continue
-                hit_class = ab_class
-                break
+            hit_class, hit_key = self.get_hit_class(alignments.gene_align_query)
 
             self["query_string"] = alignments.gene_align_query[hit_class][
                 hit_key]
@@ -58,18 +51,52 @@ class GeneResult(dict):
 
         # BLAST coverage formatted results
         coverage = res.get("coverage", None)
-        if(coverage is None):
+        if (coverage is None):
             # KMA coverage formatted results
             coverage = res["perc_coverage"]
         else:
             coverage = float(coverage) * 100
         self["coverage"] = coverage
 
-        self["grade"] = GeneResult.calc_gene_grade(coverage=self["coverage"], identity=self["identity"])
+        self["grade"] = GeneResult.calc_gene_grade(
+            coverage=self["coverage"], identity=self["identity"])
 
         self.remove_NAs()
         uniqueness = self._get_unique_gene_key(res_collection)
         self["key"] = uniqueness
+
+    def get_hit_class(self, gene_align_query):
+        """
+            Input:
+                gene_align_query: Dict from either FinderResult (KMA) or
+                                  Blaster (BLAST)
+            Output:
+                hit_class: Name of AB class
+                hit_key: Key used for query (hit)
+            
+            Method looks through all the queries that align to a reference and
+            finds the query (hit) that matches the GeneResult object.
+            For BLAST hits the query is named after the coresponding contig
+            header (query_id), but for KMA the query key is named after the
+            reference it aligns to (ref_id).
+        """
+        lookup_key = self["query_id"]
+        if self["depth"] is not None:
+            lookup_key = self["ref_id"]
+
+        for ab_class, hits in gene_align_query.items():            
+            if hits:
+                hits_keys = list(hits.keys())
+                hit_key = next((key for key in hits_keys
+                                if key.startswith(lookup_key)), None)
+                if hit_key is None:
+                    continue
+                hit_class = ab_class
+                break
+            else:
+                continue
+        
+        return hit_class, hit_key
 
     @staticmethod
     def calc_gene_grade(coverage: float, identity: float) -> int:
@@ -89,7 +116,7 @@ class GeneResult(dict):
         """
         na_keys = []
         for key, val in self.items():
-            if(val == "NA" or val is None):
+            if (val == "NA" or val is None):
                 na_keys.append(key)
         for key in na_keys:
             del self[key]
@@ -109,7 +136,7 @@ class GeneResult(dict):
             If gene_key is found in res_collection. Creates a unique key by
             appending a random string ton minimum_gene_key.
         """
-        while(gene_key in res_collection["seq_regions"]):
+        while (gene_key in res_collection["seq_regions"]):
             rnd_str = GeneResult.random_string(str_len=4)
             gene_key = ("{key}{deli}{rnd}"
                         .format(key=minimum_gene_key, deli=delimiter,
@@ -145,7 +172,7 @@ class GeneResult(dict):
         sbjct = header.split("_")
         template = sbjct[0]
 
-        if(len(sbjct) > 1):
+        if (len(sbjct) > 1):
             variant = sbjct[1]
             acc = "_".join(sbjct[2:])
         else:
@@ -182,7 +209,7 @@ class GeneResult(dict):
             query_id = self.get("query_id", "NA")
 
             # Query id == "NA" when FASTQ
-            if(query_id == "NA"):
+            if (query_id == "NA"):
                 res_collection["seq_regions"][gene_key]["ref_database"].extend(
                     self["ref_database"])
                 gene_key = None

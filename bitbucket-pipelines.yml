@@ -1,10 +1,15 @@
 # Testing ResFinder
-
+clone:
+  depth: full            
 image: python:3.10
 
 pipelines:
   custom:
-    test-and-build:
+      mirror-to-github:
+      - step:
+          script:
+            - git push --mirror git@github.com:genomicepidemiology/resfinder
+      test-and-build:
       - step:
           name: Test
           caches:
@@ -30,9 +35,3 @@ pipelines:
             - pdm install
             - pdm run test
             - pdm build
-    mirror-to-github:
-      - step:
-          name: mirror-to-github
-          script:
-            - git clone git@github.com:genomicepidemiology/resfinder
-            - git push --mirror origin

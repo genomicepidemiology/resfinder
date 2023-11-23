@@ -1,7 +1,7 @@
 on:
   workflow_dispatch
 
-name: manual release linux
+name: manual release noarch
 
 jobs:
   conda-linux:

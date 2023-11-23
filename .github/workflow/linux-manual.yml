@@ -24,7 +24,7 @@ jobs:
         run: |
           pip install PyYAML
           pip install ruamel.yaml
-          python conda/make_conda_linux.py
+          python make_conda_linux.py
           cat conda/meta.yaml
 
       - uses: mamba-org/setup-micromamba@v1
@@ -33,7 +33,7 @@ jobs:
 
       - name: build conda package
         run: |
-          conda mambabuild conda -c conda-forge --output-folder .
+          conda mambabuild conda -c conda-forge -c bioconda --output-folder .
 
       - name: upload conda package
         run: |
